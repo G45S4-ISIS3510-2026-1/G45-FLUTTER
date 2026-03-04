@@ -1,4 +1,4 @@
-# G45-FLUTTER
+# g45_flutter
 
 A new Flutter project.
 
