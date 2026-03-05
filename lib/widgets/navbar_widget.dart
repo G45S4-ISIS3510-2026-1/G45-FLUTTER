@@ -9,20 +9,26 @@ class NavbarWidget extends StatelessWidget {
     return ValueListenableBuilder(
       valueListenable: selectedPageNotifier,
       builder: (context, selectedPage, child) {
-        return NavigationBar(
-          destinations: [
-            NavigationDestination(icon: Icon(Icons.home), label: 'Inicio'),
-            NavigationDestination(
-              icon: Icon(Icons.calendar_month),
-              label: 'Agenda',
-            ),
-            NavigationDestination(icon: Icon(Icons.message), label: 'Mensajes'),
-            NavigationDestination(icon: Icon(Icons.person), label: 'Perfil'),
-          ],
-          selectedIndex: selectedPage,
-          onDestinationSelected: (int value) {
-            selectedPageNotifier.value = value;
-          },
+        return Padding(
+          padding: const EdgeInsets.all(20.0),
+          child: NavigationBar(
+            destinations: [
+              NavigationDestination(icon: Icon(Icons.home), label: 'Inicio'),
+              NavigationDestination(
+                icon: Icon(Icons.import_contacts),
+                label: 'Catálogo',
+              ),
+              NavigationDestination(
+                icon: Icon(Icons.message),
+                label: 'Mensajes',
+              ),
+              NavigationDestination(icon: Icon(Icons.person), label: 'Perfil'),
+            ],
+            selectedIndex: selectedPage,
+            onDestinationSelected: (int value) {
+              selectedPageNotifier.value = value;
+            },
+          ),
         );
       },
     );
