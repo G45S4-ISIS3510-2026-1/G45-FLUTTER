@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:g45_flutter/views/widget_tree.dart';
+// import 'package:g45_flutter/util.dart';
+import 'package:g45_flutter/theme.dart';
 
 void main() {
   runApp(const MyApp());
@@ -11,15 +13,13 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
+
+    final materialTheme = MaterialTheme(ThemeData.dark().textTheme);
+
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Flutter Demo',
-      theme: ThemeData(
-        colorScheme: .fromSeed(
-          seedColor: Colors.deepPurple,
-          brightness: Brightness.dark,
-        ),
-      ),
+      theme: materialTheme.dark(),
       home: const MyHomePage(title: 'Flutter Demo Home Page'),
     );
   }

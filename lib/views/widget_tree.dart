@@ -13,9 +13,15 @@ class WidgetTree extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+
+    final theme = Theme.of(context);
+
     return Scaffold(
+
+      backgroundColor: theme.colorScheme.primaryContainer,
+
       appBar: AppBar(
-        backgroundColor: Colors.amber,
+        backgroundColor: theme.colorScheme.primary,
         title: Text('Tutoring App'),
       ),
       body: ValueListenableBuilder(
