@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:g45_flutter/views/widget_tree.dart';
+// import 'package:g45_flutter/views/widget_tree.dart';
 // import 'package:g45_flutter/util.dart';
 import 'package:g45_flutter/theme.dart';
+import 'package:g45_flutter/views/pages/login_regist_page.dart';
 
 void main() {
   runApp(const MyApp());
@@ -43,6 +44,6 @@ class _MyHomePageState extends State<MyHomePage> {
     // The Flutter framework has been optimized to make rerunning build methods
     // fast, so that you can just rebuild anything that needs updating rather
     // than having to individually change instances of widgets.
-    return WidgetTree();
+    return LoginRegistPage();
   }
 }
