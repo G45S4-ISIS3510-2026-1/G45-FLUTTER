@@ -16,19 +16,13 @@ class _LoginPageState extends State<LoginPage> {
   Future<void> login() async {
     final token = "await Api.login(emailCtrl.text, passCtrl.text)";
 
-    if (token != null) {
-      await SessionManager.saveToken(token);
+    await SessionManager.saveToken(token);
 
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (_) => const WidgetTree()),
-      );
-    } else {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text("Credenciales incorrectas")));
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const WidgetTree()),
+    );
     }
-  }
 
   @override
   Widget build(BuildContext context) {

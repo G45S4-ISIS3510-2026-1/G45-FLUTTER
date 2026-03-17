@@ -1,21 +1,111 @@
 import 'package:flutter/material.dart';
 
-class CatalogPage extends StatelessWidget {
+class CatalogPage extends StatefulWidget {
   const CatalogPage({super.key});
+
+  @override
+  State<CatalogPage> createState() => _CatalogPageState();
+}
+
+class _CatalogPageState extends State<CatalogPage> {
+//variables:
+  //Lista de facultades mockeada
+  List<String> facultades = [
+    "Ingeniería",
+    "Ciencias",
+    "Economía",
+    "Artes",
+  ];
 
   @override
   Widget build(BuildContext context) {
     return Container(
       child: SingleChildScrollView(
         child: Column(
-          children: List.generate(
-            20,
-            (index) => ListTile(
-              title: Text('Tutor ${index + 1}'),
-              subtitle: Text('Descripción del tutor ${index + 1}'),
-              leading: Icon(Icons.person),
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+          //titulo del catalogo y foto de usuario Cuando este
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      'Catálogo de Tutores',
+                      style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ),
+          //barra de busqueda
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: TextField(
+                  onChanged: (value) {
+                    //  implementar la lógica de búsqueda
+                  },
+                  decoration: InputDecoration(
+                    hintText: 'Buscar por materia o tutor',
+                  ),
+                ),
+              ),
+            ),
+          //Fitros
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: Column(
+              children: [
+                //label de ordenar por
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    'Ordenar por',
+                      style: TextStyle(fontSize: 14, fontWeight: FontWeight.normal),
+                    ),
+                ),
+                //Botones de ordenar por
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: [
+                    ElevatedButton(onPressed: () {}, child: Text("Mejor Ratings")),
+                    ElevatedButton(onPressed: () {}, child: Text("Precio")),
+                    ElevatedButton(onPressed: () {}, child: Text("Proximidad")),
+                  ],
+                ),
+                //label de Facultad
+
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    'Facultades',
+                      style: TextStyle(fontSize: 14, fontWeight: FontWeight.normal),
+                    ),
+                ),
+                //Botones de filtro de Facultad [mapeados]
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: facultades.map((facultad){
+                    return ElevatedButton(
+                      onPressed: () {}, 
+                      child: Text(facultad)
+                      );
+                  }).toList(),
+                  
+                ),
+              ],
+            ),
+          )
+
+
+          ],
         ),
       ),
     );
