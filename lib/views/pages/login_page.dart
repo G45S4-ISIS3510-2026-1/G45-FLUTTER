@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:g45_flutter/util.dart';
-import 'package:g45_flutter/views/pages/home_page.dart';
+import 'package:g45_flutter/core/util.dart';
+import 'package:g45_flutter/views/widget_tree.dart';
+
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
 
@@ -20,12 +21,12 @@ class _LoginPageState extends State<LoginPage> {
 
       Navigator.push(
         context,
-        MaterialPageRoute(builder: (_) => const HomePage())
+        MaterialPageRoute(builder: (_) => const WidgetTree()),
       );
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Credenciales incorrectas")),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text("Credenciales incorrectas")));
     }
   }
 
@@ -37,10 +38,17 @@ class _LoginPageState extends State<LoginPage> {
         padding: const EdgeInsets.all(20),
         child: Column(
           children: [
-            TextField(controller: emailCtrl, decoration: InputDecoration(labelText: "Correo")),
-            TextField(controller: passCtrl, obscureText: true, decoration: InputDecoration(labelText: "Password")),
+            TextField(
+              controller: emailCtrl,
+              decoration: InputDecoration(labelText: "Correo"),
+            ),
+            TextField(
+              controller: passCtrl,
+              obscureText: true,
+              decoration: InputDecoration(labelText: "Password"),
+            ),
             const SizedBox(height: 20),
-            ElevatedButton(onPressed: login, child: const Text("Entrar"))
+            ElevatedButton(onPressed: login, child: const Text("Entrar")),
           ],
         ),
       ),
