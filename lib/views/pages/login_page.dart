@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:g45_flutter/util.dart';
-import 'package:g45_flutter/views/pages/home_page.dart';
+import 'package:g45_flutter/views/widget_tree.dart';
+
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
 
@@ -13,14 +14,15 @@ class _LoginPageState extends State<LoginPage> {
   final passCtrl = TextEditingController();
 
   Future<void> login() async {
-    final token = "await Api.login(emailCtrl.text, passCtrl.text)";
+    final token = "a";
 
     if (token != null) {
       await SessionManager.saveToken(token);
 
-      Navigator.push(
+      Navigator.pushAndRemoveUntil(
         context,
-        MaterialPageRoute(builder: (_) => const HomePage())
+        MaterialPageRoute(builder: (_) => const WidgetTree()),
+        (route) => false,
       );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -31,16 +33,29 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Scaffold(
+      backgroundColor: theme.colorScheme.primaryContainer,
       appBar: AppBar(title: const Text("Login")),
       body: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
             TextField(controller: emailCtrl, decoration: InputDecoration(labelText: "Correo")),
             TextField(controller: passCtrl, obscureText: true, decoration: InputDecoration(labelText: "Password")),
             const SizedBox(height: 20),
-            ElevatedButton(onPressed: login, child: const Text("Entrar"))
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(onPressed: login, 
+                style: ElevatedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 18),
+                  backgroundColor: theme.colorScheme.onPrimary,
+                ),
+                child: const Text("Entrar")
+              ),
+            ),
+            const SizedBox(height: 16)
           ],
         ),
       ),

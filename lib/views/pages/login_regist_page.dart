@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:g45_flutter/views/pages/login_page.dart';
 import 'package:g45_flutter/views/pages/registrarse_page.dart';
@@ -14,14 +16,14 @@ class LoginRegistPage extends StatelessWidget {
       child: Padding(
         padding: const EdgeInsets.all(25.0),
         child: Column(
-          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.end,
           children: [
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
                 onPressed: () => Navigator.push( context, MaterialPageRoute(builder: (_) => const LoginPage())),
                 style: ElevatedButton.styleFrom(
-                  // padding: const EdgeInsets.symmetric(vertical: 18),
+                  padding: const EdgeInsets.symmetric(vertical: 18),
                   backgroundColor: theme.colorScheme.onPrimary,
                 ),
                 child: const Text("Entrar"),
