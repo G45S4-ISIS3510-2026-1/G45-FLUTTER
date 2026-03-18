@@ -1,6 +1,6 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:g45_flutter/util.dart';
-import 'package:g45_flutter/views/widget_tree.dart';
+import 'package:flutter/foundation.dart' show kIsWeb; 
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -8,55 +8,93 @@ class LoginPage extends StatefulWidget {
   @override
   State<LoginPage> createState() => _LoginPageState();
 }
-
 class _LoginPageState extends State<LoginPage> {
   final emailCtrl = TextEditingController();
   final passCtrl = TextEditingController();
 
-  Future<void> login() async {
-    final token = "a";
+  Future<void> loginConUniandes() async {
+    try {
+      final microsoftProvider = MicrosoftAuthProvider();
+      
+      microsoftProvider.setCustomParameters({
+        'prompt': 'select_account',
+        'tenant': 'common', 
+      });
 
-    if (token != null) {
-      await SessionManager.saveToken(token);
+      UserCredential userCredential;
+      if (kIsWeb) {
+        userCredential = await FirebaseAuth.instance.signInWithPopup(microsoftProvider);
+      } else {
+        userCredential = await FirebaseAuth.instance.signInWithProvider(microsoftProvider);
+      }
 
-      Navigator.pushAndRemoveUntil(
-        context,
-        MaterialPageRoute(builder: (_) => const WidgetTree()),
-        (route) => false,
-      );
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Credenciales incorrectas")),
-      );
+      final email = userCredential.user?.email ?? "";
+
+      if (!email.endsWith('@uniandes.edu.co')) {
+        await FirebaseAuth.instance.signOut();
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text("Acceso denegado: Usa tu correo @uniandes.edu.co"),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      } else {
+        print("Login exitoso: $email");
+      }
+
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Error de conexión: $e")),
+        );
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    
     return Scaffold(
-      backgroundColor: theme.colorScheme.primaryContainer,
-      appBar: AppBar(title: const Text("Login")),
-      body: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            TextField(controller: emailCtrl, decoration: InputDecoration(labelText: "Correo")),
-            TextField(controller: passCtrl, obscureText: true, decoration: InputDecoration(labelText: "Password")),
-            const SizedBox(height: 20),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(onPressed: login, 
-                style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 18),
-                  backgroundColor: theme.colorScheme.onPrimary,
-                ),
-                child: const Text("Entrar")
+      backgroundColor: theme.colorScheme.surface,
+      body: Center(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(32),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.school, size: 80, color: Colors.black),
+              const SizedBox(height: 24),
+              Text(
+                "Tutorías Uniandes",
+                style: theme.textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.bold),
               ),
-            ),
-            const SizedBox(height: 16)
-          ],
+              const SizedBox(height: 48),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  onPressed: loginConUniandes, 
+                  icon: const Icon(Icons.window), 
+                  label: const Text("Ingresar con correo Uniandes"),
+                  style: ElevatedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    backgroundColor: Colors.black, 
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
+                ),
+              ),
+              
+              const SizedBox(height: 24),
+              const Text(
+                "Solo se permite el ingreso con cuentas institucionales activas.",
+                textAlign: TextAlign.center,
+                style: TextStyle(color: Colors.grey, fontSize: 12),
+              ),
+            ],
+          ),
         ),
       ),
     );
