@@ -28,10 +28,12 @@ class ReservationDetailPage extends StatelessWidget {
               Container(
                 child: Column(
                   children: [
-                    Text('Fecha: ${reservation.date}'),
-                    Text('Hora: ${reservation.time}'),
-                    Text('Cancha: ${reservation.court}'),
-                    Text('Precio: ${reservation.price}'),
+                    Text('Fecha: 17/03/2026'),
+                    Text('Hora: 10:00'),
+                    Text('Tutor: Juan Perez'),
+                    Text('Materia: Programación en Python'),
+                    Text('Estado: Pendiente'),
+                    Text('Código de verificación: A3X9KQ'),
                   ],
                 ),
               ),
