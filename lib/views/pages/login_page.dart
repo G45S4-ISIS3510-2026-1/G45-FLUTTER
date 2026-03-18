@@ -1,7 +1,5 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart' show kIsWeb; 
-
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
 
@@ -22,11 +20,7 @@ class _LoginPageState extends State<LoginPage> {
       });
 
       UserCredential userCredential;
-      if (kIsWeb) {
-        userCredential = await FirebaseAuth.instance.signInWithPopup(microsoftProvider);
-      } else {
-        userCredential = await FirebaseAuth.instance.signInWithProvider(microsoftProvider);
-      }
+      userCredential = await FirebaseAuth.instance.signInWithProvider(microsoftProvider);
 
       final email = userCredential.user?.email ?? "";
 
