@@ -46,6 +46,8 @@ class AuthWrapper extends StatelessWidget {
             body: Center(child: CircularProgressIndicator()),
           );
         }
+        
+
 
         if (snapshot.hasData && snapshot.data != null) {
           return const WidgetTree();
