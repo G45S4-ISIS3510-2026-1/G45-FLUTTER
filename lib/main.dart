@@ -1,18 +1,16 @@
-import 'package:flutter/material.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:g45_flutter/theme.dart';
-import 'package:g45_flutter/views/pages/login_regist_page.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/material.dart';
+import 'package:g45_flutter/core/theme.dart';
 import 'package:g45_flutter/firebase_options.dart';
+import 'package:g45_flutter/views/pages/login_regist_page.dart';
 import 'package:g45_flutter/views/widget_tree.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  
+
   // Inicialización oficial
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
   runApp(const MyApp());
 }
@@ -28,7 +26,7 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'Flutter Demo',
       theme: materialTheme.dark(),
-      home: const AuthWrapper(), 
+      home: const AuthWrapper(),
     );
   }
 }
@@ -46,8 +44,6 @@ class AuthWrapper extends StatelessWidget {
             body: Center(child: CircularProgressIndicator()),
           );
         }
-        
-
 
         if (snapshot.hasData && snapshot.data != null) {
           return const WidgetTree();
