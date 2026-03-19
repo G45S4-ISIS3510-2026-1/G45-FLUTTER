@@ -259,7 +259,7 @@ class _TutorProfilePageState extends State<TutorProfilePage> {
 
                   // top 2 reviews
                   Column(
-                    children: reviewsList.take(2).map((review) {
+                    children: reviewsList.take(2).map((review) { // TODO: PARA LIMITAR A 2 RESEÑAS, CAMBIAR DESPUÉS A TODAS
                       return ReviewCard(review: review);
                     }).toList(),
                   ),
