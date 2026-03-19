@@ -2,24 +2,34 @@ import 'package:flutter/material.dart';
 import 'package:g45_flutter/widgets/tutor_card.dart';
 import 'package:g45_flutter/data/mock/tutor_mock.dart';
 import 'package:g45_flutter/data/mock/facultades_mock.dart';
+import 'package:g45_flutter/viewmodels/tutor_viewmodel.dart';
+import 'package:provider/provider.dart';
 
 class CatalogPage extends StatefulWidget {
   const CatalogPage({super.key});
-
-  
 
   @override
   State<CatalogPage> createState() => _CatalogPageState();
 }
 
 class _CatalogPageState extends State<CatalogPage> {
-  
+  @override
+  void initState() {
+    super.initState();
+
+    Future.microtask(() {
+      context.read<TutorViewModel>().loadTutors();
+    });
+  }
   //Datos mockeados
-  List<String> facultadesList = facultades;
-  List<Map<String, dynamic>> tutoresList = tutores;
-  
+
   @override
   Widget build(BuildContext context) {
+    final vm = Provider.of<TutorViewModel>(context);
+
+    if (vm.isLoading) {
+      return Center(child: CircularProgressIndicator());
+    }
     return SingleChildScrollView(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -32,10 +42,7 @@ class _CatalogPageState extends State<CatalogPage> {
                 Expanded(
                   child: Text(
                     'Catálogo de Tutores',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                   ),
                 ),
               ],
@@ -85,13 +92,10 @@ class _CatalogPageState extends State<CatalogPage> {
                       child: Text("Mejor Ratings"),
                     ),
                     ElevatedButton(onPressed: () {}, child: Text("Precio")),
-                    ElevatedButton(
-                      onPressed: () {},
-                      child: Text("Proximidad"),
-                    ),
+                    ElevatedButton(onPressed: () {}, child: Text("Proximidad")),
                   ],
                 ),
-    
+
                 //label de Facultad
                 Align(
                   alignment: Alignment.centerLeft,
@@ -107,7 +111,8 @@ class _CatalogPageState extends State<CatalogPage> {
                 Wrap(
                   spacing: 8,
                   runSpacing: 8,
-                  children: facultades.map((facultad) {//for i con el map pero fluter necesita una lista tonces se pasa a lista
+                  children: facultades.map((facultad) {
+                    //for i con el map pero fluter necesita una lista tonces se pasa a lista
                     return ElevatedButton(
                       onPressed: () {},
                       child: Text(facultad),
@@ -116,13 +121,16 @@ class _CatalogPageState extends State<CatalogPage> {
                 ),
                 //Feed de tutores (mapeados)
                 ListView.builder(
-                  shrinkWrap: true,//tomar espacio necesario
-                  physics: NeverScrollableScrollPhysics(),// no mover scroll
-                  itemCount: tutores.length,//basicamente un for in range
-                  itemBuilder: (context, index) {// call back: context donde esta en el arbol y index ej tutor 1 2 3 
+                  shrinkWrap: true, //tomar espacio necesario
+                  physics: NeverScrollableScrollPhysics(), // no mover scroll
+                  itemCount: vm.tutors.length, //basicamente un for in range
+                  itemBuilder: (context, index) {
+                    // call back: context donde esta en el arbol y index ej tutor 1 2 3
                     return Padding(
                       padding: const EdgeInsets.all(8.0),
-                      child: TutorCard(tutor: tutores[index]),// toca decirle que parametro-> tutor:
+                      child: TutorCard(
+                        tutor: vm.tutors[index],
+                      ), // toca decirle que parametro-> tutor:
                     );
                   },
                 ),

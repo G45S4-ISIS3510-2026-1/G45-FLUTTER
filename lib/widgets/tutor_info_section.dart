@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'dart:ui';
+import 'package:g45_flutter/models/tutor.dart';
 
 class TutorInfoSection extends StatefulWidget {
-  final Map<String, dynamic> tutor;
+  final Tutor tutor;
 
   const TutorInfoSection({super.key, required this.tutor});
 
@@ -37,7 +38,7 @@ class _TutorInfoSectionState extends State<TutorInfoSection> {//necesito quitar 
                   Icon(Icons.email, color: Colors.white54),
                   SizedBox(width: 8),
                   Text(
-                    widget.tutor['email'] ?? "No disponible",
+                    widget.tutor.email ?? "No disponible",
                     style: TextStyle(color: Colors.white54),
                   ),
                 ],
@@ -48,7 +49,8 @@ class _TutorInfoSectionState extends State<TutorInfoSection> {//necesito quitar 
                   Icon(Icons.phone, color: Colors.white54),
                   SizedBox(width: 8),
                   Text(
-                    widget.tutor['phone'] ?? "No disponible",
+                    "No disponible",
+                    //widget.tutor['phone'] ?? "No disponible",
                     style: TextStyle(color: Colors.white54),
                   ),
                 ],

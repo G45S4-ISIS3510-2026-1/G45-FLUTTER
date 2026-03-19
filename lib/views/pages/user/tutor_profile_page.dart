@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:g45_flutter/data/mock/tutor_mock.dart';
+import 'package:g45_flutter/models/tutor.dart';
 import 'package:g45_flutter/widgets/tutor_info_section.dart';
 import 'package:g45_flutter/widgets/tutor_review_card.dart';
 import 'package:g45_flutter/data/mock/review_mock.dart';
@@ -6,9 +8,10 @@ import 'package:g45_flutter/views/pages/reservation/reservation_gateway_page.dar
 
 class TutorProfilePage extends StatefulWidget {
   //variable de widget
-  final Map<String, dynamic> tutor;
+  final Tutor tutor;
+  final List<String> tutoringSkills;
 
-  const TutorProfilePage({super.key, required this.tutor});
+  const TutorProfilePage({super.key, required this.tutor,this.tutoringSkills = const [],});
 
   @override
   State<TutorProfilePage> createState() => _TutorProfilePageState();
@@ -72,7 +75,7 @@ class _TutorProfilePageState extends State<TutorProfilePage> {
                   // 1. imagen fondo
                   Positioned.fill(
                     child: Image.network(
-                      tutor['image'],
+                      tutor.profileImageUrl,
                       fit: BoxFit.cover,
                       //por si falla imagen no mate toda la pagina
                       errorBuilder: (context, error, stackTrace) {
@@ -134,7 +137,7 @@ class _TutorProfilePageState extends State<TutorProfilePage> {
                                 decoration: BoxDecoration(
                                   borderRadius: BorderRadius.circular(20),
                                   image: DecorationImage(
-                                    image: NetworkImage(tutor['image']),
+                                    image: NetworkImage(tutor.profileImageUrl),
                                     fit: BoxFit.cover,
                                   ),
                                 ),
@@ -153,7 +156,7 @@ class _TutorProfilePageState extends State<TutorProfilePage> {
                               children: [
                                 //Nombre del tutor
                                 Text(
-                                  tutor["name"],
+                                  tutor.name,
                                   style: TextStyle(
                                     fontSize: 28,
                                     fontWeight: FontWeight.bold,
@@ -164,7 +167,7 @@ class _TutorProfilePageState extends State<TutorProfilePage> {
                             ),
                             //major del tutor
                             Text(
-                              tutor["major"],
+                              tutor.major,
                               style: TextStyle(
                                 fontSize: 14,
                                 color: Colors.blueAccent,
@@ -229,7 +232,7 @@ class _TutorProfilePageState extends State<TutorProfilePage> {
                   Wrap(
                     spacing: 12,
                     runSpacing: 12,
-                    children: (tutor["tutoring_skills"] as List<String>)
+                    children: <String>[] 
                         .map<Widget>(
                           (skill) => Chip(
                             label: Text(skill),
