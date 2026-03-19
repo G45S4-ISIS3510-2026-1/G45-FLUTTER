@@ -1,18 +1,18 @@
 class User {
-  final String id;
-  final String name;
-  final String email;
-  final String major;
-  final bool isTutoring;
-  final int uniandesId;
+  final String? id;
+  final String? name;
+  final String? email;
+  final String? major;
+  final bool? isTutoring;
+  final int? uniandesId;
   final List<String> tutoringSkills;
-  final List<String> interestedSkills;
+  List<String> interestedSkills;
   final List<String> fcmTokens;
   final List<String> favTutors;
   final Map<String, dynamic> availability;
   final List<dynamic> paymentMethods;
-  final int sessionPrice;
-  final String profileImageUrl;
+  final int? sessionPrice;
+  final String? profileImageUrl;
 
   User({
     required this.id,
@@ -32,6 +32,7 @@ class User {
   });
 
   factory User.fromJson(Map<String, dynamic> json) {
+
     return User(
       id: json["id"],
       name: json["name"],
