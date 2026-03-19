@@ -17,11 +17,6 @@ class WidgetTree extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: theme.colorScheme.primaryContainer,
-
-      appBar: AppBar(
-        backgroundColor: theme.colorScheme.primary,
-        title: Text('Tutoring App'),
-      ),
       body: ValueListenableBuilder(
         valueListenable: selectedPageNotifier,
         builder: (context, selectedPageNotifier, child) {
