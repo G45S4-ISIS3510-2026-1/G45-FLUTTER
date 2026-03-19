@@ -6,7 +6,9 @@ class LoginRegistPage extends StatelessWidget {
   const LoginRegistPage({super.key});
 
   Future<void> ingresarConUniandes(BuildContext context) async {
+    final theme = Theme.of(context);
     try {
+
       final microsoftProvider = MicrosoftAuthProvider();
       
       microsoftProvider.setCustomParameters({
@@ -22,8 +24,7 @@ class LoginRegistPage extends StatelessWidget {
       }
 
       final email = userCredential.user?.email ?? "";
-      
-      // FILTRO UNIANDES
+
       if (!email.endsWith('@uniandes.edu.co')) {
         await FirebaseAuth.instance.signOut();
         if (context.mounted) {
@@ -34,18 +35,22 @@ class LoginRegistPage extends StatelessWidget {
             ),
           );
         }
-      } 
-      // Si todo sale bien, el AuthWrapper del main.dart detecta el cambio solo.
-      
+      }
     } catch (error) {
-      print("Error de conexión: $error");
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text("Error de autenticación: $error"),
+            backgroundColor: theme.colorScheme.onError,
+          ),
+        );
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    
     return Scaffold(
       backgroundColor: theme.colorScheme.primaryContainer,
       body: SafeArea(
