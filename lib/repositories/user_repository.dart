@@ -52,7 +52,6 @@ class UserRepository {
       return usuario;
     }
 
-    String uniandesId = email.split('@')[0];
     final resp = await http.post(
       url,
       headers: {"Content-Type": "application/json"},
@@ -63,7 +62,7 @@ class UserRepository {
         "name": name,
         "email": email,
         "major":"Otro",
-        "uniandesId":uniandesId,
+        "uniandesId":null,
         "interestedSkills": [],
         "tutoringSkills": [],
         "availability": {},
