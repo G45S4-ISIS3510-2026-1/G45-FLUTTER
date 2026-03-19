@@ -4,6 +4,8 @@ class ReservationDetailPage extends StatelessWidget {
   const ReservationDetailPage({super.key, required this.reservation});
 
   final String reservation;
+  final String sessionStatus = 'Pendiente de Asistencia';
+  final bool isTutorView = false;
 
   @override
   Widget build(BuildContext context) {
@@ -16,7 +18,7 @@ class ReservationDetailPage extends StatelessWidget {
           },
         ),
       ),
-      body: Center(
+      body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(8.0),
           child: Column(
@@ -25,17 +27,15 @@ class ReservationDetailPage extends StatelessWidget {
                 'Detalle de Reserva',
                 style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
               ),
-              Container(
-                child: Column(
-                  children: [
-                    Text('Fecha: 17/03/2026'),
-                    Text('Hora: 10:00'),
-                    Text('Tutor: Juan Perez'),
-                    Text('Materia: Programación en Python'),
-                    Text('Estado: Pendiente'),
-                    Text('Código de verificación: A3X9KQ'),
-                  ],
-                ),
+              Column(
+                children: [
+                  Text('Fecha: 19/03/2026'),
+                  Text('Hora: 10:00'),
+                  Text('Tutor: Mario Lino'),
+                  Text('Materia: Arquitectura de Software'),
+                  Text('Estado: $sessionStatus'),
+                  Text('Código de verificación: A3X9KQ'),
+                ],
               ),
             ],
           ),
