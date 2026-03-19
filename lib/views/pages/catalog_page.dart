@@ -1,47 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:g45_flutter/widgets/tutor_card.dart';
+import 'package:g45_flutter/data/mock/tutor_mock.dart';
+import 'package:g45_flutter/data/mock/facultades_mock.dart';
 
 class CatalogPage extends StatefulWidget {
   const CatalogPage({super.key});
+
+  
 
   @override
   State<CatalogPage> createState() => _CatalogPageState();
 }
 
 class _CatalogPageState extends State<CatalogPage> {
-  //variables y datos mockeados
   
-  //Mocks:
-    //Lista de facultades mockeada
-    List<String> facultades = ["Ingeniería", "Ciencias", "Economía", "Artes"];
-    //Lista de tutores mockeada
-    List<Map<String, dynamic>> tutores = [
-  {
-    "name": "Camilo Rivas",
-    "major": "Ingeniería",
-    "price": "35k/h",
-    "rating": "4.9",
-    "tutoring_skills": ["Cálculo", "Python"],
-    "image": "https://i.pravatar.cc/150?img=1",
-    "numTutorias" : "20",
-    "nivel":"alto",
-    "email": "c.rivas@uniandes.edu.co",
-    "numero": "3001234567"
-  },
-  {
-    "name": "Ana Torres",
-    "major": "Ciencias",
-    "price": "30k/h",
-    "rating": "4.7",
-    "tutoring_skills": ["Química", "Biología"],
-    "image": "https://i.pravatar.cc/150?img=2",
-    "numTutorias" : "245",
-    "nivel":"medio",
-    "email": "c.rivas@uniandes.edu.co",
-    "numero": "3001234567"
-  }
-];
-
+  //Datos mockeados
+  List<String> facultadesList = facultades;
+  List<Map<String, dynamic>> tutoresList = tutores;
+  
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(

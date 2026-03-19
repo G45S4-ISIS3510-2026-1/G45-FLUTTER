@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:g45_flutter/views/pages/tutor_profile_page.dart';
+import 'package:g45_flutter/views/pages/reservation/reservation_gateway_page.dart';
 
 class TutorCard extends StatelessWidget {
   final Map<String, dynamic> tutor;
@@ -84,7 +85,14 @@ class TutorCard extends StatelessWidget {
                 ),
                 Spacer(),
                 //Boton reseva
-                ElevatedButton(onPressed: () {}, child: Text("Reservar")),
+                ElevatedButton(onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const ReservationGatewayPage(),
+                    ),
+                  );
+                }, child: Text("Reservar")),
               ],
             ),
           ],

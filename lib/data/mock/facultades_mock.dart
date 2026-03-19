@@ -1,0 +1,1 @@
+List<String> facultades = ["Ingeniería", "Ciencias", "Economía", "Artes"];
