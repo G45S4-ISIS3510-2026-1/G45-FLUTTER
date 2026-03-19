@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:g45_flutter/widgets/tutor_info_section.dart';
 import 'package:g45_flutter/widgets/tutor_review_card.dart';
 import 'package:g45_flutter/data/mock/review_mock.dart';
+import 'package:g45_flutter/views/pages/reservation/reservation_gateway_page.dart';
 
 class TutorProfilePage extends StatefulWidget {
   //variable de widget
   final Map<String, dynamic> tutor;
-  
 
   const TutorProfilePage({super.key, required this.tutor});
 
@@ -16,7 +16,7 @@ class TutorProfilePage extends StatefulWidget {
 
 class _TutorProfilePageState extends State<TutorProfilePage> {
   //varianbles
-final reviewsList = reviews;
+  final reviewsList = reviews;
 
   //-------------------------------
   // Funciones Auxiliares
@@ -272,10 +272,18 @@ final reviewsList = reviews;
                   ),
 
                   SizedBox(height: 20),
-
-                  // BOTÓN PRINCIPAL
+                  //-----------------------------------------------------------------------
+                  // BOTÓN PRINCIPAL RESERVA (Diego)-> PASAR A RESERVA PUNTUAL DE ESE TUTOR
+                  //------------------------------------------------------------------------
                   ElevatedButton(
-                    onPressed: () {},
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const ReservationGatewayPage(),
+                        ),
+                      );
+                    },
                     child: Text("Reservar sesión"),
                   ),
                 ],

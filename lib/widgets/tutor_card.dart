@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:g45_flutter/views/pages/tutor_profile_page.dart';
+import 'package:g45_flutter/views/pages/user/tutor_profile_page.dart';
 import 'package:g45_flutter/views/pages/reservation/reservation_gateway_page.dart';
 
 class TutorCard extends StatelessWidget {
@@ -84,7 +84,9 @@ class TutorCard extends StatelessWidget {
                   style: TextStyle(color: Colors.white),
                 ),
                 Spacer(),
-                //Boton reseva
+                //--------------------------------------------------
+                //Boton reseva(DIEGO)->TOCA MANDARLE EL TUTOR PUNTUAL
+                //--------------------------------------------------
                 ElevatedButton(onPressed: () {
                   Navigator.push(
                     context,

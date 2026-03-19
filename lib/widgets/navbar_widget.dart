@@ -13,20 +13,31 @@ class NavbarWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ValueListenableBuilder(
-      valueListenable: selectedPageNotifier,
-      builder: (context, selectedPage, child) {
-        return Padding(
-          padding: const EdgeInsets.all(20.0),
+    return  ValueListenableBuilder<int>(
+  valueListenable: selectedPageNotifier,
+  builder: (context, selectedPage, child) {
+    return Padding(
+      padding: const EdgeInsets.all(20.0),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(30), // Redondo por defecto navbar no trae border radius tonces se pone uno redondo atras y se deja el navbar traparente
+        child: Container(
+          decoration: BoxDecoration(
+            color: Colors.black.withOpacity(0.6), //Efecto de vidrio
+            borderRadius: BorderRadius.circular(30),
+          ),
           child: NavigationBar(
-            destinations: destinations,
+            backgroundColor: Colors.transparent, // Trasparente con efecto de vidrio negro definido linea 25
+            elevation: 0,
             selectedIndex: selectedPage,
             onDestinationSelected: (int value) {
               selectedPageNotifier.value = value;
             },
+            destinations: destinations,
           ),
-        );
-      },
+        ),
+      ),
     );
+  },
+);
   }
 }
