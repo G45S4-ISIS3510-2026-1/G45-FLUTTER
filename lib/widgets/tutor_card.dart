@@ -17,15 +17,18 @@ class TutorCard extends StatelessWidget {
     final skillsVM = Provider.of<SkillsViewModel>(context);
 
     final tutorSkills = tutor.tutoringSkills ?? [];
+    print("TutorSummary skills: ${tutor.tutoringSkills}");
 
     final skillNames = skillsVM.skills
-        .where((skill) => tutorSkills.contains(skill.id))
+        .where((skill) => tutorSkills.contains(skill.label))
         .map((skill) => skill.label)
         .where((label) => label != null)
         .map((label) => label!)
         .toList();
+    
     //detectar press de tutor y routing a detail de tutor
     return GestureDetector(
+    
       onTap: () {
         Navigator.push(
           context,
@@ -91,8 +94,15 @@ class TutorCard extends StatelessWidget {
 
                       Wrap(
                         spacing: 6,
+                        runSpacing: 6,
                         children: skillNames
-                            .map((s) => Chip(label: Text(s)))
+                            .map(
+                              (skill) => Chip(
+                                label: Text(skill),
+                                backgroundColor: Color(0xFF1A2A40),
+                                labelStyle: TextStyle(color: Colors.blueAccent),
+                              ),
+                            )
                             .toList(),
                       ),
                     ],

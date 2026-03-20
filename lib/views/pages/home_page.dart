@@ -107,7 +107,7 @@ class _HomePageState extends State<HomePage> {
                   itemBuilder: (context, index) {
                     return Padding(
                       padding: const EdgeInsets.all(8.0),
-                      child: TutorCard(tutor: tutores[index]),
+ //                     child: TutorCard(tutor: tutores[index]),//quitar mock
                     );
                   },
                 ),
