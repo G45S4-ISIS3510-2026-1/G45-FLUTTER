@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:g45_flutter/data/mock/tutor_mock.dart';
+
 import 'package:g45_flutter/models/user.dart';
 import 'package:g45_flutter/repositories/user_repository.dart';
 import 'package:g45_flutter/widgets/tutor_info_section.dart';
 import 'package:g45_flutter/widgets/tutor_review_card.dart';
-import 'package:g45_flutter/data/mock/review_mock.dart';
+import 'package:g45_flutter/repositories/review_repository.dart';
+import 'package:g45_flutter/models/review.dart';
 import 'package:g45_flutter/views/pages/reservation/reservation_gateway_page.dart';
 
 class TutorProfilePage extends StatefulWidget {
@@ -28,14 +29,17 @@ class _TutorProfilePageState extends State<TutorProfilePage> {
 
   Future<void> loadTutor() async {
     final repo = UserRepository();
+    final reviewRepo = ReviewRepository();
+
     tutor = await repo.getUserById(widget.tutorId);
+    reviewsList = await reviewRepo.getReviewsByTutor(widget.tutorId);
 
     setState(() {
       isLoading = false;
     });
   }
 
-  final reviewsList = reviews;
+  List<Review> reviewsList = [];
 
   //-------------------------------
   // Funciones Auxiliares

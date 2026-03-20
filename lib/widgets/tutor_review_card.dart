@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:g45_flutter/models/review.dart';
 
 class ReviewCard extends StatelessWidget {
-  final Map<String, dynamic> review;
+  final Review review;
 
   const ReviewCard({super.key, required this.review});
 
@@ -22,7 +23,9 @@ class ReviewCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           CircleAvatar(
-            backgroundImage: NetworkImage(review["userImage"]),
+            backgroundImage: review.authorImage != null
+                ? NetworkImage(review.authorImage!)
+                : null,
           ),
           SizedBox(width: 10),
 
@@ -36,24 +39,24 @@ class ReviewCard extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      review["userName"],
+                      review.authorName,
                       style: TextStyle(color: Colors.white),
                     ),
-                    Text("⭐ ${review["rating"]}"),
+                    Text("⭐ ${review.rating}"),
                   ],
                 ),
 
                 SizedBox(height: 4),
                 //FILA DE LA MITAD
                 Text(
-                  review["description"],
+                  review.details,
                   style: TextStyle(color: Colors.white70),
                 ),
 
                 SizedBox(height: 4),
                 //FILA DE ABAJO
                 Text(
-                  review["date"],
+                  review.createdAt.toString().split(" ")[0],
                   style: TextStyle(color: Colors.white38, fontSize: 12),
                 ),
               ],
