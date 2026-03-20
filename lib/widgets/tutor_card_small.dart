@@ -84,10 +84,7 @@ class TutorCard extends StatelessWidget {
             Row(
               children: [
                 //Rating
-                Text(
-                  "⭐ ",
-                  style: TextStyle(color: Colors.white),
-                ),
+                Text("⭐ ", style: TextStyle(color: Colors.white)),
                 Spacer(),
                 //--------------------------------------------------
                 //Boton reserva

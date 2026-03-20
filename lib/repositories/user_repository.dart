@@ -11,6 +11,7 @@ class UserRepository {
   final String baseUrl = "${ApiConfig.baseUrl}/users";
   final SkillRepository skillRepo = SkillRepository();
 
+  //buscar user por email retorna un objeeto usuario
   Future<User?> findUser(String email) async {
     final url = Uri.parse("$baseUrl/by-email/$email");
 
@@ -28,6 +29,7 @@ class UserRepository {
     return User.fromJson(json);
   }
 
+  //actualizar el major del usuario
   Future<User?> updateUsuarioInterestedSkills(User user, String major) async {
     final skillsMajor = await skillRepo.getByMajor(major);
     user.interestedSkills = skillsMajor.map((s) => s.id!).toList();
@@ -46,6 +48,7 @@ class UserRepository {
     return User.fromJson(jsonDecode(resp.body));
   }
 
+  //crear usuario params:  id, name, email
   Future<User> createUser(String uid, String name, String email) async {
     final url = Uri.parse(baseUrl);
 
@@ -84,6 +87,7 @@ class UserRepository {
   //-----------------------------------------------
   //Llamado de lista de tutores
   //-----------------------------------------------
+  //obteneer la lista de tutoreSummary con params opcionales: nombre, lista de skills y major
   Future<List<TutorSummary>> getTutors({
     String? name,
     List<String>? skillIds,
@@ -122,6 +126,7 @@ class UserRepository {
     return data.map((json) => TutorSummary.fromJson(json)).toList();
   }
 
+  //obtener lista de usuarios por ID
   Future<User> getUserById(String id) async {
     final url = Uri.parse("$baseUrl/$id");
     final resp = await http.get(url);

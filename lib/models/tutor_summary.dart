@@ -33,9 +33,9 @@ class TutorSummary {
       id: json['id']?.toString(),
       name: json['name'],
       major: json['major'],
-      profileImageUrl: json['profileImageUrl'],
-      sessionPrice: json['sessionPrice'],
-      tutoringSkills: List<String>.from(json['tutoringSkills'] ?? []),
+      sessionPrice: json['session_price'],
+      profileImageUrl: json['profile_image_url'],
+      tutoringSkills: List<String>.from(json['tutoring_skills'] ?? []),
     );
   }
 

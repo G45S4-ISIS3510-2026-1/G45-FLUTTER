@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:g45_flutter/data/mock/facultades_mock.dart';
 import 'package:g45_flutter/data/mock/tutor_mock.dart';
+import 'package:g45_flutter/models/tutor_summary.dart';
 import 'package:g45_flutter/models/user.dart' as u;
 import 'package:g45_flutter/widgets/tutor_card.dart';
-import 'package:g45_flutter/models/tutor_summary.dart';
+
 import '../../viewmodels/auth.dart';
 
-class HomePage extends StatefulWidget { // Cambiado a StatefulWidget
+class HomePage extends StatefulWidget {
+  // Cambiado a StatefulWidget
   const HomePage({super.key});
 
   @override
@@ -28,7 +30,9 @@ class _HomePageState extends State<HomePage> {
     u.User? user = await authVM.getUsuarioCache();
     if (user != null) {
       setState(() {
-        nombre = user.name ?? "Usuario"; // Esto redibuja la página con el nombre real
+        nombre =
+            user.name ??
+            "Usuario"; // Esto redibuja la página con el nombre real
       });
     }
   }
@@ -82,9 +86,18 @@ class _HomePageState extends State<HomePage> {
                 Wrap(
                   spacing: 8,
                   children: [
-                    ElevatedButton(onPressed: () {}, child: const Text("Mejor Ratings")),
-                    ElevatedButton(onPressed: () {}, child: const Text("Precio")),
-                    ElevatedButton(onPressed: () {}, child: const Text("Proximidad")),
+                    ElevatedButton(
+                      onPressed: () {},
+                      child: const Text("Mejor Ratings"),
+                    ),
+                    ElevatedButton(
+                      onPressed: () {},
+                      child: const Text("Precio"),
+                    ),
+                    ElevatedButton(
+                      onPressed: () {},
+                      child: const Text("Proximidad"),
+                    ),
                   ],
                 ),
                 const Align(
@@ -108,7 +121,9 @@ class _HomePageState extends State<HomePage> {
                   itemBuilder: (context, index) {
                     return Padding(
                       padding: const EdgeInsets.all(8.0),
-                      child: TutorCard(tutor: TutorSummary.fromMap(tutores[index])),
+                      child: TutorCard(
+                        tutor: TutorSummary.fromMap(tutores[index]),
+                      ),
                     );
                   },
                 ),
