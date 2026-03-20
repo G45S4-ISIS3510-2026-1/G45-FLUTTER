@@ -6,6 +6,7 @@ import 'package:g45_flutter/data/mock/tutor_mock.dart';
 import 'package:g45_flutter/models/user.dart' as u;
 import 'package:g45_flutter/models/session.dart';
 import 'package:g45_flutter/widgets/tutor_card.dart';
+import 'package:g45_flutter/models/tutor_summary.dart';
 import '../../viewmodels/auth.dart';
 
 class HomePage extends StatefulWidget { // Cambiado a StatefulWidget

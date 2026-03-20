@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:g45_flutter/views/pages/user/tutor_profile_page.dart';
 import 'package:g45_flutter/views/pages/reservation/reservation_gateway_page.dart';
+import 'package:g45_flutter/views/pages/user/tutor_profile_page.dart';
 
 class TutorCard extends StatelessWidget {
   final Map<String, dynamic> tutor;
@@ -11,11 +11,14 @@ class TutorCard extends StatelessWidget {
   Widget build(BuildContext context) {
     //detectar press de tutor y routing a detail de tutor
     return GestureDetector(
-      onTap: (){
+      onTap: () {
         Navigator.push(
-          context, 
+          context,
           MaterialPageRoute(
-            builder: (context) => TutorProfilePage(tutor: tutor)));
+            builder: (context) =>
+                TutorProfilePage(tutorId: tutor["id"] ?? "", tutor: tutor),
+          ),
+        );
       },
       //-----------------------------------------------------------------
       child: Container(
@@ -87,14 +90,18 @@ class TutorCard extends StatelessWidget {
                 //--------------------------------------------------
                 //Boton reseva(DIEGO)->TOCA MANDARLE EL TUTOR PUNTUAL
                 //--------------------------------------------------
-                ElevatedButton(onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const ReservationGatewayPage(),
-                    ),
-                  );
-                }, child: Text("Reservar")),
+                ElevatedButton(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) =>
+                            ReservationGatewayPage(tutor: tutor),
+                      ),
+                    );
+                  },
+                  child: Text("Reservar"),
+                ),
               ],
             ),
           ],

@@ -1,9 +1,9 @@
 class User {
-  final String? id;
-  final String? name;
-  final String? email;
-  final String? major;
-  final bool? isTutoring;
+  final String id;
+  final String name;
+  final String email;
+  final String major;
+  final bool isTutoring;
   final int? uniandesId;
   final List<String> tutoringSkills;
   List<String> interestedSkills;
@@ -31,8 +31,44 @@ class User {
     required this.profileImageUrl,
   });
 
-  factory User.fromJson(Map<String, dynamic> json) {
+  factory User.fromMock(Map<String, dynamic> json) {
+    return User(
+      id: json["id"] ?? json["uniandesId"]?.toString() ?? "unknown",
+      name: json["name"] ?? "Sin nombre",
+      email: json["email"] ?? "",
+      major: json["major"] ?? "Otro",
+      isTutoring: json["isTutoring"] ?? (json["price"] != null),
+      uniandesId: int.tryParse(json["uniandesId"]?.toString() ?? "0") ?? 0,
+      tutoringSkills: json["tutoring_skills"] != null
+          ? List<String>.from(json["tutoring_skills"])
+          : (json["tutoringSkills"] != null
+                ? List<String>.from(json["tutoringSkills"])
+                : []),
+      interestedSkills: json["interestedSkills"] != null
+          ? List<String>.from(json["interestedSkills"])
+          : [],
+      fcmTokens: json["fcmTokens"] != null
+          ? List<String>.from(json["fcmTokens"])
+          : [],
+      favTutors: json["favTutors"] != null
+          ? List<String>.from(json["favTutors"])
+          : [],
+      availability: json["availability"] != null
+          ? Map<String, dynamic>.from(json["availability"])
+          : {},
+      paymentMethods: json["paymentMethods"] != null
+          ? List<dynamic>.from(json["paymentMethods"])
+          : [],
+      sessionPrice:
+          json["sessionPrice"] ??
+          int.tryParse(
+            json["price"]?.toString().replaceAll(RegExp(r'[^0-9]'), '') ?? "",
+          ),
+      profileImageUrl: json["profileImageUrl"] ?? json["image"],
+    );
+  }
 
+  factory User.fromJson(Map<String, dynamic> json) {
     return User(
       id: json["id"],
       name: json["name"],

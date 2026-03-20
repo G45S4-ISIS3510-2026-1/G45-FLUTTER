@@ -1,8 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:g45_flutter/models/session.dart';
 import 'package:g45_flutter/views/pages/reservation/reservation_detail_page.dart';
+import 'package:g45_flutter/widgets/date_card_widget.dart';
+import 'package:g45_flutter/widgets/gradient_background.dart';
+import 'package:g45_flutter/widgets/tutor_card.dart';
 
 class ReservationGatewayPage extends StatefulWidget {
-  const ReservationGatewayPage({super.key});
+  const ReservationGatewayPage({super.key, required this.tutor});
+  final dynamic tutor;
 
   @override
   State<ReservationGatewayPage> createState() => _ReservationGatewayPageState();
@@ -20,6 +25,14 @@ class _ReservationGatewayPageState extends State<ReservationGatewayPage> {
     '06:00 PM',
     '08:00 PM',
   ];
+
+  List<DateTime> getNextDays() {
+    return List.generate(
+      5,
+      (index) => DateTime.now().add(Duration(days: index)),
+    );
+  }
+
   String? selectedPaymentMethod;
 
   @override
@@ -35,114 +48,156 @@ class _ReservationGatewayPageState extends State<ReservationGatewayPage> {
         ),
         automaticallyImplyLeading: false,
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            Text(
-              'Resumen de la tutoría',
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-            ),
-            Card(
-              elevation: 4,
-              child: const ListTile(
-                leading: CircleAvatar(
-                  backgroundColor: Colors.yellow,
-                  child: Icon(Icons.person),
-                ),
-                title: Text('Mario Lino'),
-                subtitle: Text('Arquitectura de Software'),
-                trailing: Text('\$ 5.000.000 / hora'),
+      backgroundColor: Colors.transparent,
+      body: GradientBackground(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            children: [
+              Text(
+                'Resumen de la tutoría',
+                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
               ),
-            ),
-            Text(
-              'Seleccionar fecha',
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-            ),
-            SizedBox(
-              width: double.infinity,
-              height: 50,
-              child: FilledButton.icon(
-                onPressed: () async {
-                  final date = await showDatePicker(
-                    context: context,
-                    initialDate: DateTime.now(),
-                    firstDate: DateTime.now(),
-                    lastDate: DateTime.now().add(const Duration(days: 30)),
+              if (widget.tutor != null)
+                TutorCard(tutor: widget.tutor, ),
+              SizedBox(height: 24),
+              Text(
+                'Seleccionar fecha',
+                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 12),
+              Wrap(
+                spacing: 12.0,
+                runSpacing: 12.0,
+                alignment: WrapAlignment.center,
+                children: getNextDays().map((date) {
+                  return DateCardWidget(
+                    selectedDate: selectedDate,
+                    date: date,
+                    onSelected: (DateTime p1) {
+                      setState(() => selectedDate = p1);
+                    },
                   );
-                  if (date != null) {
-                    setState(() => selectedDate = date);
-                  }
-                },
-                icon: const Icon(Icons.calendar_today),
-                label: Text(
-                  selectedDate == null
-                      ? 'Elegir Fecha'
-                      : '${selectedDate!.day}/${selectedDate!.month}/${selectedDate!.year}',
-                  style: const TextStyle(fontSize: 16),
-                ),
-                style: FilledButton.styleFrom(
-                  backgroundColor: Colors.yellow,
-                  foregroundColor: Colors.black,
-                ),
+                }).toList(),
               ),
-            ),
-            const SizedBox(height: 24),
-            Wrap(
-              spacing: 12.0,
-              children: availableTimes.map((time) {
-                final isSelected = selectedTime == time;
-                return ChoiceChip(
-                  label: Text(time),
-                  selected: isSelected,
-                  selectedColor: Theme.of(context).colorScheme.primaryContainer,
-                  onSelected: (selected) {
-                    setState(() => selectedTime = selected ? time : null);
+              const SizedBox(height: 24),
+              Wrap(
+                spacing: 12.0,
+                runSpacing: 12.0,
+                alignment: WrapAlignment.center,
+                children: availableTimes.map((time) {
+                  final isSelected = selectedTime == time;
+                  return ChoiceChip(
+                    label: Text(time),
+                    selected: isSelected,
+                    selectedColor: Theme.of(
+                      context,
+                    ).colorScheme.primaryContainer,
+                    onSelected: (selected) {
+                      setState(() => selectedTime = selected ? time : null);
+                      if (selected && selectedDate != null) {
+                        final time = selectedTime!.split(' ')[0];
+                        final ampm = selectedTime!.split(' ')[1];
+                        int hour = int.parse(time.split(':')[0]);
+                        int minute = int.parse(time.split(':')[1]);
+                        if (ampm == 'PM' && hour != 12) {
+                          hour += 12;
+                        }
+                        if (ampm == 'AM' && hour == 12) {
+                          hour = 0;
+                        }
+                        selectedDate = DateTime(
+                          selectedDate!.year,
+                          selectedDate!.month,
+                          selectedDate!.day,
+                          hour,
+                          minute,
+                        );
+                      }
+                    },
+                  );
+                }).toList(),
+              ),
+              const SizedBox(height: 24),
+              Card(
+                child: RadioGroup<String>(
+                  groupValue: selectedPaymentMethod,
+                  onChanged: (value) {
+                    setState(() => selectedPaymentMethod = value);
                   },
-                );
-              }).toList(),
-            ),
-            const SizedBox(height: 24),
-            Card(
-              child: RadioGroup<String>(
-                groupValue: selectedPaymentMethod,
-                onChanged: (value) {
-                  setState(() => selectedPaymentMethod = value);
-                },
-                child: Column(
-                  children: [
-                    RadioListTile<String>(
-                      value: 'card',
-                      title: const Text('Tarjeta de crédito'),
-                      subtitle: const Text('**** **** **** 1234'),
-                      secondary: const Icon(Icons.credit_card),
-                    ),
-                    RadioListTile<String>(
-                      value: 'cash',
-                      title: const Text('Efectivo'),
-                      subtitle: const Text('Pagar en la sesión'),
-                      secondary: const Icon(Icons.money),
-                    ),
-                  ],
+                  child: Column(
+                    children: [
+                      RadioListTile<String>(
+                        value: 'card',
+                        title: const Text('Tarjeta de crédito'),
+                        subtitle: const Text('**** **** **** 1234'),
+                        secondary: const Icon(Icons.credit_card),
+                      ),
+                      RadioListTile<String>(
+                        value: 'cash',
+                        title: const Text('Efectivo'),
+                        subtitle: const Text('Pagar en la sesión'),
+                        secondary: const Icon(Icons.money),
+                      ),
+                    ],
+                  ),
                 ),
               ),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) =>
-                        ReservationDetailPage(reservation: ''),
-                  ),
-                );
-              },
-              style: ElevatedButton.styleFrom(
-                fixedSize: Size(double.infinity, 50),
+              ElevatedButton(
+                onPressed: () {
+                  if (selectedDate == null) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Por favor seleccione una fecha')),
+                    );
+                    return;
+                  }
+
+                  if (selectedTime == null) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Por favor seleccione una hora')),
+                    );
+                    return;
+                  }
+
+                  if (selectedPaymentMethod == null) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Por favor seleccione un método de pago'),
+                      ),
+                    );
+                    return;
+                  }
+
+                  final reservation = Session(
+                    skill: {
+                      'label': (widget.tutor.tutoringSkills != null && widget.tutor.tutoringSkills.isNotEmpty) 
+                               ? widget.tutor.tutoringSkills[0] 
+                               : "Tutoria General",
+                      'major': widget.tutor.major ?? "General",
+                      'iconUrl': 'https://cdn.example.com/icons/calculus.png',
+                    },
+                    scheduledAt: selectedDate!,
+                    status: 'Pendiente',
+                    studentId: '9GgVfKROcyBbaveLU2lw',
+                    tutorId: widget.tutor.id.toString(),
+                    verifCode: 'TOHEB3',
+                  );
+
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) =>
+                          ReservationDetailPage(session: reservation),
+                    ),
+                  );
+                },
+                style: ElevatedButton.styleFrom(
+                  fixedSize: Size(double.infinity, 50),
+                ),
+                child: Text('Reservar', style: TextStyle(fontSize: 24)),
               ),
-              child: Text('Reservar', style: TextStyle(fontSize: 24)),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

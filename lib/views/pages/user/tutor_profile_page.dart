@@ -1,22 +1,51 @@
 import 'package:flutter/material.dart';
+import 'package:g45_flutter/models/review.dart';
+import 'package:g45_flutter/models/user.dart';
+import 'package:g45_flutter/repositories/review_repository.dart';
+import 'package:g45_flutter/repositories/user_repository.dart';
+import 'package:g45_flutter/viewmodels/skills_viewmodel.dart';
+import 'package:g45_flutter/views/pages/reservation/reservation_gateway_page.dart';
 import 'package:g45_flutter/widgets/tutor_info_section.dart';
 import 'package:g45_flutter/widgets/tutor_review_card.dart';
-import 'package:g45_flutter/data/mock/review_mock.dart';
-import 'package:g45_flutter/views/pages/reservation/reservation_gateway_page.dart';
+import 'package:provider/provider.dart';
 
 class TutorProfilePage extends StatefulWidget {
   //variable de widget
-  final Map<String, dynamic> tutor;
-
-  const TutorProfilePage({super.key, required this.tutor});
+  final String tutorId;
+  final dynamic tutor;
+  const TutorProfilePage({
+    super.key,
+    required this.tutorId,
+    required this.tutor,
+  });
 
   @override
   State<TutorProfilePage> createState() => _TutorProfilePageState();
 }
 
 class _TutorProfilePageState extends State<TutorProfilePage> {
-  //varianbles
-  final reviewsList = reviews;
+  User? tutor;
+  bool isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    loadTutor();
+  }
+
+  Future<void> loadTutor() async {
+    final repo = UserRepository();
+    final reviewRepo = ReviewRepository();
+
+    tutor = await repo.getUserById(widget.tutorId);
+    reviewsList = await reviewRepo.getReviewsByTutor(widget.tutorId);
+
+    setState(() {
+      isLoading = false;
+    });
+  }
+
+  List<Review> reviewsList = [];
 
   //-------------------------------
   // Funciones Auxiliares
@@ -54,7 +83,16 @@ class _TutorProfilePageState extends State<TutorProfilePage> {
 
   @override
   Widget build(BuildContext context) {
-    final tutor = widget.tutor;
+    final skillsVM = Provider.of<SkillsViewModel>(context);
+    final tutorSkills = tutor!.tutoringSkills ?? [];
+    final skillNames = skillsVM.skills
+        .where((skill) => tutorSkills.contains(skill.id))
+        .map((skill) => skill.label ?? "")
+        .toList();
+
+    if (isLoading || tutor == null) {
+      return Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
     return Scaffold(
       body: SingleChildScrollView(
         //--------------------------------------------------
@@ -72,7 +110,7 @@ class _TutorProfilePageState extends State<TutorProfilePage> {
                   // 1. imagen fondo
                   Positioned.fill(
                     child: Image.network(
-                      tutor['image'],
+                      tutor!.profileImageUrl ?? "",
                       fit: BoxFit.cover,
                       //por si falla imagen no mate toda la pagina
                       errorBuilder: (context, error, stackTrace) {
@@ -134,7 +172,9 @@ class _TutorProfilePageState extends State<TutorProfilePage> {
                                 decoration: BoxDecoration(
                                   borderRadius: BorderRadius.circular(20),
                                   image: DecorationImage(
-                                    image: NetworkImage(tutor['image']),
+                                    image: NetworkImage(
+                                      tutor!.profileImageUrl ?? "",
+                                    ),
                                     fit: BoxFit.cover,
                                   ),
                                 ),
@@ -153,7 +193,7 @@ class _TutorProfilePageState extends State<TutorProfilePage> {
                               children: [
                                 //Nombre del tutor
                                 Text(
-                                  tutor["name"],
+                                  tutor!.name ?? "Sin nombre",
                                   style: TextStyle(
                                     fontSize: 28,
                                     fontWeight: FontWeight.bold,
@@ -164,7 +204,7 @@ class _TutorProfilePageState extends State<TutorProfilePage> {
                             ),
                             //major del tutor
                             Text(
-                              tutor["major"],
+                              tutor!.major ?? "Sin carrera",
                               style: TextStyle(
                                 fontSize: 14,
                                 color: Colors.blueAccent,
@@ -229,8 +269,8 @@ class _TutorProfilePageState extends State<TutorProfilePage> {
                   Wrap(
                     spacing: 12,
                     runSpacing: 12,
-                    children: (tutor["tutoring_skills"] as List<String>)
-                        .map<Widget>(
+                    children: skillNames
+                        .map(
                           (skill) => Chip(
                             label: Text(skill),
                             backgroundColor: Color(0xFF1A2A40),
@@ -242,7 +282,7 @@ class _TutorProfilePageState extends State<TutorProfilePage> {
                   SizedBox(height: 10),
                   //--------------------------------------------------
                   //Info Personal
-                  SizedBox(height: 140, child: TutorInfoSection(tutor: tutor)),
+                  SizedBox(height: 140, child: TutorInfoSection(tutor: tutor!)),
                   // REVIEWS
                   Align(
                     alignment: Alignment.centerLeft,
@@ -259,7 +299,8 @@ class _TutorProfilePageState extends State<TutorProfilePage> {
 
                   // top 2 reviews
                   Column(
-                    children: reviewsList.take(2).map((review) { // TODO: PARA LIMITAR A 2 RESEÑAS, CAMBIAR DESPUÉS A TODAS
+                    children: reviewsList.take(2).map((review) {
+                      // TODO: PARA LIMITAR A 2 RESEÑAS, CAMBIAR DESPUÉS A TODAS
                       return ReviewCard(review: review);
                     }).toList(),
                   ),
@@ -280,7 +321,8 @@ class _TutorProfilePageState extends State<TutorProfilePage> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => const ReservationGatewayPage(),
+                          builder: (context) =>
+                              ReservationGatewayPage(tutor: tutor!),
                         ),
                       );
                     },
