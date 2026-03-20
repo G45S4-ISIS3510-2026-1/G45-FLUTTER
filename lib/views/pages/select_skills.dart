@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:g45_flutter/viewmodels/auth.dart';
+import 'package:g45_flutter/views/widget_tree.dart';
 import '../../repositories/skills_repository.dart';
 import '../../models/user.dart' as u;
-import '../widget_tree.dart';
 
 class SelectSkills extends StatefulWidget {
   const SelectSkills({super.key});
@@ -44,13 +44,16 @@ class _SelectSkillsState extends State<SelectSkills> {
     }
 
     final resp = await authVM.updateUsuarioInterestedSkills(miUsuario, selectedMajor);
-    if(resp != null){
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text("¡Carrera guardada exitosamente!"),
-          backgroundColor: theme.colorScheme.onSurface,
-        ),
-      );
+
+    if (resp != null) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text("Carrera guardada exitosamente"),
+            backgroundColor: theme.colorScheme.primary,
+          ),
+        );
+      }
       Navigator.pushAndRemoveUntil(
         context,
         MaterialPageRoute(builder: (context) => const WidgetTree()),
@@ -58,13 +61,16 @@ class _SelectSkillsState extends State<SelectSkills> {
       );
 
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text("Error al guardar la carrera"),
-          backgroundColor: theme.colorScheme.onSurface,
-        ),
-      );
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text("Error al guardar la carrera"),
+            backgroundColor: theme.colorScheme.onSurface,
+          ),
+        );
+      }
     }
+
 
   }
 
@@ -88,6 +94,8 @@ class _SelectSkillsState extends State<SelectSkills> {
               ),
               const SizedBox(height: 32),
 
+              
+
               if (majors.isEmpty)
                 const CircularProgressIndicator()
               else
@@ -102,8 +110,8 @@ class _SelectSkillsState extends State<SelectSkills> {
                           setState(() => selectedMajor = m);
                         },
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: isSelected ? theme.colorScheme.onPrimary : theme.colorScheme.primary,
-                          foregroundColor: isSelected ? theme.colorScheme.primary : theme.colorScheme.onPrimary,
+                          backgroundColor: isSelected ? theme.colorScheme.tertiary : theme.colorScheme.secondary,
+                          foregroundColor: isSelected ? theme.colorScheme.onTertiary : theme.colorScheme.onSecondary,
                           padding: const EdgeInsets.symmetric(vertical: 14),
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                         ),
@@ -117,14 +125,14 @@ class _SelectSkillsState extends State<SelectSkills> {
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed: selectedMajor == null ? null : () async {
+                  onPressed:  selectedMajor == null ? null : () async {
                     await saveSelectedMajor(selectedMajor!);
                     // authVM.setAuthState(AuthState.home);
                   },
                   style: ElevatedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 16),
-                    backgroundColor: theme.colorScheme.primary,
-                    foregroundColor: theme.colorScheme.onPrimary,
+                    backgroundColor: theme.colorScheme.secondary,
+                    foregroundColor: theme.colorScheme.onSecondary,
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   ),
                   child: const Text("Continuar"),
