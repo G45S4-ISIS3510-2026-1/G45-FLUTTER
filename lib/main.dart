@@ -3,6 +3,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:g45_flutter/core/theme.dart';
 import 'package:g45_flutter/repositories/user_repository.dart';
+import 'package:g45_flutter/viewmodels/skills_viewmodel.dart';
 
 import 'package:g45_flutter/viewmodels/tutor_viewmodel.dart';
 import 'package:g45_flutter/views/pages/login/login_regist_page.dart';
@@ -30,6 +31,7 @@ class MyApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => TutorViewModel(UserRepository())),
+        ChangeNotifierProvider(create: (_) => SkillsViewModel()),
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,

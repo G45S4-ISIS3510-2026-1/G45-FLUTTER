@@ -1,24 +1,38 @@
 import 'package:flutter/material.dart';
 import 'package:g45_flutter/models/tutor_summary.dart';
+import 'package:g45_flutter/viewmodels/skills_viewmodel.dart';
 import 'package:g45_flutter/views/pages/user/tutor_profile_page.dart';
 import 'package:g45_flutter/views/pages/reservation/reservation_gateway_page.dart';
 
 import 'package:g45_flutter/models/user.dart';
+import 'package:provider/provider.dart';
 
 class TutorCard extends StatelessWidget {
   final TutorSummary tutor; //cambio de mock a real
-  
+
   const TutorCard({super.key, required this.tutor});
 
   @override
   Widget build(BuildContext context) {
+    final skillsVM = Provider.of<SkillsViewModel>(context);
+
+    final tutorSkills = tutor.tutoringSkills ?? [];
+
+    final skillNames = skillsVM.skills
+        .where((skill) => tutorSkills.contains(skill.id))
+        .map((skill) => skill.label)
+        .where((label) => label != null)
+        .map((label) => label!)
+        .toList();
     //detectar press de tutor y routing a detail de tutor
     return GestureDetector(
-      onTap: (){
+      onTap: () {
         Navigator.push(
-          context, 
+          context,
           MaterialPageRoute(
-            builder: (context) => TutorProfilePage(tutorId: tutor.id ?? "",)));
+            builder: (context) => TutorProfilePage(tutorId: tutor.id ?? ""),
+          ),
+        );
       },
       //-----------------------------------------------------------------
       child: Container(
@@ -35,7 +49,16 @@ class TutorCard extends StatelessWidget {
                 //Foto de perfil del tutor
                 CircleAvatar(
                   radius: 30,
-                  backgroundImage: NetworkImage(tutor.profileImageUrl ?? ""),
+                  backgroundImage:
+                      (tutor.profileImageUrl != null &&
+                          tutor.profileImageUrl!.isNotEmpty)
+                      ? NetworkImage(tutor.profileImageUrl!)
+                      : null,
+                  child:
+                      (tutor.profileImageUrl == null ||
+                          tutor.profileImageUrl!.isEmpty)
+                      ? Icon(Icons.person)
+                      : null,
                 ),
                 SizedBox(width: 12),
                 //Información del tutor
@@ -45,14 +68,15 @@ class TutorCard extends StatelessWidget {
                     children: [
                       //renglon Superior
                       Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          //Nombre del tutor
-                          Text(
-                            tutor.name ?? "Sin nombre",
-                            style: TextStyle(color: Colors.white),
+                          Expanded(
+                            child: Text(
+                              tutor.name ?? "Sin nombre",
+                              style: TextStyle(color: Colors.white),
+                              overflow: TextOverflow.ellipsis,
+                            ),
                           ),
-                          //Precio por hora del tutor
+                          SizedBox(width: 8),
                           Text(
                             "\$${tutor.sessionPrice}",
                             style: TextStyle(color: Colors.blue),
@@ -67,8 +91,8 @@ class TutorCard extends StatelessWidget {
 
                       Wrap(
                         spacing: 6,
-                        children: <String>[]
-                            .map((skill) => Chip(label: Text(skill)))
+                        children: skillNames
+                            .map((s) => Chip(label: Text(s)))
                             .toList(),
                       ),
                     ],
@@ -91,14 +115,17 @@ class TutorCard extends StatelessWidget {
                 //--------------------------------------------------
                 //Boton reseva(DIEGO)->TOCA MANDARLE EL TUTOR PUNTUAL
                 //--------------------------------------------------
-                ElevatedButton(onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const ReservationGatewayPage(),
-                    ),
-                  );
-                }, child: Text("Reservar")),
+                ElevatedButton(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const ReservationGatewayPage(),
+                      ),
+                    );
+                  },
+                  child: Text("Reservar"),
+                ),
               ],
             ),
           ],
