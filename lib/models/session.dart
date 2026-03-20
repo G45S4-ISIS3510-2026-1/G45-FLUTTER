@@ -1,35 +1,39 @@
 class Session {
-  final String id;
-  final String userId;
-  final String date;
-  final String time;
-  final String price;
+  final Map<String, dynamic> skill;
+  final DateTime scheduledAt;
+  final String status;
+  final String studentId;
+  final String tutorId;
+  final String verifCode;
 
   Session({
-    required this.id,
-    required this.userId,
-    required this.date,
-    required this.time,
-    required this.price,
+    required this.skill,
+    required this.scheduledAt,
+    required this.status,
+    required this.studentId,
+    required this.tutorId,
+    required this.verifCode,
   });
 
   factory Session.fromJson(Map<String, dynamic> json) {
     return Session(
-      id: json['id'],
-      userId: json['userId'],
-      date: json['date'],
-      time: json['time'],
-      price: json['price'],
+      skill: Map<String, dynamic>.from(json['skill']),
+      scheduledAt: DateTime.parse(json['scheduledAt']),
+      status: json['status'],
+      studentId: json['studentId'],
+      tutorId: json['tutorId'],
+      verifCode: json['verifCode'],
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
-      'id': id,
-      'userId': userId,
-      'date': date,
-      'time': time,
-      'price': price,
+      'skill': skill,
+      'scheduledAt': scheduledAt.toIso8601String(),
+      'status': status,
+      'studentId': studentId,
+      'tutorId': tutorId,
+      'verifCode': verifCode,
     };
   }
 }

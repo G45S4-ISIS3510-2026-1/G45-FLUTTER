@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:g45_flutter/widgets/tutor_info_section.dart';
-import 'package:g45_flutter/widgets/tutor_review_card.dart';
 import 'package:g45_flutter/data/mock/review_mock.dart';
 import 'package:g45_flutter/views/pages/reservation/reservation_gateway_page.dart';
+import 'package:g45_flutter/widgets/tutor_info_section.dart';
+import 'package:g45_flutter/widgets/tutor_review_card.dart';
 
 class TutorProfilePage extends StatefulWidget {
   //variable de widget
@@ -280,7 +280,8 @@ class _TutorProfilePageState extends State<TutorProfilePage> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => const ReservationGatewayPage(),
+                          builder: (context) =>
+                              ReservationGatewayPage(tutor: tutor),
                         ),
                       );
                     },
