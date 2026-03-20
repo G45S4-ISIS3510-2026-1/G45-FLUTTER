@@ -23,6 +23,7 @@ class _SelectSkillsState extends State<SelectSkills> {
   void initState() {
     super.initState();
     loadMajors();
+    print(majors);
   }
 
   Future<void> loadMajors() async {
@@ -66,6 +67,8 @@ class _SelectSkillsState extends State<SelectSkills> {
                 style: theme.textTheme.headlineMedium,
               ),
               const SizedBox(height: 32),
+
+              
 
               if (majors.isEmpty)
                 const CircularProgressIndicator()

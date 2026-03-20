@@ -53,8 +53,8 @@ class MyApp extends StatelessWidget {
               future: authVM.handleLogin(),
               builder: (context, snap) {
                 if (!snap.hasData) {
-                  return const Scaffold(
-                    body: Center(child: CircularProgressIndicator()),
+                  return Scaffold(
+                    body: Center(child: Text(snap.error?.toString() ?? "Error desconocido")),
                   );
                 }
 

@@ -52,6 +52,7 @@ class AuthViewModel {
         user.email ?? "",
       );
 
+
       await guardarUsuarioCache(backendUser);
 
       return AuthState.selectSkills;

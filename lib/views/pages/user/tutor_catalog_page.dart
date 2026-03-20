@@ -129,9 +129,9 @@ class _CatalogPageState extends State<CatalogPage> {
                     // call back: context donde esta en el arbol y index ej tutor 1 2 3
                     return Padding(
                       padding: const EdgeInsets.all(8.0),
-                      child: TutorCard(
-                        tutor: vm.tutors[index],
-                      ), // toca decirle que parametro-> tutor:
+                      // child: TutorCard(
+                      //   tutor: vm.tutors[index],
+                      // ), // toca decirle que parametro-> tutor:
                     );
                   },
                 ),
