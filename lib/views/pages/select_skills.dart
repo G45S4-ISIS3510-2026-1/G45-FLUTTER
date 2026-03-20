@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:g45_flutter/viewmodels/auth.dart';
 import '../../repositories/skills_repository.dart';
 import '../../models/user.dart' as u;
+import '../widget_tree.dart';
 
 class SelectSkills extends StatefulWidget {
   const SelectSkills({super.key});
@@ -42,7 +43,29 @@ class _SelectSkillsState extends State<SelectSkills> {
       return ;
     }
 
-    await authVM.updateUsuarioInterestedSkills(miUsuario, selectedMajor);
+    final resp = await authVM.updateUsuarioInterestedSkills(miUsuario, selectedMajor);
+    if(resp != null){
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("¡Carrera guardada exitosamente!"),
+          backgroundColor: theme.colorScheme.onSurface,
+        ),
+      );
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(builder: (context) => const WidgetTree()),
+            (route) => false,
+      );
+
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("Error al guardar la carrera"),
+          backgroundColor: theme.colorScheme.onSurface,
+        ),
+      );
+    }
+
   }
 
 
@@ -79,8 +102,8 @@ class _SelectSkillsState extends State<SelectSkills> {
                           setState(() => selectedMajor = m);
                         },
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: isSelected ? theme.colorScheme.onPrimary : theme.colorScheme.inversePrimary,
-                          foregroundColor: theme.colorScheme.onSurface ,
+                          backgroundColor: isSelected ? theme.colorScheme.onPrimary : theme.colorScheme.primary,
+                          foregroundColor: isSelected ? theme.colorScheme.primary : theme.colorScheme.onPrimary,
                           padding: const EdgeInsets.symmetric(vertical: 14),
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                         ),
@@ -100,7 +123,7 @@ class _SelectSkillsState extends State<SelectSkills> {
                   },
                   style: ElevatedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 16),
-                    backgroundColor: theme.colorScheme.onSurface,
+                    backgroundColor: theme.colorScheme.primary,
                     foregroundColor: theme.colorScheme.onPrimary,
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   ),
