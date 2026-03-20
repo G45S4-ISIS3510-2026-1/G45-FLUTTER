@@ -17,26 +17,28 @@ class CatalogPage extends StatefulWidget {
 class _CatalogPageState extends State<CatalogPage> {
 
   @override
+  //una vez abre el page corre todo esto
   void initState() {
     super.initState();
     Future.microtask(() {
-      Provider.of<TutorViewModel>(context, listen: false).loadTutors();
-      Provider.of<SkillsViewModel>(context, listen: false).loadSkills();
+      Provider.of<TutorViewModel>(context, listen: false).loadTutors();// llamado a backend para cargar todos los tutores los guarda en view model
+      //Provider.of<SkillsViewModel>(context, listen: false).loadSkills(); //llamado a backend para cargar todos los skills los guarda en view model
     });
   }
   //Datos mockeados
 
   @override
   Widget build(BuildContext context) {
-    final vm = Provider.of<TutorViewModel>(context);
-    final skillsVM = Provider.of<SkillsViewModel>(context);
+    final vm = Provider.of<TutorViewModel>(context); //instancia de ViewModel donde vm.tutor es la lista de todos los TutorSummary
+    //final skillsVM = Provider.of<SkillsViewModel>(context); //instancia de skillsViewModel donde skillsVM.skills lista de skills
     
+    // si cualquiera de los dos no carga simbolo de carga
     if (vm.isLoading) {
       return Center(child: CircularProgressIndicator());
-    }
-    if (skillsVM.isLoading) {
-      return Center(child: CircularProgressIndicator());
-    }
+    } 
+    // if (skillsVM.isLoading) {
+    //   return Center(child: CircularProgressIndicator());
+    // }
     return SingleChildScrollView(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -119,7 +121,7 @@ class _CatalogPageState extends State<CatalogPage> {
                   spacing: 8,
                   runSpacing: 8,
                   children: facultades.map((facultad) {
-                    //for i con el map pero fluter necesita una lista tonces se pasa a lista
+                    //for i con el map pero fluter necesita una lista tonces se pasa a lista [MOCKEADO]
                     return ElevatedButton(
                       onPressed: () {},
                       child: Text(facultad),
@@ -136,7 +138,7 @@ class _CatalogPageState extends State<CatalogPage> {
                     return Padding(
                       padding: const EdgeInsets.all(8.0),
                       child: TutorCard(
-                        tutor: vm.tutors[index],
+                        tutor: vm.tutors[index],// recorro la lista de tutores en vm.tutors donde List<TutorSummary>
                       ), // toca decirle que parametro-> tutor:
                     );
                   },

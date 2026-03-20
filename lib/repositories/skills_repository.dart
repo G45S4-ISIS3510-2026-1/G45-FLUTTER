@@ -5,30 +5,31 @@ import '../models/skills.dart';
 class SkillRepository {
   final String baseUrl = "http://127.0.0.1:8000/skills";
 
+  //obtener los majors 
   Future<List<String>> getMajors() async {
     final url = Uri.parse("$baseUrl/majors");
     final resp = await http.get(url);
 
     if (resp.statusCode == 200) {
       final List data = jsonDecode(resp.body);
-      return List<String>.from(data);
+      return List<String>.from(data); //de json a lista de strings
     }
 
     throw Exception("Error obteniendo majors: ${resp.statusCode}");
   }
-
+  //todas las skills
   Future<List<Skill>> getAllSkills() async {
     final url = Uri.parse(baseUrl);
     final resp = await http.get(url);
 
     if (resp.statusCode == 200) {
-      final List data = jsonDecode(resp.body);
+      final List data = jsonDecode(resp.body);//de josn a lista de skills
       return data.map((json) => Skill.fromJson(json)).toList();
     }
 
     throw Exception("Error obteniendo skills: ${resp.statusCode}");
   }
-
+  //buscar las skills que coincidan en la major
   Future<List<Skill>> getByMajor(String major) async {
     final url = Uri.parse("$baseUrl/by-major/$major");
     final resp = await http.get(url);

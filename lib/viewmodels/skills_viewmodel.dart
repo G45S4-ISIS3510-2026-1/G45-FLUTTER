@@ -15,12 +15,12 @@ class SkillsViewModel extends ChangeNotifier {
   // getters
   List<Skill> get skills => _skills;
   List<String> get majors => _majors;
-  bool get isLoading => _isLoading;
-  String? get error => _error;
+  bool get isLoading => _isLoading;//para manejar logo de carga
+  String? get error => _error;// para try catch y guardar errores
 
   // ---------------------------------- LOAD ALL SKILLS
   Future<void> loadSkills() async {
-    _isLoading = true;
+    _isLoading = true; 
     _error = null;
     notifyListeners();
 
