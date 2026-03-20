@@ -1,17 +1,21 @@
 import 'package:flutter/material.dart';
-
+import 'package:g45_flutter/models/review.dart';
 import 'package:g45_flutter/models/user.dart';
+import 'package:g45_flutter/repositories/review_repository.dart';
 import 'package:g45_flutter/repositories/user_repository.dart';
+import 'package:g45_flutter/views/pages/reservation/reservation_gateway_page.dart';
 import 'package:g45_flutter/widgets/tutor_info_section.dart';
 import 'package:g45_flutter/widgets/tutor_review_card.dart';
-import 'package:g45_flutter/repositories/review_repository.dart';
-import 'package:g45_flutter/models/review.dart';
-import 'package:g45_flutter/views/pages/reservation/reservation_gateway_page.dart';
 
 class TutorProfilePage extends StatefulWidget {
   //variable de widget
   final String tutorId;
-  const TutorProfilePage({super.key, required this.tutorId});
+  final User tutor;
+  const TutorProfilePage({
+    super.key,
+    required this.tutorId,
+    required this.tutor,
+  });
 
   @override
   State<TutorProfilePage> createState() => _TutorProfilePageState();
@@ -308,7 +312,8 @@ class _TutorProfilePageState extends State<TutorProfilePage> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => const ReservationGatewayPage(),
+                          builder: (context) =>
+                              ReservationGatewayPage(tutor: tutor!),
                         ),
                       );
                     },

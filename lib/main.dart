@@ -1,15 +1,14 @@
-import 'package:flutter/material.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/material.dart';
 import 'package:g45_flutter/core/theme.dart';
+import 'package:g45_flutter/firebase_options.dart';
 import 'package:g45_flutter/repositories/user_repository.dart';
-
+import 'package:g45_flutter/viewmodels/auth.dart';
 import 'package:g45_flutter/viewmodels/tutor_viewmodel.dart';
 import 'package:g45_flutter/views/pages/login/login_regist_page.dart';
-import 'package:g45_flutter/firebase_options.dart';
-import 'package:g45_flutter/views/widget_tree.dart';
 import 'package:g45_flutter/views/pages/select_skills.dart';
-import 'package:g45_flutter/viewmodels/auth.dart';
+import 'package:g45_flutter/views/widget_tree.dart';
 import 'package:provider/provider.dart';
 
 void main() async {

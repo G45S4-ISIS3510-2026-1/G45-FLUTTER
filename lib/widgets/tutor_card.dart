@@ -1,24 +1,25 @@
 import 'package:flutter/material.dart';
-import 'package:g45_flutter/models/tutor_summary.dart';
-import 'package:g45_flutter/views/pages/user/tutor_profile_page.dart';
-import 'package:g45_flutter/views/pages/reservation/reservation_gateway_page.dart';
-
 import 'package:g45_flutter/models/user.dart';
+import 'package:g45_flutter/views/pages/reservation/reservation_gateway_page.dart';
+import 'package:g45_flutter/views/pages/user/tutor_profile_page.dart';
 
 class TutorCard extends StatelessWidget {
-  final TutorSummary tutor; //cambio de mock a real
-  
-  const TutorCard({super.key, required this.tutor});
+  final User tutor;
+  final bool showButton;
+  const TutorCard({super.key, required this.tutor, this.showButton = true});
 
   @override
   Widget build(BuildContext context) {
     //detectar press de tutor y routing a detail de tutor
     return GestureDetector(
-      onTap: (){
+      onTap: () {
         Navigator.push(
-          context, 
+          context,
           MaterialPageRoute(
-            builder: (context) => TutorProfilePage(tutorId: tutor.id ?? "",)));
+            builder: (context) =>
+                TutorProfilePage(tutor: tutor, tutorId: tutor.id ?? ""),
+          ),
+        );
       },
       //-----------------------------------------------------------------
       child: Container(
@@ -87,18 +88,22 @@ class TutorCard extends StatelessWidget {
                   //"⭐ ${tutor["rating"]}",
                   style: TextStyle(color: Colors.white),
                 ),
-                Spacer(),
-                //--------------------------------------------------
-                //Boton reseva(DIEGO)->TOCA MANDARLE EL TUTOR PUNTUAL
-                //--------------------------------------------------
-                ElevatedButton(onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const ReservationGatewayPage(),
-                    ),
-                  );
-                }, child: Text("Reservar")),
+                if (showButton) Spacer(),
+                if (showButton)
+                  //Boton reserva
+                  ElevatedButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) =>
+                              ReservationGatewayPage(tutor: tutor),
+                        ),
+                      );
+                    },
+
+                    child: Text("Reservar"),
+                  ),
               ],
             ),
           ],
