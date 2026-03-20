@@ -15,7 +15,7 @@ class CatalogPage extends StatefulWidget {
 }
 
 class _CatalogPageState extends State<CatalogPage> {
-  @override
+
   @override
   void initState() {
     super.initState();

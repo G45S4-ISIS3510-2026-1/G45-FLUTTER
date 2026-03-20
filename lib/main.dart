@@ -30,7 +30,7 @@ class MyApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => TutorViewModel(UserRepository())),
-        ChangeNotifierProvider(create: (_) => SkillsViewModel()),
+        ChangeNotifierProvider(create: (_) => SkillsViewModel()..loadSkills(),),
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
