@@ -4,10 +4,12 @@ import 'package:g45_flutter/data/mock/tutor_mock.dart';
 import 'package:g45_flutter/data/mock/facultades_mock.dart';
 import 'package:g45_flutter/viewmodels/tutor_viewmodel.dart';
 import 'package:provider/provider.dart';
+import 'package:g45_flutter/models/tutor_summary.dart';
 
 class CatalogPage extends StatefulWidget {
+  
   const CatalogPage({super.key});
-
+  
   @override
   State<CatalogPage> createState() => _CatalogPageState();
 }
@@ -16,10 +18,9 @@ class _CatalogPageState extends State<CatalogPage> {
   @override
   void initState() {
     super.initState();
-
-    Future.microtask(() {
-      context.read<TutorViewModel>().loadTutors();
-    });
+    Future.microtask(
+      () => Provider.of<TutorViewModel>(context, listen: false).loadTutors(),
+    );
   }
   //Datos mockeados
 

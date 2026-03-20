@@ -1,20 +1,37 @@
 import 'package:flutter/material.dart';
-import 'package:g45_flutter/repositories/tutor_repository.dart';
-import 'package:g45_flutter/models/tutor.dart';
+import '../repositories/user_repository.dart';
+import '../models/tutor_summary.dart';
 
 class TutorViewModel extends ChangeNotifier {
-  final TutorRepository repo;
+  final UserRepository repo;
 
-  List<Tutor> tutors = [];
-  bool isLoading = true;
+  List<TutorSummary> tutors = [];
+  bool isLoading = false;
+  String? errorMessage;
 
   TutorViewModel(this.repo);
 
-  Future<void> loadTutors() async {
+  Future<void> loadTutors({
+    String? name,
+    List<String>? skillIds,
+    String? major,
+  }) async {
+    if (isLoading) return;
+
     isLoading = true;
+    errorMessage = null;
     notifyListeners();
 
-    tutors = await repo.getTutors();
+    try {
+      tutors = await repo.getTutors(
+        name: name,
+        skillIds: skillIds,
+        major: major,
+      );
+    } catch (e) {
+      errorMessage = "Error cargando tutores";
+      tutors = [];
+    }
 
     isLoading = false;
     notifyListeners();

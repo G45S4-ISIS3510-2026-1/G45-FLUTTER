@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:g45_flutter/models/tutor_summary.dart';
 import 'package:g45_flutter/views/pages/user/tutor_profile_page.dart';
 import 'package:g45_flutter/views/pages/reservation/reservation_gateway_page.dart';
-import 'package:g45_flutter/models/tutor.dart';
+
+import 'package:g45_flutter/models/user.dart';
 
 class TutorCard extends StatelessWidget {
-  final Tutor tutor; //cambio de mock a real
-
+  final TutorSummary tutor; //cambio de mock a real
+  
   const TutorCard({super.key, required this.tutor});
 
   @override
@@ -16,7 +18,7 @@ class TutorCard extends StatelessWidget {
         Navigator.push(
           context, 
           MaterialPageRoute(
-            builder: (context) => TutorProfilePage(tutor: tutor)));
+            builder: (context) => TutorProfilePage(tutorId: tutor.id ?? "",)));
       },
       //-----------------------------------------------------------------
       child: Container(
@@ -33,7 +35,7 @@ class TutorCard extends StatelessWidget {
                 //Foto de perfil del tutor
                 CircleAvatar(
                   radius: 30,
-                  backgroundImage: NetworkImage(tutor.profileImageUrl),
+                  backgroundImage: NetworkImage(tutor.profileImageUrl ?? ""),
                 ),
                 SizedBox(width: 12),
                 //Información del tutor
@@ -47,7 +49,7 @@ class TutorCard extends StatelessWidget {
                         children: [
                           //Nombre del tutor
                           Text(
-                            tutor.name,
+                            tutor.name ?? "Sin nombre",
                             style: TextStyle(color: Colors.white),
                           ),
                           //Precio por hora del tutor
@@ -59,7 +61,7 @@ class TutorCard extends StatelessWidget {
                       ),
                       //major del tutor
                       Text(
-                        tutor.major,
+                        tutor.major ?? "Sin carrera",
                         style: TextStyle(color: Colors.grey),
                       ),
 

@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../models/user.dart';
 import 'skills_repository.dart';
+import '../models/tutor_summary.dart';
 
 class UserRepository {
   final String baseUrl = "http://127.0.0.1:8000/users";
@@ -55,14 +56,12 @@ class UserRepository {
     final resp = await http.post(
       url,
       headers: {"Content-Type": "application/json"},
-
-
       body: jsonEncode({
         "id": uid,
         "name": name,
         "email": email,
         "major":"Otro",
-        "uniandesId":null,
+        "uniandesId":0,
         "interestedSkills": [],
         "tutoringSkills": [],
         "availability": {},
@@ -78,4 +77,52 @@ class UserRepository {
 
     return User.fromJson(jsonDecode(resp.body));
   }
+  
+  Future<List<TutorSummary>> getTutors({
+  String? name,
+  List<String>? skillIds,
+  String? major,
+}) async {
+  final baseUri = Uri.parse("$baseUrl/tutors/search");
+
+  final query = <String>[];
+
+  if (name != null) {
+    query.add("name=${Uri.encodeComponent(name)}");
+  }
+
+  if (major != null) {
+    query.add("major=${Uri.encodeComponent(major)}");
+  }
+
+  if (skillIds != null && skillIds.isNotEmpty) {
+    for (final id in skillIds) {
+      query.add("skill_ids=${Uri.encodeComponent(id)}");
+    }
+  }
+
+  final finalUri = Uri.parse(
+    "${baseUri.toString()}${query.isNotEmpty ? "?" + query.join("&") : ""}",
+  );
+
+  final resp = await http.get(finalUri);
+
+  if (resp.statusCode != 200) {
+    throw Exception("Error obteniendo tutores");
+  }
+
+  final List data = jsonDecode(resp.body);
+
+  return data.map((json) => TutorSummary.fromJson(json)).toList();
+}
+Future<User> getUserById(String id) async {
+  final url = Uri.parse("$baseUrl/$id");
+  final resp = await http.get(url);
+
+  if (resp.statusCode != 200) {
+    throw Exception("Error obteniendo usuario");
+  }
+
+  return User.fromJson(jsonDecode(resp.body));
+}
 }

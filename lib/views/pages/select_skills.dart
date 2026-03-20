@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:g45_flutter/viewmodels/auth.dart';
+import 'package:g45_flutter/views/pages/home_page.dart';
+import 'package:g45_flutter/views/widget_tree.dart';
 import '../../repositories/skills_repository.dart';
 import '../../models/user.dart' as u;
 
@@ -94,10 +96,19 @@ class _SelectSkillsState extends State<SelectSkills> {
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed: selectedMajor == null ? null : () async {
-                    await saveSelectedMajor(selectedMajor!);
-                    // authVM.setAuthState(AuthState.home);
-                  },
+                  onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) =>
+                        WidgetTree(),
+                  ),
+                );
+                },
+                  // selectedMajor == null ? null : () async {
+                  //   await saveSelectedMajor(selectedMajor!);
+                  //   // authVM.setAuthState(AuthState.home);
+                  // },
                   style: ElevatedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     backgroundColor: theme.colorScheme.onSurface,

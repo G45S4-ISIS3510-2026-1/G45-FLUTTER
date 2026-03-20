@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'dart:ui';
-import 'package:g45_flutter/models/tutor.dart';
+import 'package:g45_flutter/models/user.dart';
 
 class TutorInfoSection extends StatefulWidget {
-  final Tutor tutor;
+   final User tutor;
 
   const TutorInfoSection({super.key, required this.tutor});
 
