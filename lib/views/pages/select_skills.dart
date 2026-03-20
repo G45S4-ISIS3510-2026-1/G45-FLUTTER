@@ -54,7 +54,7 @@ class _SelectSkillsState extends State<SelectSkills> {
       Navigator.pushAndRemoveUntil(
         context,
         MaterialPageRoute(builder: (context) => const WidgetTree()),
-            (route) => false,
+        (route) => false,
       );
 
     } else {

@@ -82,13 +82,13 @@ class LoginRegistPage extends StatelessWidget {
                 width: double.infinity,
                 child: ElevatedButton.icon(
                   onPressed: () => ingresarConUniandes(context), // Llama a la función aquí
-                  icon: Icon(Icons.account_balance, color: theme.colorScheme.onSurface),
+                  icon: Icon(Icons.account_balance, color: theme.colorScheme.primary),
                   label: Text(
                     "ENTRAR CON UNIANDES",
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
-                      color: theme.colorScheme.onSurface
+                      color: theme.colorScheme.primary
                     ),
                   ),
                   style: ElevatedButton.styleFrom(
