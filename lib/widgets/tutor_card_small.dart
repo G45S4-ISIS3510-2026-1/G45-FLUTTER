@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:g45_flutter/models/tutor_summary.dart';
+import 'package:g45_flutter/models/user.dart';
 import 'package:g45_flutter/views/pages/reservation/reservation_gateway_page.dart';
 import 'package:g45_flutter/views/pages/user/tutor_profile_page.dart';
 
 class TutorCard extends StatelessWidget {
-  final Map<String, dynamic> tutor;
+  final User tutor;
 
   const TutorCard({super.key, required this.tutor});
 
@@ -16,7 +18,7 @@ class TutorCard extends StatelessWidget {
           context,
           MaterialPageRoute(
             builder: (context) =>
-                TutorProfilePage(tutorId: tutor["id"] ?? "", tutor: tutor),
+                TutorProfilePage(tutorId: tutor.id ?? "", tutor: tutor),
           ),
         );
       },
@@ -35,7 +37,7 @@ class TutorCard extends StatelessWidget {
                 //Foto de perfil del tutor
                 CircleAvatar(
                   radius: 30,
-                  backgroundImage: NetworkImage(tutor["image"]),
+                  backgroundImage: NetworkImage(tutor.profileImageUrl ?? ""),
                 ),
                 SizedBox(width: 12),
                 //Información del tutor
@@ -49,25 +51,25 @@ class TutorCard extends StatelessWidget {
                         children: [
                           //Nombre del tutor
                           Text(
-                            tutor["name"],
+                            tutor.name ?? "Sin nombre",
                             style: TextStyle(color: Colors.white),
                           ),
                           //Precio por hora del tutor
                           Text(
-                            "\$${tutor["price"]}",
+                            "\$${tutor.sessionPrice ?? 0}",
                             style: TextStyle(color: Colors.blue),
                           ),
                         ],
                       ),
                       //major del tutor
                       Text(
-                        tutor["major"],
+                        tutor.major ?? "Sin carrera",
                         style: TextStyle(color: Colors.grey),
                       ),
 
                       Wrap(
                         spacing: 6,
-                        children: (tutor["tutoring_skills"] as List<String>)
+                        children: (tutor.tutoringSkills ?? [])
                             .map((skill) => Chip(label: Text(skill)))
                             .toList(),
                       ),
@@ -83,20 +85,20 @@ class TutorCard extends StatelessWidget {
               children: [
                 //Rating
                 Text(
-                  "⭐ ${tutor["rating"]}",
+                  "⭐ ",
                   style: TextStyle(color: Colors.white),
                 ),
                 Spacer(),
                 //--------------------------------------------------
-                //Boton reseva(DIEGO)->TOCA MANDARLE EL TUTOR PUNTUAL
-                //--------------------------------------------------
+                //Boton reserva
                 ElevatedButton(
                   onPressed: () {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) =>
-                            ReservationGatewayPage(tutor: tutor),
+                        builder: (context) => ReservationGatewayPage(
+                          tutor: TutorSummary.fromUser(tutor),
+                        ),
                       ),
                     );
                   },

@@ -1,19 +1,26 @@
 import 'package:flutter/material.dart';
 import 'package:g45_flutter/models/session.dart';
+import 'package:g45_flutter/models/skills.dart';
+import 'package:g45_flutter/models/tutor_summary.dart';
+import 'package:g45_flutter/viewmodels/auth.dart';
+import 'package:g45_flutter/viewmodels/reservation_gateway_viewmodel.dart';
+import 'package:g45_flutter/viewmodels/skills_viewmodel.dart';
 import 'package:g45_flutter/views/pages/reservation/reservation_detail_page.dart';
 import 'package:g45_flutter/widgets/date_card_widget.dart';
 import 'package:g45_flutter/widgets/gradient_background.dart';
 import 'package:g45_flutter/widgets/tutor_card.dart';
+import 'package:provider/provider.dart';
 
 class ReservationGatewayPage extends StatefulWidget {
   const ReservationGatewayPage({super.key, required this.tutor});
-  final dynamic tutor;
+  final TutorSummary tutor;
 
   @override
   State<ReservationGatewayPage> createState() => _ReservationGatewayPageState();
 }
 
 class _ReservationGatewayPageState extends State<ReservationGatewayPage> {
+  ReservationGatewayViewModel viewModel = ReservationGatewayViewModel();
   DateTime? selectedDate;
   String? selectedTime;
   final List<String> availableTimes = [
@@ -25,6 +32,8 @@ class _ReservationGatewayPageState extends State<ReservationGatewayPage> {
     '06:00 PM',
     '08:00 PM',
   ];
+
+  String studentId = AuthViewModel.instance.usuarioCache!.id;
 
   List<DateTime> getNextDays() {
     return List.generate(
@@ -58,8 +67,7 @@ class _ReservationGatewayPageState extends State<ReservationGatewayPage> {
                 'Resumen de la tutoría',
                 style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
               ),
-              if (widget.tutor != null)
-                TutorCard(tutor: widget.tutor, ),
+              if (widget.tutor != null) TutorCard(tutor: widget.tutor),
               SizedBox(height: 24),
               Text(
                 'Seleccionar fecha',
@@ -144,7 +152,7 @@ class _ReservationGatewayPageState extends State<ReservationGatewayPage> {
                 ),
               ),
               ElevatedButton(
-                onPressed: () {
+                onPressed: () async {
                   if (selectedDate == null) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(content: Text('Por favor seleccione una fecha')),
@@ -167,29 +175,49 @@ class _ReservationGatewayPageState extends State<ReservationGatewayPage> {
                     );
                     return;
                   }
-
+                  final skillsViewModel = Provider.of<SkillsViewModel>(
+                    context,
+                    listen: false,
+                  );
+                  final tutorSkillIds = widget.tutor.tutoringSkills ?? [];
+                  final tutorSkill = skillsViewModel.skills.firstWhere(
+                    (skill) => tutorSkillIds.contains(skill.id),
+                    orElse: () => Skill(
+                      id: tutorSkillIds.isNotEmpty ? tutorSkillIds.first : '0',
+                      major: 'Otro',
+                      label: 'Tutoría',
+                      iconUrl: '',
+                    ),
+                  );
                   final reservation = Session(
                     skill: {
-                      'label': (widget.tutor.tutoringSkills != null && widget.tutor.tutoringSkills.isNotEmpty) 
-                               ? widget.tutor.tutoringSkills[0] 
-                               : "Tutoria General",
-                      'major': widget.tutor.major ?? "General",
-                      'iconUrl': 'https://cdn.example.com/icons/calculus.png',
+                      'label': tutorSkill.label,
+                      'major': tutorSkill.major,
+                      'iconUrl': tutorSkill.iconUrl,
                     },
                     scheduledAt: selectedDate!,
                     status: 'Pendiente',
-                    studentId: '9GgVfKROcyBbaveLU2lw',
+                    studentId: studentId,
                     tutorId: widget.tutor.id.toString(),
-                    verifCode: 'TOHEB3',
+                    verifCode: '',
                   );
 
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) =>
-                          ReservationDetailPage(session: reservation),
-                    ),
+                  final createdSession = await viewModel.createSession(
+                    reservation,
                   );
+                  if (createdSession != null) {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) =>
+                            ReservationDetailPage(session: createdSession),
+                      ),
+                    );
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Error creando la sesión')),
+                    );
+                  }
                 },
                 style: ElevatedButton.styleFrom(
                   fixedSize: Size(double.infinity, 50),

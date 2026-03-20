@@ -1,9 +1,10 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../models/review.dart';
+import '../config/api_config.dart';
 
 class ReviewRepository {
-  final String baseUrl = "http://127.0.0.1:8000";
+  final String baseUrl = ApiConfig.baseUrl;
 
   Future<List<Review>> getReviewsByTutor(String tutorId) async {
     final response = await http.get(

@@ -1,11 +1,14 @@
 import 'dart:convert';
+
 import 'package:http/http.dart' as http;
+
+import '../config/api_config.dart';
+import '../models/tutor_summary.dart';
 import '../models/user.dart';
 import 'skills_repository.dart';
-import '../models/tutor_summary.dart';
 
 class UserRepository {
-  final String baseUrl = "http://127.0.0.1:8000/users";
+  final String baseUrl = "${ApiConfig.baseUrl}/users";
   final SkillRepository skillRepo = SkillRepository();
 
   Future<User?> findUser(String email) async {
@@ -26,7 +29,6 @@ class UserRepository {
   }
 
   Future<User?> updateUsuarioInterestedSkills(User user, String major) async {
-  
     final skillsMajor = await skillRepo.getByMajor(major);
     user.interestedSkills = skillsMajor.map((s) => s.id!).toList();
 
@@ -49,7 +51,7 @@ class UserRepository {
 
     User? usuario = await findUser(email);
 
-    if(usuario != null){
+    if (usuario != null) {
       return usuario;
     }
 
@@ -60,72 +62,74 @@ class UserRepository {
         "id": uid,
         "name": name,
         "email": email,
-        "major":"Otro",
-        "uniandesId":0,
+        "major": "Otro",
+        "uniandesId": null,
         "interestedSkills": [],
         "tutoringSkills": [],
         "availability": {},
         "isTutoring": false,
         "favTutors": [],
-        "fcmTokens": []
+        "fcmTokens": [],
       }),
     );
 
     if (resp.statusCode != 201) {
+      print("❌ BACKEND ERROR: ${resp.body}");
       throw Exception("Error creando usuario en backend");
     }
 
     return User.fromJson(jsonDecode(resp.body));
   }
 
-//-----------------------------------------------
-//Llamado de lista de tutores 
-//-----------------------------------------------
+  //-----------------------------------------------
+  //Llamado de lista de tutores
+  //-----------------------------------------------
   Future<List<TutorSummary>> getTutors({
-  String? name,
-  List<String>? skillIds,
-  String? major,
-}) async {
-  final baseUri = Uri.parse("$baseUrl/tutors/search");
+    String? name,
+    List<String>? skillIds,
+    String? major,
+  }) async {
+    final baseUri = Uri.parse("$baseUrl/tutors/search");
 
-  final query = <String>[];
+    final query = <String>[];
 
-  if (name != null) {
-    query.add("name=${Uri.encodeComponent(name)}");
-  }
-
-  if (major != null) {
-    query.add("major=${Uri.encodeComponent(major)}");
-  }
-
-  if (skillIds != null && skillIds.isNotEmpty) {
-    for (final id in skillIds) {
-      query.add("skill_ids=${Uri.encodeComponent(id)}");
+    if (name != null) {
+      query.add("name=${Uri.encodeComponent(name)}");
     }
+
+    if (major != null) {
+      query.add("major=${Uri.encodeComponent(major)}");
+    }
+
+    if (skillIds != null && skillIds.isNotEmpty) {
+      for (final id in skillIds) {
+        query.add("skill_ids=${Uri.encodeComponent(id)}");
+      }
+    }
+
+    final finalUri = Uri.parse(
+      "${baseUri.toString()}${query.isNotEmpty ? "?" + query.join("&") : ""}",
+    );
+
+    final resp = await http.get(finalUri);
+
+    if (resp.statusCode != 200) {
+      throw Exception("Error obteniendo tutores");
+    }
+
+    final List data = jsonDecode(resp.body);
+
+    return data.map((json) => TutorSummary.fromJson(json)).toList();
   }
 
-  final finalUri = Uri.parse(
-    "${baseUri.toString()}${query.isNotEmpty ? "?" + query.join("&") : ""}",
-  );
+  Future<User> getUserById(String id) async {
+    final url = Uri.parse("$baseUrl/$id");
+    final resp = await http.get(url);
 
-  final resp = await http.get(finalUri);
+    if (resp.statusCode != 200) {
+      throw Exception("Error obteniendo usuario");
+    }
 
-  if (resp.statusCode != 200) {
-    throw Exception("Error obteniendo tutores");
+    return User.fromJson(jsonDecode(resp.body));
   }
-
-  final List data = jsonDecode(resp.body);
-
-  return data.map((json) => TutorSummary.fromJson(json)).toList();
-}
-Future<User> getUserById(String id) async {
-  final url = Uri.parse("$baseUrl/$id");
-  final resp = await http.get(url);
-
-  if (resp.statusCode != 200) {
-    throw Exception("Error obteniendo usuario");
-  }
-
-  return User.fromJson(jsonDecode(resp.body));
-}
 }

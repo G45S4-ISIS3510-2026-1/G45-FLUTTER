@@ -1,17 +1,45 @@
 import 'package:flutter/material.dart';
-import 'package:g45_flutter/data/mock/tutor_mock.dart';
 import 'package:g45_flutter/models/session.dart';
-import 'package:g45_flutter/models/user.dart';
+import 'package:g45_flutter/viewmodels/reservation_detail_viewmodel.dart';
 import 'package:g45_flutter/widgets/gradient_background.dart';
 import 'package:g45_flutter/widgets/qr_code_widget.dart';
 import 'package:g45_flutter/widgets/session_card_widget.dart';
 import 'package:g45_flutter/widgets/simple_user_card_widget.dart';
 
-class ReservationDetailPage extends StatelessWidget {
+class ReservationDetailPage extends StatefulWidget {
   const ReservationDetailPage({super.key, required this.session});
 
   final Session session;
+
+  @override
+  State<ReservationDetailPage> createState() => ReservationDetailPageState();
+}
+
+class ReservationDetailPageState extends State<ReservationDetailPage> {
+  final ReservationDetailViewModel viewModel = ReservationDetailViewModel();
   final bool isTutorView = false;
+
+  @override
+  void initState() {
+    super.initState();
+    viewModel.loadParticipants(
+      widget.session.tutorId,
+      widget.session.studentId,
+    );
+    viewModel.addListener(_onViewModelChanged);
+  }
+
+  void _onViewModelChanged() {
+    if (mounted) {
+      setState(() {});
+    }
+  }
+
+  @override
+  void dispose() {
+    viewModel.removeListener(_onViewModelChanged);
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -44,7 +72,7 @@ class ReservationDetailPage extends StatelessWidget {
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Text(
-                      session.status.toUpperCase(),
+                      widget.session.status.toUpperCase(),
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
@@ -54,31 +82,33 @@ class ReservationDetailPage extends StatelessWidget {
                   SizedBox(height: 16),
                   Column(
                     children: [
-                      SessionCardWidget(session: session),
+                      SessionCardWidget(session: widget.session),
                       SizedBox(height: 16),
-                      SimpleUserCardWidget(
-                        user: User.fromMock(tutores.firstWhere(
-                          (t) =>
-                              t['id'] == session.tutorId ||
-                              t['name'] == session.tutorId ||
-                              t['uniandesId'] == session.tutorId,
-                          orElse: () => tutores.first,
-                        )),
+                      if (viewModel.isLoading)
+                        CircularProgressIndicator()
+                      else if (viewModel.errorMessage != null)
+                        Text(
+                          viewModel.errorMessage!,
+                          style: TextStyle(color: Colors.red),
+                        )
+                      else ...[
+                        if (viewModel.tutor != null)
+                          SimpleUserCardWidget(
+                            user: viewModel.tutor!,
+                            isTutor: true,
+                          ),
+                        SizedBox(height: 16),
+                        if (viewModel.student != null)
+                          SimpleUserCardWidget(
+                            user: viewModel.student!,
+                            isTutor: false,
+                          ),
+                      ],
+                      SizedBox(height: 16),
+                      QrCodeWidget(
+                        verifCode: widget.session.verifCode,
                         isTutor: true,
                       ),
-                      SizedBox(height: 16),
-                      SimpleUserCardWidget(
-                        user: User.fromMock(tutores.firstWhere(
-                          (t) =>
-                              t['id'] == session.studentId ||
-                              t['name'] == session.studentId ||
-                              t['uniandesId'] == session.studentId,
-                          orElse: () => tutores.last,
-                        )),
-                        isTutor: false,
-                      ),
-                      SizedBox(height: 16),
-                      QrCodeWidget(verifCode: session.verifCode, isTutor: true),
                       SizedBox(height: 16),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -104,7 +134,9 @@ class ReservationDetailPage extends StatelessWidget {
                                         onPressed: () {
                                           Navigator.pop(context);
                                           Navigator.pop(context);
-                                          // agregar reserva
+                                          viewModel.cancelSession(
+                                            widget.session,
+                                          );
                                         },
                                         child: Text('Confirmar'),
                                       ),
@@ -121,6 +153,7 @@ class ReservationDetailPage extends StatelessWidget {
                           ElevatedButton(
                             onPressed: () {
                               Navigator.pop(context);
+                              viewModel.confirmSession(widget.session);
                             },
                             child: Text(
                               'Confirmar',

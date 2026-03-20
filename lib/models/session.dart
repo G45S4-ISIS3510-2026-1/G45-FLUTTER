@@ -5,6 +5,7 @@ class Session {
   final String studentId;
   final String tutorId;
   final String verifCode;
+  final String? id;
 
   Session({
     required this.skill,
@@ -13,6 +14,7 @@ class Session {
     required this.studentId,
     required this.tutorId,
     required this.verifCode,
+    this.id,
   });
 
   factory Session.fromJson(Map<String, dynamic> json) {
@@ -23,11 +25,13 @@ class Session {
       studentId: json['studentId'],
       tutorId: json['tutorId'],
       verifCode: json['verifCode'],
+      id: json['id'],
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
+      'id': id,
       'skill': skill,
       'scheduledAt': scheduledAt.toIso8601String(),
       'status': status,
