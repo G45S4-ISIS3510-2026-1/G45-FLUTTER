@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:g45_flutter/data/mock/facultades_mock.dart';
-import 'package:g45_flutter/data/mock/tutor_mock.dart';
-import 'package:g45_flutter/models/tutor_summary.dart';
 import 'package:g45_flutter/models/user.dart' as u;
+import 'package:g45_flutter/viewmodels/tutor_viewmodel.dart';
 import 'package:g45_flutter/widgets/tutor_card.dart';
+import 'package:provider/provider.dart';
 
 import '../../viewmodels/auth.dart';
 
@@ -23,6 +23,9 @@ class _HomePageState extends State<HomePage> {
   void initState() {
     super.initState();
     cargarDatos(); // Cargamos el usuario apenas entre a la página
+    Future.microtask(() {
+      Provider.of<TutorViewModel>(context, listen: false).loadTutors();
+    });
   }
 
   // Función para obtener el nombre sin bloquear la UI
@@ -39,6 +42,8 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
+    final viewmodel = Provider.of<TutorViewModel>(context);
+
     return SingleChildScrollView(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -114,19 +119,19 @@ class _HomePageState extends State<HomePage> {
                     );
                   }).toList(),
                 ),
-                ListView.builder(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  itemCount: tutores.length,
-                  itemBuilder: (context, index) {
-                    return Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: TutorCard(
-                        tutor: TutorSummary.fromMap(tutores[index]),
+                viewmodel.isLoading
+                    ? const Center(child: CircularProgressIndicator())
+                    : ListView.builder(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        itemCount: viewmodel.tutors.length,
+                        itemBuilder: (context, index) {
+                          return Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: TutorCard(tutor: viewmodel.tutors[index]),
+                          );
+                        },
                       ),
-                    );
-                  },
-                ),
               ],
             ),
           ),
