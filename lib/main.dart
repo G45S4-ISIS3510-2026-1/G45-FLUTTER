@@ -5,6 +5,7 @@ import 'package:g45_flutter/core/theme.dart';
 import 'package:g45_flutter/firebase_options.dart';
 import 'package:g45_flutter/repositories/user_repository.dart';
 import 'package:g45_flutter/viewmodels/auth.dart';
+import 'package:g45_flutter/viewmodels/skills_viewmodel.dart';
 import 'package:g45_flutter/viewmodels/tutor_viewmodel.dart';
 import 'package:g45_flutter/views/pages/login/login_regist_page.dart';
 import 'package:g45_flutter/views/pages/select_skills.dart';
@@ -29,6 +30,7 @@ class MyApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => TutorViewModel(UserRepository())),
+        ChangeNotifierProvider(create: (_) => SkillsViewModel()),
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
@@ -54,7 +56,11 @@ class MyApp extends StatelessWidget {
               builder: (context, snap) {
                 if (!snap.hasData) {
                   return Scaffold(
-                    body: Center(child: Text(snap.error?.toString() ?? "Error desconocido")),
+                    body: Center(
+                      child: Text(
+                        snap.error?.toString() ?? "Error desconocido",
+                      ),
+                    ),
                   );
                 }
 

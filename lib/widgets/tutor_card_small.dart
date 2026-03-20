@@ -1,27 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:g45_flutter/models/tutor_summary.dart';
-import 'package:g45_flutter/viewmodels/skills_viewmodel.dart';
 import 'package:g45_flutter/views/pages/reservation/reservation_gateway_page.dart';
 import 'package:g45_flutter/views/pages/user/tutor_profile_page.dart';
-import 'package:provider/provider.dart';
 
 class TutorCard extends StatelessWidget {
-  final TutorSummary tutor; //cambio de mock a real
+  final Map<String, dynamic> tutor;
 
   const TutorCard({super.key, required this.tutor});
 
   @override
   Widget build(BuildContext context) {
-    final skillsVM = Provider.of<SkillsViewModel>(context);
-
-    final tutorSkills = tutor.tutoringSkills ?? [];
-
-    final skillNames = skillsVM.skills
-        .where((skill) => tutorSkills.contains(skill.id))
-        .map((skill) => skill.label)
-        .where((label) => label != null)
-        .map((label) => label!)
-        .toList();
     //detectar press de tutor y routing a detail de tutor
     return GestureDetector(
       onTap: () {
@@ -29,7 +16,7 @@ class TutorCard extends StatelessWidget {
           context,
           MaterialPageRoute(
             builder: (context) =>
-                TutorProfilePage(tutorId: tutor.id ?? "", tutor: tutor),
+                TutorProfilePage(tutorId: tutor["id"] ?? "", tutor: tutor),
           ),
         );
       },
@@ -48,16 +35,7 @@ class TutorCard extends StatelessWidget {
                 //Foto de perfil del tutor
                 CircleAvatar(
                   radius: 30,
-                  backgroundImage:
-                      (tutor.profileImageUrl != null &&
-                          tutor.profileImageUrl!.isNotEmpty)
-                      ? NetworkImage(tutor.profileImageUrl!)
-                      : null,
-                  child:
-                      (tutor.profileImageUrl == null ||
-                          tutor.profileImageUrl!.isEmpty)
-                      ? Icon(Icons.person)
-                      : null,
+                  backgroundImage: NetworkImage(tutor["image"]),
                 ),
                 SizedBox(width: 12),
                 //Información del tutor
@@ -67,31 +45,30 @@ class TutorCard extends StatelessWidget {
                     children: [
                       //renglon Superior
                       Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Expanded(
-                            child: Text(
-                              tutor.name ?? "Sin nombre",
-                              style: TextStyle(color: Colors.white),
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                          SizedBox(width: 8),
+                          //Nombre del tutor
                           Text(
-                            "\$${tutor.sessionPrice}",
+                            tutor["name"],
+                            style: TextStyle(color: Colors.white),
+                          ),
+                          //Precio por hora del tutor
+                          Text(
+                            "\$${tutor["price"]}",
                             style: TextStyle(color: Colors.blue),
                           ),
                         ],
                       ),
                       //major del tutor
                       Text(
-                        tutor.major ?? "Sin carrera",
+                        tutor["major"],
                         style: TextStyle(color: Colors.grey),
                       ),
 
                       Wrap(
                         spacing: 6,
-                        children: skillNames
-                            .map((s) => Chip(label: Text(s)))
+                        children: (tutor["tutoring_skills"] as List<String>)
+                            .map((skill) => Chip(label: Text(skill)))
                             .toList(),
                       ),
                     ],
@@ -106,8 +83,7 @@ class TutorCard extends StatelessWidget {
               children: [
                 //Rating
                 Text(
-                  "⭐ ",
-                  //"⭐ ${tutor["rating"]}",
+                  "⭐ ${tutor["rating"]}",
                   style: TextStyle(color: Colors.white),
                 ),
                 Spacer(),

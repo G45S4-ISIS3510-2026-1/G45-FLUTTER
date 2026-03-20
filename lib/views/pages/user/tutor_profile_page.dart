@@ -3,14 +3,16 @@ import 'package:g45_flutter/models/review.dart';
 import 'package:g45_flutter/models/user.dart';
 import 'package:g45_flutter/repositories/review_repository.dart';
 import 'package:g45_flutter/repositories/user_repository.dart';
+import 'package:g45_flutter/viewmodels/skills_viewmodel.dart';
 import 'package:g45_flutter/views/pages/reservation/reservation_gateway_page.dart';
 import 'package:g45_flutter/widgets/tutor_info_section.dart';
 import 'package:g45_flutter/widgets/tutor_review_card.dart';
+import 'package:provider/provider.dart';
 
 class TutorProfilePage extends StatefulWidget {
   //variable de widget
   final String tutorId;
-  final User tutor;
+  final dynamic tutor;
   const TutorProfilePage({
     super.key,
     required this.tutorId,
@@ -81,6 +83,13 @@ class _TutorProfilePageState extends State<TutorProfilePage> {
 
   @override
   Widget build(BuildContext context) {
+    final skillsVM = Provider.of<SkillsViewModel>(context);
+    final tutorSkills = tutor!.tutoringSkills ?? [];
+    final skillNames = skillsVM.skills
+        .where((skill) => tutorSkills.contains(skill.id))
+        .map((skill) => skill.label ?? "")
+        .toList();
+
     if (isLoading || tutor == null) {
       return Scaffold(body: Center(child: CircularProgressIndicator()));
     }
@@ -260,8 +269,8 @@ class _TutorProfilePageState extends State<TutorProfilePage> {
                   Wrap(
                     spacing: 12,
                     runSpacing: 12,
-                    children: <String>[]
-                        .map<Widget>(
+                    children: skillNames
+                        .map(
                           (skill) => Chip(
                             label: Text(skill),
                             backgroundColor: Color(0xFF1A2A40),

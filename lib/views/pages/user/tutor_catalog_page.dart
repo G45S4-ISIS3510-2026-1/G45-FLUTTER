@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:g45_flutter/viewmodels/skills_viewmodel.dart';
 import 'package:g45_flutter/widgets/tutor_card.dart';
 import 'package:g45_flutter/data/mock/tutor_mock.dart';
 import 'package:g45_flutter/data/mock/facultades_mock.dart';
@@ -7,28 +8,33 @@ import 'package:provider/provider.dart';
 import 'package:g45_flutter/models/tutor_summary.dart';
 
 class CatalogPage extends StatefulWidget {
-  
   const CatalogPage({super.key});
-  
+
   @override
   State<CatalogPage> createState() => _CatalogPageState();
 }
 
 class _CatalogPageState extends State<CatalogPage> {
   @override
+  @override
   void initState() {
     super.initState();
-    Future.microtask(
-      () => Provider.of<TutorViewModel>(context, listen: false).loadTutors(),
-    );
+    Future.microtask(() {
+      Provider.of<TutorViewModel>(context, listen: false).loadTutors();
+      Provider.of<SkillsViewModel>(context, listen: false).loadSkills();
+    });
   }
   //Datos mockeados
 
   @override
   Widget build(BuildContext context) {
     final vm = Provider.of<TutorViewModel>(context);
-
+    final skillsVM = Provider.of<SkillsViewModel>(context);
+    
     if (vm.isLoading) {
+      return Center(child: CircularProgressIndicator());
+    }
+    if (skillsVM.isLoading) {
       return Center(child: CircularProgressIndicator());
     }
     return SingleChildScrollView(

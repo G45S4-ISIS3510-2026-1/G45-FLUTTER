@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:g45_flutter/models/session.dart';
-import 'package:g45_flutter/models/user.dart';
 import 'package:g45_flutter/views/pages/reservation/reservation_detail_page.dart';
 import 'package:g45_flutter/widgets/date_card_widget.dart';
 import 'package:g45_flutter/widgets/gradient_background.dart';
@@ -8,7 +7,7 @@ import 'package:g45_flutter/widgets/tutor_card.dart';
 
 class ReservationGatewayPage extends StatefulWidget {
   const ReservationGatewayPage({super.key, required this.tutor});
-  final User tutor;
+  final dynamic tutor;
 
   @override
   State<ReservationGatewayPage> createState() => _ReservationGatewayPageState();
@@ -59,7 +58,8 @@ class _ReservationGatewayPageState extends State<ReservationGatewayPage> {
                 'Resumen de la tutoría',
                 style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
               ),
-              TutorCard(tutor: widget.tutor, showButton: false),
+              if (widget.tutor != null)
+                TutorCard(tutor: widget.tutor, ),
               SizedBox(height: 24),
               Text(
                 'Seleccionar fecha',
@@ -170,8 +170,10 @@ class _ReservationGatewayPageState extends State<ReservationGatewayPage> {
 
                   final reservation = Session(
                     skill: {
-                      'label': widget.tutor.tutoringSkills![0],
-                      'major': widget.tutor.major,
+                      'label': (widget.tutor.tutoringSkills != null && widget.tutor.tutoringSkills.isNotEmpty) 
+                               ? widget.tutor.tutoringSkills[0] 
+                               : "Tutoria General",
+                      'major': widget.tutor.major ?? "General",
                       'iconUrl': 'https://cdn.example.com/icons/calculus.png',
                     },
                     scheduledAt: selectedDate!,
