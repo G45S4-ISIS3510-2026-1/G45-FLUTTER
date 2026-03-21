@@ -65,9 +65,7 @@ class MyApp extends StatelessWidget {
                 if (!snap.hasData) {
                   return Scaffold(
                     body: Center(
-                      child: Text(
-                        snap.error?.toString() ?? "Error desconocido",
-                      ),
+                      child: CircularProgressIndicator()
                     ),
                   );
                 }

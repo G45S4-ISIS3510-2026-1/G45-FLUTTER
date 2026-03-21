@@ -34,6 +34,7 @@ class QrCodeWidget extends StatelessWidget {
           // test
           if (isTutor)
             QrImageView(
+              backgroundColor: Colors.white,
               data: verifCode,
               version: QrVersions.auto,
               size: 200.0,
