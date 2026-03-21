@@ -1,108 +1,90 @@
-// import 'package:flutter/material.dart';
-// import 'package:g45_flutter/models/tutor_summary.dart';
-// import 'package:g45_flutter/models/user.dart';
-// import 'package:g45_flutter/views/pages/user/tutor_profile_page.dart';
-// import 'package:g45_flutter/views/pages/reservation/reservation_gateway_page.dart';
+import 'package:flutter/material.dart';
+import 'package:g45_flutter/models/tutor_summary.dart';
+import 'package:g45_flutter/views/pages/reservation/reservation_gateway_page.dart';
+import 'package:g45_flutter/views/pages/user/tutor_profile_page.dart';
 
-// class TutorCard extends StatelessWidget {
-//   final TutorSummary tutor;
+class TutorCardSmall extends StatelessWidget {
+  final TutorSummary tutor;
 
-//   const TutorCard({super.key, required this.tutor});
+  const TutorCardSmall({super.key, required this.tutor});
 
-//   @override
-//   Widget build(BuildContext context) {
-//     //detectar press de tutor y routing a detail de tutor
-//     return GestureDetector(
-//       onTap: (){
-//       if (tutor.id == null) return;
-//         Navigator.push(
-//           context, 
-//           MaterialPageRoute(
-//             builder: (context) => TutorProfilePage(tutorId: tutor.id!)));
-//       },
-//       //-----------------------------------------------------------------
-//       child: Container(
-//         padding: EdgeInsets.all(16),
-//         decoration: BoxDecoration(
-//           color: Colors.black,
-//           borderRadius: BorderRadius.circular(20),
-//         ),
-//         child: Column(
-//           children: [
-//             //Fila superior con foto, nombre, carrera y habilidades
-//             Row(
-//               children: [
-//                 //Foto de perfil del tutor
-//                 CircleAvatar(
-//                   radius: 30,
-//                   backgroundImage: NetworkImage(tutor.profileImageUrl),
-//                 ),
-//                 SizedBox(width: 12),
-//                 //Información del tutor
-//                 Expanded(
-//                   child: Column(
-//                     crossAxisAlignment: CrossAxisAlignment.start,
-//                     children: [
-//                       //renglon Superior
-//                       Row(
-//                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
-//                         children: [
-//                           //Nombre del tutor
-//                           Text(
-//                             tutor["name"],
-//                             style: TextStyle(color: Colors.white),
-//                           ),
-//                           //Precio por hora del tutor
-//                           Text(
-//                             "\$${tutor["price"]}",
-//                             style: TextStyle(color: Colors.blue),
-//                           ),
-//                         ],
-//                       ),
-//                       //major del tutor
-//                       Text(
-//                         tutor["major"],
-//                         style: TextStyle(color: Colors.grey),
-//                       ),
-
-//                       Wrap(
-//                         spacing: 6,
-//                         children: (tutor["tutoring_skills"] as List<String>)
-//                             .map((skill) => Chip(label: Text(skill)))
-//                             .toList(),
-//                       ),
-//                     ],
-//                   ),
-//                 ),
-//               ],
-//             ),
-
-//             SizedBox(height: 12),
-//             //Fila inferior con rating y boton
-//             Row(
-//               children: [
-//                 //Rating
-//                 Text(
-//                   "⭐ ${tutor["rating"]}",
-//                   style: TextStyle(color: Colors.white),
-//                 ),
-//                 Spacer(),
-//                 //--------------------------------------------------
-//                 //Boton reseva(DIEGO)->TOCA MANDARLE EL TUTOR PUNTUAL
-//                 //--------------------------------------------------
-//                 ElevatedButton(onPressed: () {
-//                   Navigator.push(
-//                     context,
-//                     MaterialPageRoute(
-//                       builder: (context) => const ReservationGatewayPage(),
-//                     ),
-//                   );
-//                 }, child: Text("Reservar")),
-//               ],
-//             ),
-//           ],
-//         ),
-//       ),
-//     );
-//   }
-// }
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => TutorProfilePage(tutorId: tutor.id ?? "", tutor: tutor),
+          ),
+        );
+      },
+      child: Container(
+        decoration: BoxDecoration(
+          color: const Color(0xFF1E222D),
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Stack(
+              alignment: Alignment.bottomRight,
+              children: [
+                CircleAvatar(
+                  radius: 35,
+                  backgroundImage: (tutor.profileImageUrl != null && tutor.profileImageUrl!.isNotEmpty)
+                      ? NetworkImage(tutor.profileImageUrl!)
+                      : null,
+                  child: (tutor.profileImageUrl == null || tutor.profileImageUrl!.isEmpty)
+                      ? const Icon(Icons.person, size: 40)
+                      : null,
+                ),
+                const CircleAvatar(
+                  radius: 10,
+                  backgroundColor: Colors.black54,
+                  child: Text("⭐", style: TextStyle(fontSize: 10)),
+                )
+              ],
+            ),
+            const SizedBox(height: 8),
+            Text(
+              tutor.name ?? "Sin nombre",
+              style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+              textAlign: TextAlign.center,
+              overflow: TextOverflow.ellipsis,
+            ),
+            Text(
+              tutor.major ?? "Carrera",
+              style: const TextStyle(color: Colors.grey, fontSize: 12),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 10),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              child: SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => ReservationGatewayPage(tutor: tutor),
+                      ),
+                    );
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFFFFD15C),
+                    foregroundColor: Colors.black,
+                    padding: EdgeInsets.zero,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  ),
+                  child: const Text("RESERVAR", style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
