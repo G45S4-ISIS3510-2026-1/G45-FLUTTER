@@ -130,8 +130,7 @@ class TutorCard extends StatelessWidget {
                 ),
                 Spacer(),
                 //--------------------------------------------------
-                //Boton reseva(DIEGO)->TOCA MANDARLE EL TUTOR PUNTUAL
-                //--------------------------------------------------
+                //Boton reseva
                 ElevatedButton(
                   onPressed: () {
                     Navigator.push(

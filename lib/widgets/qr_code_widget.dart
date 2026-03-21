@@ -32,32 +32,34 @@ class QrCodeWidget extends StatelessWidget {
           ),
           SizedBox(height: 16),
           // test
-          QrImageView(
-            data: verifCode,
-            version: QrVersions.auto,
-            size: 200.0,
-            gapless: false,
-          ),
-          SizedBox(
-            width: 250,
-            height: 250,
-            child: MobileScanner(
-              onDetect: (capture) {
-                final List<Barcode> barcodes = capture.barcodes;
-                for (final barcode in barcodes) {
-                  if (barcode.rawValue != null) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text(
-                          'Barcode found! Value: ${barcode.rawValue}',
+          if (isTutor)
+            QrImageView(
+              data: verifCode,
+              version: QrVersions.auto,
+              size: 200.0,
+              gapless: false,
+            )
+          else
+            SizedBox(
+              width: 250,
+              height: 250,
+              child: MobileScanner(
+                onDetect: (capture) {
+                  final List<Barcode> barcodes = capture.barcodes;
+                  for (final barcode in barcodes) {
+                    if (barcode.rawValue != null) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            'Barcode found! Value: ${barcode.rawValue}',
+                          ),
                         ),
-                      ),
-                    );
+                      );
+                    }
                   }
-                }
-              },
+                },
+              ),
             ),
-          ),
         ],
       ),
     );
