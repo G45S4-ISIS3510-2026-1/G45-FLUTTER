@@ -17,18 +17,18 @@ class TutorCard extends StatelessWidget {
     final skillsVM = Provider.of<SkillsViewModel>(context);
 
     final tutorSkills = tutor.tutoringSkills ?? [];
-    print("""
------ TUTOR SUMMARY -----
-id: ${tutor.id}
-name: ${tutor.name}
-major: ${tutor.major}
-profileImageUrl: ${tutor.profileImageUrl}
-sessionPrice: ${tutor.sessionPrice}
-tutoringSkills: ${tutor.tutoringSkills}
-------------------------
-""");
-    print("Tutor skills IDs: $tutorSkills");
-    print("All skills: ${skillsVM.skills.map((s) => s.id)}");
+//     print("""
+// ----- TUTOR SUMMARY -----
+// id: ${tutor.id}
+// name: ${tutor.name}
+// major: ${tutor.major}
+// profileImageUrl: ${tutor.profileImageUrl}
+// sessionPrice: ${tutor.sessionPrice}
+// tutoringSkills: ${tutor.tutoringSkills}
+// ------------------------
+// """);
+//     print("Tutor skills IDs: $tutorSkills");
+//     print("All skills: ${skillsVM.skills.map((s) => s.id)}");
 
 final skillNames = skillsVM.skills
     .where((skill) => tutorSkills.contains(skill.id)) //comparar IDs

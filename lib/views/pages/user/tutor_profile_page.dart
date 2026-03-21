@@ -10,9 +10,12 @@ import 'package:g45_flutter/models/review.dart';
 import 'package:g45_flutter/views/pages/reservation/reservation_gateway_page.dart';
 import 'package:provider/provider.dart';
 
+import 'package:firebase_analytics/firebase_analytics.dart';
+
 class TutorProfilePage extends StatefulWidget {
   //variable de widget
   final String tutorId;
+
   const TutorProfilePage({super.key, required this.tutorId});
 
   @override
@@ -23,9 +26,21 @@ class _TutorProfilePageState extends State<TutorProfilePage> {
   User? tutor;
   bool isLoading = true;
 
+  //ANALYTICS ENGINE
+  final FirebaseAnalytics analytics = FirebaseAnalytics.instance;
+  DateTime? _startTime;
+
   @override
   void initState() {
     super.initState();
+    analytics.logEvent(name: 'test_event');
+    _startTime = DateTime.now();
+
+    analytics.logEvent(
+      name: 'view_tutor_profile',
+      parameters: {'tutor_id': widget.tutorId},
+    );
+
     loadTutor();
   }
 
@@ -46,6 +61,21 @@ class _TutorProfilePageState extends State<TutorProfilePage> {
   //-------------------------------
   // Funciones Auxiliares
   //-------------------------------
+
+  //Analytics engine
+  @override
+  void dispose() {
+    if (_startTime != null) {
+      final seconds = DateTime.now().difference(_startTime!).inSeconds;
+
+      analytics.logEvent(
+        name: 'time_spent_on_reviews',
+        parameters: {'tutor_id': widget.tutorId, 'seconds': seconds},
+      );
+    }
+
+    super.dispose();
+  }
 
   //Fonts para Barra de stats
   Widget buildStat(String title, String value) {
@@ -79,6 +109,9 @@ class _TutorProfilePageState extends State<TutorProfilePage> {
 
   @override
   Widget build(BuildContext context) {
+    if (isLoading || tutor == null) {
+      return Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
     final skillsVM = Provider.of<SkillsViewModel>(context);
     final tutorSkills = tutor!.tutoringSkills ?? [];
     final skillNames = skillsVM.skills
@@ -314,6 +347,11 @@ class _TutorProfilePageState extends State<TutorProfilePage> {
                   //------------------------------------------------------------------------
                   ElevatedButton(
                     onPressed: () {
+                      analytics.logEvent(
+                        name: 'schedule_session',
+                        parameters: {'tutor_id': tutor!.id ?? ""},
+                      );
+
                       Navigator.push(
                         context,
                         MaterialPageRoute(
