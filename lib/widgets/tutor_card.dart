@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:g45_flutter/models/user.dart';
+import 'package:g45_flutter/viewmodels/skills_viewmodel.dart';
 import 'package:g45_flutter/views/pages/reservation/reservation_gateway_page.dart';
 import 'package:g45_flutter/views/pages/user/tutor_profile_page.dart';
+import 'package:provider/provider.dart';
 
 class TutorCard extends StatelessWidget {
   final User tutor;
@@ -10,6 +12,27 @@ class TutorCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final skillsVM = Provider.of<SkillsViewModel>(context);
+
+    final tutorSkills = tutor.tutoringSkills ?? [];
+    //     print("""
+    // ----- TUTOR SUMMARY -----
+    // id: ${tutor.id}
+    // name: ${tutor.name}
+    // major: ${tutor.major}
+    // profileImageUrl: ${tutor.profileImageUrl}
+    // sessionPrice: ${tutor.sessionPrice}
+    // tutoringSkills: ${tutor.tutoringSkills}
+    // ------------------------
+    // """);
+    //     print("Tutor skills IDs: $tutorSkills");
+    //     print("All skills: ${skillsVM.skills.map((s) => s.id)}");
+
+    final skillNames = skillsVM.skills
+        .where((skill) => tutorSkills.contains(skill.id)) //comparar IDs
+        .map((skill) => skill.label ?? "") //devolver label
+        .toList();
+
     //detectar press de tutor y routing a detail de tutor
     return GestureDetector(
       onTap: () {
@@ -36,7 +59,16 @@ class TutorCard extends StatelessWidget {
                 //Foto de perfil del tutor
                 CircleAvatar(
                   radius: 30,
-                  backgroundImage: NetworkImage(tutor.profileImageUrl ?? ""),
+                  backgroundImage:
+                      (tutor.profileImageUrl != null &&
+                          tutor.profileImageUrl!.isNotEmpty)
+                      ? NetworkImage(tutor.profileImageUrl!)
+                      : null,
+                  child:
+                      (tutor.profileImageUrl == null ||
+                          tutor.profileImageUrl!.isEmpty)
+                      ? Icon(Icons.person)
+                      : null,
                 ),
                 SizedBox(width: 12),
                 //Información del tutor
@@ -46,14 +78,15 @@ class TutorCard extends StatelessWidget {
                     children: [
                       //renglon Superior
                       Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          //Nombre del tutor
-                          Text(
-                            tutor.name ?? "Sin nombre",
-                            style: TextStyle(color: Colors.white),
+                          Expanded(
+                            child: Text(
+                              tutor.name ?? "Sin nombre",
+                              style: TextStyle(color: Colors.white),
+                              overflow: TextOverflow.ellipsis,
+                            ),
                           ),
-                          //Precio por hora del tutor
+                          SizedBox(width: 8),
                           Text(
                             "\$${tutor.sessionPrice}",
                             style: TextStyle(color: Colors.blue),
@@ -68,8 +101,15 @@ class TutorCard extends StatelessWidget {
 
                       Wrap(
                         spacing: 6,
-                        children: <String>[]
-                            .map((skill) => Chip(label: Text(skill)))
+                        runSpacing: 6,
+                        children: skillNames
+                            .map(
+                              (skill) => Chip(
+                                label: Text(skill),
+                                backgroundColor: Color(0xFF1A2A40),
+                                labelStyle: TextStyle(color: Colors.blueAccent),
+                              ),
+                            )
                             .toList(),
                       ),
                     ],

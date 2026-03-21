@@ -1,11 +1,14 @@
+import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flutter/material.dart';
 import 'package:g45_flutter/models/review.dart';
 import 'package:g45_flutter/models/user.dart';
 import 'package:g45_flutter/repositories/review_repository.dart';
 import 'package:g45_flutter/repositories/user_repository.dart';
+import 'package:g45_flutter/viewmodels/skills_viewmodel.dart';
 import 'package:g45_flutter/views/pages/reservation/reservation_gateway_page.dart';
 import 'package:g45_flutter/widgets/tutor_info_section.dart';
 import 'package:g45_flutter/widgets/tutor_review_card.dart';
+import 'package:provider/provider.dart';
 
 class TutorProfilePage extends StatefulWidget {
   //variable de widget
@@ -25,9 +28,21 @@ class _TutorProfilePageState extends State<TutorProfilePage> {
   User? tutor;
   bool isLoading = true;
 
+  //ANALYTICS ENGINE
+  final FirebaseAnalytics analytics = FirebaseAnalytics.instance;
+  DateTime? _startTime;
+
   @override
   void initState() {
     super.initState();
+    analytics.logEvent(name: 'test_event');
+    _startTime = DateTime.now();
+
+    analytics.logEvent(
+      name: 'view_tutor_profile',
+      parameters: {'tutor_id': widget.tutorId},
+    );
+
     loadTutor();
   }
 
@@ -48,6 +63,21 @@ class _TutorProfilePageState extends State<TutorProfilePage> {
   //-------------------------------
   // Funciones Auxiliares
   //-------------------------------
+
+  //Analytics engine
+  @override
+  void dispose() {
+    if (_startTime != null) {
+      final seconds = DateTime.now().difference(_startTime!).inSeconds;
+
+      analytics.logEvent(
+        name: 'time_spent_on_reviews',
+        parameters: {'tutor_id': widget.tutorId, 'seconds': seconds},
+      );
+    }
+
+    super.dispose();
+  }
 
   //Fonts para Barra de stats
   Widget buildStat(String title, String value) {
@@ -81,6 +111,16 @@ class _TutorProfilePageState extends State<TutorProfilePage> {
 
   @override
   Widget build(BuildContext context) {
+    if (isLoading || tutor == null) {
+      return Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
+    final skillsVM = Provider.of<SkillsViewModel>(context);
+    final tutorSkills = tutor!.tutoringSkills ?? [];
+    final skillNames = skillsVM.skills
+        .where((skill) => tutorSkills.contains(skill.id))
+        .map((skill) => skill.label ?? "")
+        .toList();
+
     if (isLoading || tutor == null) {
       return Scaffold(body: Center(child: CircularProgressIndicator()));
     }
@@ -260,8 +300,8 @@ class _TutorProfilePageState extends State<TutorProfilePage> {
                   Wrap(
                     spacing: 12,
                     runSpacing: 12,
-                    children: <String>[]
-                        .map<Widget>(
+                    children: skillNames
+                        .map(
                           (skill) => Chip(
                             label: Text(skill),
                             backgroundColor: Color(0xFF1A2A40),
@@ -309,6 +349,11 @@ class _TutorProfilePageState extends State<TutorProfilePage> {
                   //------------------------------------------------------------------------
                   ElevatedButton(
                     onPressed: () {
+                      analytics.logEvent(
+                        name: 'schedule_session',
+                        parameters: {'tutor_id': tutor!.id ?? ""},
+                      );
+
                       Navigator.push(
                         context,
                         MaterialPageRoute(
