@@ -6,6 +6,8 @@ import 'package:g45_flutter/core/theme.dart';
 import 'package:g45_flutter/firebase_options.dart';
 import 'package:g45_flutter/repositories/user_repository.dart';
 import 'package:g45_flutter/viewmodels/auth.dart';
+import 'package:g45_flutter/viewmodels/reservation_detail_viewmodel.dart';
+import 'package:g45_flutter/viewmodels/reservation_gateway_viewmodel.dart';
 import 'package:g45_flutter/viewmodels/skills_viewmodel.dart';
 import 'package:g45_flutter/viewmodels/tutor_viewmodel.dart';
 import 'package:g45_flutter/views/pages/login/login_regist_page.dart';
@@ -35,6 +37,8 @@ class MyApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider(create: (_) => TutorViewModel(UserRepository())),
         ChangeNotifierProvider(create: (_) => SkillsViewModel()..loadSkills()),
+        ChangeNotifierProvider(create: (_) => ReservationDetailViewModel()),
+        ChangeNotifierProvider(create: (_) => ReservationGatewayViewModel()),
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
@@ -59,8 +63,12 @@ class MyApp extends StatelessWidget {
               future: authVM.handleLogin(),
               builder: (context, snap) {
                 if (!snap.hasData) {
-                  return const Scaffold(
-                    body: Center(child: CircularProgressIndicator()),
+                  return Scaffold(
+                    body: Center(
+                      child: Text(
+                        snap.error?.toString() ?? "Error desconocido",
+                      ),
+                    ),
                   );
                 }
 

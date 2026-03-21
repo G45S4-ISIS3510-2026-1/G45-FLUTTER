@@ -4,7 +4,7 @@ class User {
   final String email;
   final String major;
   final bool isTutoring;
-  final int uniandesId;
+  final int? uniandesId;
   final List<String> tutoringSkills;
   List<String> interestedSkills;
   final List<String> fcmTokens;

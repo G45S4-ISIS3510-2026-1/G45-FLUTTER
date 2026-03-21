@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:g45_flutter/models/user.dart';
+import 'package:g45_flutter/models/tutor_summary.dart';
 import 'package:g45_flutter/viewmodels/skills_viewmodel.dart';
 import 'package:g45_flutter/views/pages/reservation/reservation_gateway_page.dart';
 import 'package:g45_flutter/views/pages/user/tutor_profile_page.dart';
 import 'package:provider/provider.dart';
 
 class TutorCard extends StatelessWidget {
-  final User tutor;
   final bool showButton;
   const TutorCard({super.key, required this.tutor, this.showButton = true});
+  final TutorSummary tutor; //cambio de mock a real
 
   @override
   Widget build(BuildContext context) {
@@ -40,7 +40,7 @@ class TutorCard extends StatelessWidget {
           context,
           MaterialPageRoute(
             builder: (context) =>
-                TutorProfilePage(tutor: tutor, tutorId: tutor.id ?? ""),
+                TutorProfilePage(tutorId: tutor.id ?? "", tutor: tutor),
           ),
         );
       },
@@ -128,22 +128,22 @@ class TutorCard extends StatelessWidget {
                   //"⭐ ${tutor["rating"]}",
                   style: TextStyle(color: Colors.white),
                 ),
-                if (showButton) Spacer(),
-                if (showButton)
-                  //Boton reserva
-                  ElevatedButton(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) =>
-                              ReservationGatewayPage(tutor: tutor),
-                        ),
-                      );
-                    },
-
-                    child: Text("Reservar"),
-                  ),
+                Spacer(),
+                //--------------------------------------------------
+                //Boton reseva(DIEGO)->TOCA MANDARLE EL TUTOR PUNTUAL
+                //--------------------------------------------------
+                ElevatedButton(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) =>
+                            ReservationGatewayPage(tutor: tutor),
+                      ),
+                    );
+                  },
+                  child: Text("Reservar"),
+                ),
               ],
             ),
           ],

@@ -1,9 +1,10 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../models/skills.dart';
+import '../config/api_config.dart';
 
 class SkillRepository {
-  final String baseUrl = "http://127.0.0.1:8000/skills";
+  final String baseUrl = "${ApiConfig.baseUrl}/skills";
 
   //obtener los majors 
   Future<List<String>> getMajors() async {

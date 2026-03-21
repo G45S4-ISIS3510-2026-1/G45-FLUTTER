@@ -1,6 +1,7 @@
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flutter/material.dart';
 import 'package:g45_flutter/models/review.dart';
+import 'package:g45_flutter/models/tutor_summary.dart';
 import 'package:g45_flutter/models/user.dart';
 import 'package:g45_flutter/repositories/review_repository.dart';
 import 'package:g45_flutter/repositories/user_repository.dart';
@@ -13,7 +14,7 @@ import 'package:provider/provider.dart';
 class TutorProfilePage extends StatefulWidget {
   //variable de widget
   final String tutorId;
-  final User tutor;
+  final dynamic tutor;
   const TutorProfilePage({
     super.key,
     required this.tutorId,
@@ -115,7 +116,7 @@ class _TutorProfilePageState extends State<TutorProfilePage> {
       return Scaffold(body: Center(child: CircularProgressIndicator()));
     }
     final skillsVM = Provider.of<SkillsViewModel>(context);
-    final tutorSkills = tutor!.tutoringSkills ?? [];
+    final tutorSkills = tutor?.tutoringSkills ?? [];
     final skillNames = skillsVM.skills
         .where((skill) => tutorSkills.contains(skill.id))
         .map((skill) => skill.label ?? "")
@@ -345,8 +346,7 @@ class _TutorProfilePageState extends State<TutorProfilePage> {
 
                   SizedBox(height: 20),
                   //-----------------------------------------------------------------------
-                  // BOTÓN PRINCIPAL RESERVA (Diego)-> PASAR A RESERVA PUNTUAL DE ESE TUTOR
-                  //------------------------------------------------------------------------
+                  // BOTÓN PRINCIPAL RESERVA
                   ElevatedButton(
                     onPressed: () {
                       analytics.logEvent(
@@ -357,8 +357,9 @@ class _TutorProfilePageState extends State<TutorProfilePage> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) =>
-                              ReservationGatewayPage(tutor: tutor!),
+                          builder: (context) => ReservationGatewayPage(
+                            tutor: TutorSummary.fromUser(tutor!),
+                          ),
                         ),
                       );
                     },
