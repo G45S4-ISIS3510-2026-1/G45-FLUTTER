@@ -28,10 +28,10 @@ tutoringSkills: ${tutor.tutoringSkills}
     print("Tutor skills IDs: $tutorSkills");
     print("All skills: ${skillsVM.skills.map((s) => s.id)}");
 
-final skillNames = skillsVM.skills
-    .where((skill) => tutorSkills.contains(skill.id)) //comparar IDs
-    .map((skill) => skill.label ?? "") //devolver label
-    .toList();
+    final skillNames = skillsVM.skills
+        .where((skill) => tutorSkills.contains(skill.id)) //comparar IDs
+        .map((skill) => skill.label ?? "") //devolver label
+        .toList();
 
     //detectar press de tutor y routing a detail de tutor
     return GestureDetector(
@@ -130,8 +130,7 @@ final skillNames = skillsVM.skills
                 ),
                 Spacer(),
                 //--------------------------------------------------
-                //Boton reseva(DIEGO)->TOCA MANDARLE EL TUTOR PUNTUAL
-                //--------------------------------------------------
+                //Boton reseva
                 ElevatedButton(
                   onPressed: () {
                     Navigator.push(

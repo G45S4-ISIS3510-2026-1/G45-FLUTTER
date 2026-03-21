@@ -266,6 +266,7 @@ class _ReservationGatewayPageState extends State<ReservationGatewayPage> {
                   );
                   final reservation = Session(
                     skill: {
+                      'id': tutorSkill.id,
                       'label': tutorSkill.label,
                       'major': tutorSkill.major,
                       'iconUrl': tutorSkill.iconUrl,
@@ -277,20 +278,31 @@ class _ReservationGatewayPageState extends State<ReservationGatewayPage> {
                     verifCode: '',
                   );
 
-                  final createdSession = await viewModel.createSession(
-                    reservation,
-                  );
-                  if (createdSession != null) {
+                  Session? createdSession;
+                  // CONTINGENCIA
+                  try {
+                    createdSession = await viewModel.createSession(reservation);
+                  } catch (e) {
+                    if (mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text(
+                            'Error al conectar con firebase. Mostrando vista previa.',
+                          ),
+                        ),
+                      );
+                    }
+                  }
+
+                  final sessionToDisplay = createdSession ?? reservation;
+                  // CONTINGENCIA P2
+                  if (mounted) {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
                         builder: (context) =>
-                            ReservationDetailPage(session: createdSession),
+                            ReservationDetailPage(session: sessionToDisplay),
                       ),
-                    );
-                  } else {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Error creando la sesión')),
                     );
                   }
                 },
