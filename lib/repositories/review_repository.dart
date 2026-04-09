@@ -1,17 +1,23 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../models/review.dart';
+import '../core/api_config.dart';
 
 class ReviewRepository {
-  final String baseUrl = "http://127.0.0.1:8000";
 
-  //Reviews de cada autor
+  // headers comunes para evitar que ngrok devuelva la página intermedia
+  Map<String, String> get headers => {
+        "Content-Type": "application/json",
+        "ngrok-skip-browser-warning": "true",
+      };
+
   Future<List<Review>> getReviewsByTutor(String tutorId) async {
     final response = await http.get(
-      Uri.parse("$baseUrl/reviews/by-tutor/$tutorId"), // se le pasa el id puntual del tutor.
+      Uri.parse("${ApiConfig.baseUrl}/reviews/by-tutor/$tutorId"), // se le pasa el id puntual del tutor.
+      headers: headers,
     );
 
-    print(response.body); //debug
+    print(response.body);//debug
 
     if (response.statusCode == 200) {
       final List data = jsonDecode(response.body);// recibe json

@@ -158,6 +158,7 @@ class _TutorProfilePageState extends State<TutorProfilePage> {
                     left: 16,
                     child: IconButton(
                       icon: Icon(Icons.arrow_back),
+                      color: Colors.white,
                       onPressed: () => Navigator.pop(context),
                     ),
                   ),
@@ -168,6 +169,7 @@ class _TutorProfilePageState extends State<TutorProfilePage> {
                     right: 16,
                     child: IconButton(
                       icon: Icon(Icons.favorite_border),
+                      color: Colors.white,
                       onPressed: () {},
                     ),
                   ),
@@ -311,7 +313,7 @@ class _TutorProfilePageState extends State<TutorProfilePage> {
                   SizedBox(height: 10),
                   //--------------------------------------------------
                   //Info Personal
-                  SizedBox(height: 140, child: TutorInfoSection(tutor: tutor!)),
+                  SizedBox(height: 180, child: TutorInfoSection(tutor: tutor!)),
                   // REVIEWS
                   Align(
                     alignment: Alignment.centerLeft,
