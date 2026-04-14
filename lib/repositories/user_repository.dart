@@ -35,6 +35,7 @@ class UserRepository {
     user.interestedSkills = skillsMajor.map((s) => s.id!).toList();
 
     final url = Uri.parse("$baseUrl/${user.id}");
+    
     final resp = await http.put(
       url,
       headers: {"Content-Type": "application/json"},
@@ -50,7 +51,7 @@ class UserRepository {
 
   //crear usuario params:  id, name, email
   Future<User> createUser(String uid, String name, String email) async {
-    final url = Uri.parse(baseUrl);
+    final url = Uri.parse("$baseUrl/");
 
     User? usuario = await findUser(email);
 
@@ -76,8 +77,10 @@ class UserRepository {
       }),
     );
 
+    print(resp.statusCode);
+
     if (resp.statusCode != 201) {
-      print("❌ BACKEND ERROR: ${resp.body}");
+      print("BACKEND ERROR: ${resp.body}");
       throw Exception("Error creando usuario en backend");
     }
 

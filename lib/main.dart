@@ -18,14 +18,24 @@ import 'package:provider/provider.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  try {
+    if (Firebase.apps.isEmpty) {
+      await Firebase.initializeApp(
+        options: DefaultFirebaseOptions.currentPlatform,
+      );
+    }
+  } catch (e) {
+    if (!e.toString().contains('duplicate-app')) {
+      rethrow; 
+    }
+  }
+  // ---------------------------
 
   final FirebaseAnalytics analytics = FirebaseAnalytics.instance;
-
   await analytics.setAnalyticsCollectionEnabled(true);
+  
   runApp(const MyApp());
 }
-
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 

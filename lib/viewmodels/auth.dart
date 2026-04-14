@@ -44,14 +44,12 @@ class AuthViewModel {
     }
 
     u.User? backendUser = await repository.findUser(user.email ?? "");
-
     if (backendUser == null) {
       backendUser = await repository.createUser(
         user.uid,
         user.displayName ?? "",
         user.email ?? "",
       );
-
 
       await guardarUsuarioCache(backendUser);
 

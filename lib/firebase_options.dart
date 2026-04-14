@@ -23,10 +23,7 @@ class DefaultFirebaseOptions {
       case TargetPlatform.android:
         return android;
       case TargetPlatform.iOS:
-        throw UnsupportedError(
-          'DefaultFirebaseOptions have not been configured for ios - '
-          'you can reconfigure this by running the FlutterFire CLI again.',
-        );
+        return ios;
       case TargetPlatform.macOS:
         throw UnsupportedError(
           'DefaultFirebaseOptions have not been configured for macos - '
@@ -65,5 +62,16 @@ class DefaultFirebaseOptions {
     messagingSenderId: '442653183551',
     projectId: 'mobileapps-g45-tutoriauniandes',
     storageBucket: 'mobileapps-g45-tutoriauniandes.firebasestorage.app',
+  );
+
+
+  // 1. Agrega esta constante al final de la clase, antes de la última llave }
+  static const FirebaseOptions ios = FirebaseOptions(
+    apiKey: 'AIzaSyCNnF-2-rvaTYY6DaMSZVes6Cv4t33X3aw', // Usamos la misma de Web/Android que ya tienes
+    appId: '1:442653183551:ios:1067de8f0223b50116728a', // Sacado de tu imagen
+    messagingSenderId: '442653183551',
+    projectId: 'mobileapps-g45-tutoriauniandes',
+    storageBucket: 'mobileapps-g45-tutoriauniandes.firebasestorage.app',
+    iosBundleId: 'com.example.g45Flutter',
   );
 }

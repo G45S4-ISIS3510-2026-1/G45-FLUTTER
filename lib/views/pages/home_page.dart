@@ -11,6 +11,8 @@ import 'package:g45_flutter/widgets/tutor_card.dart';
 import 'package:g45_flutter/widgets/tutor_card_small.dart';
 import 'package:provider/provider.dart';
 
+// import 'package:firebase_auth/firebase_auth.dart';
+// Ejecuta esto para limpiar la instancia actua
 import '../../viewmodels/auth.dart';
 
 class HomePage extends StatefulWidget {
@@ -57,6 +59,7 @@ class _HomePageState extends State<HomePage> {
         sesiones = listaSesiones;
       });
     }
+    // await FirebaseAuth.instance.signOut();
   }
 
   @override
