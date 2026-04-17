@@ -30,7 +30,7 @@ class UserRepository {
   }
 
   //actualizar el major del usuario
-  Future<User?> updateUsuarioInterestedSkills(User user, String major) async {
+  Future<User?> updateUserInterestedSkills(User user, String major) async {
     final skillsMajor = await skillRepo.getByMajor(major);
     user.interestedSkills = skillsMajor.map((s) => s.id!).toList();
 

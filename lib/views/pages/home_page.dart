@@ -51,7 +51,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future<void> cargarDatos() async {
-    u.User? user = await authVM.getUsuarioCache();
+    u.User? user = await authVM.getUserCache();
     if (user != null) {
       final listaSesiones = await sessionVM.getSessionsByStudent(user.id);
       setState(() {

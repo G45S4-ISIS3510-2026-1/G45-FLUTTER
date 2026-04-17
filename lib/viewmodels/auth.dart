@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
 import '../repositories/user_repository.dart';
 import '../models/user.dart' as u;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -10,29 +11,29 @@ enum AuthState {
   home,
 }
 
-class AuthViewModel {
+class AuthViewModel extends ChangeNotifier {
   final repository = UserRepository();
 
   static final AuthViewModel instance = AuthViewModel.internal();
   factory AuthViewModel() => instance;
   AuthViewModel.internal();
 
-  u.User? usuarioCache;
+  u.User? userCache;
 
-  Future<u.User?> getUsuarioCache() async {
-    if (usuarioCache != null) {
-      return usuarioCache;
+  Future<u.User?> getUserCache() async {
+    if (userCache != null) {
+      return userCache;
     }
 
-    usuarioCache = await usuarioEnCache();
-    return usuarioCache;
+    userCache = await userInCache();
+    return userCache;
   }
 
-  Future<u.User?> updateUsuarioInterestedSkills(u.User user,String major) async {
-    final updatedUser = await repository.updateUsuarioInterestedSkills(user, major);
+  Future<u.User?> updateUserInterestedSkills(u.User user,String major) async {
+    final updatedUser = await repository.updateUserInterestedSkills(user, major);
     if (updatedUser != null) {
-      usuarioCache = updatedUser;
-      await guardarUsuarioCache(updatedUser);
+      userCache = updatedUser;
+      await saveUserInCache(updatedUser);
     }
     return updatedUser;
   }
@@ -51,12 +52,12 @@ class AuthViewModel {
         user.email ?? "",
       );
 
-      await guardarUsuarioCache(backendUser);
+      await saveUserInCache(backendUser);
 
       return AuthState.selectSkills;
     }
 
-    await guardarUsuarioCache(backendUser);
+    await saveUserInCache(backendUser);
 
     if (backendUser.interestedSkills.isEmpty) {
       return AuthState.selectSkills;
@@ -65,13 +66,13 @@ class AuthViewModel {
     return AuthState.home;
   }
 
-  Future<void> guardarUsuarioCache(u.User user) async {
+  Future<void> saveUserInCache(u.User user) async {
     final prefs = await SharedPreferences.getInstance();
     final userJson = user.toJson();
     await prefs.setString('usuario', jsonEncode(userJson));
   }
 
-  Future<u.User?> usuarioEnCache() async {
+  Future<u.User?> userInCache() async {
     final prefs = await SharedPreferences.getInstance();
     final userData = prefs.getString('usuario');
     if (userData == null) {

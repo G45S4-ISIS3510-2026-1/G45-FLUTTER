@@ -31,7 +31,7 @@ class _SelectSkillsState extends State<SelectSkills> {
   }
 
   Future<void> saveSelectedMajor(String selectedMajor) async {
-    u.User? miUsuario = await authVM.getUsuarioCache();
+    u.User? miUsuario = await authVM.getUserCache();
     final theme = Theme.of(context);
 
     if(miUsuario == null) {
@@ -44,7 +44,7 @@ class _SelectSkillsState extends State<SelectSkills> {
       return ;
     }
 
-    final resp = await authVM.updateUsuarioInterestedSkills(miUsuario, selectedMajor);
+    final resp = await authVM.updateUserInterestedSkills(miUsuario, selectedMajor);
 
     if (resp != null) {
       if (context.mounted) {

@@ -91,7 +91,7 @@ class _ReservationGatewayPageState extends State<ReservationGatewayPage> {
     return [];
   }
 
-  String studentId = AuthViewModel.instance.usuarioCache!.id;
+  String studentId = AuthViewModel.instance.userCache!.id;
 
   List<DateTime> getNextDays() {
     return List.generate(
