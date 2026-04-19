@@ -12,6 +12,7 @@ class UserRepository {
   final SkillRepository skillRepo = SkillRepository();
 
   //buscar user por email retorna un objeeto usuario
+  //OJO: este endpoint puede no existir en el backend
   Future<User?> findUser(String email) async {
     final url = Uri.parse("$baseUrl/by-email/$email");
 
@@ -32,14 +33,15 @@ class UserRepository {
   //actualizar el major del usuario
   Future<User?> updateUserInterestedSkills(User user, String major) async {
     final skillsMajor = await skillRepo.getByMajor(major);
-    user.interestedSkills = skillsMajor.map((s) => s.id!).toList();
+    final skillIds = skillsMajor.map((s) => s.id!).toList();
 
-    final url = Uri.parse("$baseUrl/${user.id}");
-    
-    final resp = await http.put(
+    //endpoint correcto segun backend
+    final url = Uri.parse("$baseUrl/${user.id}/interested-skills");
+
+    final resp = await http.patch(
       url,
       headers: {"Content-Type": "application/json"},
-      body: jsonEncode(user.toJson()),
+      body: jsonEncode(skillIds),
     );
 
     if (resp.statusCode != 200) {
@@ -53,7 +55,13 @@ class UserRepository {
   Future<User> createUser(String uid, String name, String email) async {
     final url = Uri.parse("$baseUrl/");
 
-    User? usuario = await findUser(email);
+    //si el endpoint no existe, esto puede fallar
+    User? usuario;
+    try {
+      usuario = await findUser(email);
+    } catch (_) {
+      usuario = null;
+    }
 
     if (usuario != null) {
       return usuario;
@@ -96,27 +104,21 @@ class UserRepository {
     List<String>? skillIds,
     String? major,
   }) async {
-    final baseUri = Uri.parse("$baseUrl/tutors/search");
-
-    final query = <String>[];
-
-    if (name != null) {
-      query.add("name=${Uri.encodeComponent(name)}");
-    }
-
-    if (major != null) {
-      query.add("major=${Uri.encodeComponent(major)}");
-    }
-
-    if (skillIds != null && skillIds.isNotEmpty) {
-      for (final id in skillIds) {
-        query.add("skill_ids=${Uri.encodeComponent(id)}");
-      }
-    }
-
-    final finalUri = Uri.parse(
-      "${baseUri.toString()}${query.isNotEmpty ? "?" + query.join("&") : ""}",
+    final uri = Uri.parse("$baseUrl/tutors/search").replace(
+      queryParameters: {
+        if (name != null) "name": name,
+        if (major != null) "major": major,
+      },
     );
+
+    //agregar skill_ids repetidos manualmente
+    final finalUri = skillIds != null && skillIds.isNotEmpty
+        ? Uri.parse(
+            uri.toString() +
+                "&" +
+                skillIds.map((id) => "skill_ids=${Uri.encodeComponent(id)}").join("&"),
+          )
+        : uri;
 
     final resp = await http.get(finalUri);
 
@@ -131,7 +133,9 @@ class UserRepository {
 
   //obtener lista de usuarios por ID
   Future<User> getUserById(String id) async {
-    final url = Uri.parse("$baseUrl/$id");
+    //endpoint correcto segun backend
+    final url = Uri.parse("$baseUrl/profile/$id");
+
     final resp = await http.get(url);
 
     if (resp.statusCode != 200) {
