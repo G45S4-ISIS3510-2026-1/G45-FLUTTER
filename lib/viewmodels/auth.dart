@@ -1,3 +1,5 @@
+// ignore_for_file: prefer_conditional_assignment
+
 import 'dart:convert';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -73,17 +75,24 @@ class AuthViewModel extends ChangeNotifier {
     try {
       u.User? backendUser = await repository.findUser(firebaseUser.email ?? '');
 
-      backendUser ??= await repository.createUser(
-        firebaseUser.uid,
-        firebaseUser.displayName ?? '',
-        firebaseUser.email ?? '',
-      );
+      if(backendUser == null) {
+        backendUser = await repository.createUser(
+          firebaseUser.uid,
+          firebaseUser.displayName ?? 'Usuario',
+          firebaseUser.email ?? '',
+        );
+      }
 
       userCache = backendUser;
       await saveUserInCache(backendUser);
       resolveState();
     } catch (e) {
-      errorMessage = 'Error al sincronizar usuario: $e';
+      // Si el usuario fue borrado de Firebase
+      await FirebaseAuth.instance.signOut();
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.remove('usuario');
+      userCache = null;
+      errorMessage = 'Sesión inválida';
       setAuthState(AuthState.login);
     }
   }
