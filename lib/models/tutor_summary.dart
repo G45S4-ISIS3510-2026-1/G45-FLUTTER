@@ -4,6 +4,7 @@ class TutorSummary {
   final String? id;
   final String? name;
   final String? major;
+  final double? rating;
   final String? profileImageUrl;
   final int? sessionPrice;
   final List<String>? tutoringSkills;
@@ -12,6 +13,7 @@ class TutorSummary {
     this.id,
     this.name,
     this.major,
+    this.rating,
     this.profileImageUrl,
     this.sessionPrice,
     this.tutoringSkills,
@@ -33,8 +35,9 @@ class TutorSummary {
       id: json['id']?.toString(),
       name: json['name'],
       major: json['major'],
-      sessionPrice: json['session_price'],
+      rating: (json['rating'] as num?)?.toDouble(),
       profileImageUrl: json['profile_image_url'],
+      sessionPrice: json['session_price'],
       tutoringSkills: List<String>.from(json['tutoring_skills'] ?? []),
     );
   }
@@ -44,6 +47,7 @@ class TutorSummary {
       id: map['id']?.toString(),
       name: map['name'],
       major: map['major'],
+      rating: (map['rating'] as num?)?.toDouble(),
       profileImageUrl: map['profileImageUrl'],
       sessionPrice: map['sessionPrice'],
       tutoringSkills: List<String>.from(map['tutoringSkills'] ?? []),
@@ -55,6 +59,7 @@ class TutorSummary {
       'id': id,
       'name': name,
       'major': major,
+      'rating': rating,
       'profileImageUrl': profileImageUrl,
       'sessionPrice': sessionPrice,
       'tutoringSkills': tutoringSkills,

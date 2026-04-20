@@ -103,13 +103,15 @@ class UserRepository {
     String? name,
     List<String>? skillIds,
     String? major,
+    int limit = 20,
   }) async {
-    final uri = Uri.parse("$baseUrl/tutors/search").replace(
-      queryParameters: {
-        if (name != null) "name": name,
-        if (major != null) "major": major,
-      },
-    );
+      final uri = Uri.parse("$baseUrl/tutors/search").replace(
+        queryParameters: {
+          if (name != null) "name": name,
+          if (major != null) "major": major,
+          "limit": limit.toString(),
+        },
+      );
 
     //agregar skill_ids repetidos manualmente
     final finalUri = skillIds != null && skillIds.isNotEmpty

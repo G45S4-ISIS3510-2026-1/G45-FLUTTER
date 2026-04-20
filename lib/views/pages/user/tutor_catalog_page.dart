@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:g45_flutter/data/mock/facultades_mock.dart';
+
+import 'package:g45_flutter/viewmodels/skills_viewmodel.dart';
 import 'package:g45_flutter/viewmodels/tutor_viewmodel.dart';
 import 'package:g45_flutter/widgets/tutor_card.dart';
 import 'package:provider/provider.dart';
@@ -12,35 +13,95 @@ class CatalogPage extends StatefulWidget {
 }
 
 class _CatalogPageState extends State<CatalogPage> {
-  @override
+  final ScrollController _scrollController = ScrollController();
+
+  String searchQuery = "";
+  String? selectedFaculty;
+  String selectedSort = "";
+  String normalize(String text) {
+    return text
+        .toLowerCase()
+        .replaceAll('á', 'a')
+        .replaceAll('é', 'e')
+        .replaceAll('í', 'i')
+        .replaceAll('ó', 'o')
+        .replaceAll('ú', 'u')
+        .replaceAll('ñ', 'n');
+  }
+
+  final facultadesMock = [
+    "Física",
+    "Psicología",
+    "Biología",
+    "Ingeniería de Sistemas y Computación",
+    "Matemáticas",
+  ];
+
   //una vez abre el page corre todo esto
+  @override
   void initState() {
     super.initState();
+
     Future.microtask(() {
-      Provider.of<TutorViewModel>(
-        context,
-        listen: false,
-      ).loadTutors(); // llamado a backend para cargar todos los tutores los guarda en view model
-      //Provider.of<SkillsViewModel>(context, listen: false).loadSkills(); //llamado a backend para cargar todos los skills los guarda en view model
+      Provider.of<TutorViewModel>(context, listen: false).loadTutors();
+    });
+
+    _scrollController.addListener(() {
+      if (_scrollController.position.pixels >=
+          _scrollController.position.maxScrollExtent - 200) {
+        Provider.of<TutorViewModel>(context, listen: false).loadMoreTutors();
+      }
     });
   }
-  //Datos mockeados
+
+  //Evitar leaks del scroll controller
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     final vm = Provider.of<TutorViewModel>(
       context,
     ); //instancia de ViewModel donde vm.tutor es la lista de todos los TutorSummary
+
     //final skillsVM = Provider.of<SkillsViewModel>(context); //instancia de skillsViewModel donde skillsVM.skills lista de skills
 
     // si cualquiera de los dos no carga simbolo de carga
     if (vm.isLoading) {
       return Center(child: CircularProgressIndicator());
     }
+
+    final filteredTutors = vm.tutors.where((tutor) {
+      final name = normalize(tutor.name ?? "");
+      final major = normalize(tutor.major ?? "");
+      final query = normalize(searchQuery);
+
+      final matchesSearch = name.contains(query) || major.contains(query);
+
+      final matchesFaculty =
+          selectedFaculty == null || tutor.major == selectedFaculty;
+
+      return matchesSearch && matchesFaculty;
+    }).toList();
+
+    // ORDENAR
+    filteredTutors.sort((a, b) => (b.rating ?? 0).compareTo(a.rating ?? 0));
+
+    if (selectedSort == "rating") {
+      filteredTutors.sort((a, b) => (b.rating ?? 0).compareTo(a.rating ?? 0));
+    } else if (selectedSort == "price") {
+      filteredTutors.sort(
+        (a, b) => (a.sessionPrice ?? 0).compareTo(b.sessionPrice ?? 0),
+      );
+    }
     // if (skillsVM.isLoading) {
     //   return Center(child: CircularProgressIndicator());
     // }
     return SingleChildScrollView(
+      controller: _scrollController,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -67,8 +128,11 @@ class _CatalogPageState extends State<CatalogPage> {
                 borderRadius: BorderRadius.circular(8),
               ),
               child: TextField(
+                style: TextStyle(color: Colors.black),
                 onChanged: (value) {
-                  //  implementar la lógica de búsqueda
+                  setState(() {
+                    searchQuery = value;
+                  });
                 },
                 decoration: InputDecoration(
                   hintText: 'Buscar por materia o tutor',
@@ -98,11 +162,46 @@ class _CatalogPageState extends State<CatalogPage> {
                   runSpacing: 8,
                   children: [
                     ElevatedButton(
-                      onPressed: () {},
+                      onPressed: () {
+                        setState(() {
+                          if (selectedSort == "rating") {
+                            selectedSort = "";
+                          } else {
+                            selectedSort = "rating";
+                          }
+                        });
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: selectedSort == "rating"
+                            ? Colors.blue
+                            : Colors.blue.withOpacity(0.2),
+                        foregroundColor: selectedSort == "rating"
+                            ? Colors.white
+                            : Colors.blue,
+                      ),
                       child: Text("Mejor Ratings"),
                     ),
-                    ElevatedButton(onPressed: () {}, child: Text("Precio")),
-                    ElevatedButton(onPressed: () {}, child: Text("Proximidad")),
+                    ElevatedButton(
+                      onPressed: () {
+                        setState(() {
+                          if (selectedSort == "price") {
+                            selectedSort = "";
+                          } else {
+                            selectedSort = "price";
+                          }
+                        });
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: selectedSort == "price"
+                            ? Colors.blue
+                            : Colors.blue.withOpacity(0.2),
+                        foregroundColor: selectedSort == "price"
+                            ? Colors.white
+                            : Colors.blue,
+                      ),
+                      child: Text("Precio"),
+                    ),
+                    //ElevatedButton(onPressed: () {}, child: Text("Proximidad")),
                   ],
                 ),
 
@@ -118,30 +217,58 @@ class _CatalogPageState extends State<CatalogPage> {
                   ),
                 ),
                 //Botones de filtro de Facultad [mapeados]
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
-                  children: facultades.map((facultad) {
-                    //for i con el map pero fluter necesita una lista tonces se pasa a lista [MOCKEADO]
-                    return ElevatedButton(
-                      onPressed: () {},
-                      child: Text(facultad),
-                    );
-                  }).toList(),
+                SizedBox(
+                  height: 45, // altura fija para los chips
+                  child: ListView.builder(
+                    scrollDirection: Axis.horizontal,
+                    itemCount: facultadesMock.length,
+                    itemBuilder: (context, index) {
+                      final facultad = facultadesMock[index];
+
+                      final isSelected = selectedFaculty == facultad;
+
+                      return Padding(
+                        padding: const EdgeInsets.only(right: 8),
+                        child: ElevatedButton(
+                          onPressed: () {
+                            setState(() {
+                              if (selectedFaculty == facultad) {
+                                selectedFaculty = null;
+                              } else {
+                                selectedFaculty = facultad;
+                              }
+                            });
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: isSelected
+                                ? Colors.blue
+                                : Colors.blue.withOpacity(0.2),
+                            foregroundColor: isSelected
+                                ? Colors.white
+                                : Colors.blue,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            padding: EdgeInsets.symmetric(horizontal: 16),
+                          ),
+                          child: Text(facultad),
+                        ),
+                      );
+                    },
+                  ),
                 ),
+
                 //Feed de tutores (mapeados)
                 ListView.builder(
                   shrinkWrap: true, //tomar espacio necesario
                   physics: NeverScrollableScrollPhysics(), // no mover scroll
-                  itemCount: vm.tutors.length, //basicamente un for in range
+                  itemCount: filteredTutors.length,
                   itemBuilder: (context, index) {
-                    // call back: context donde esta en el arbol y index ej tutor 1 2 3
+                    final tutors = filteredTutors;
+
                     return Padding(
                       padding: const EdgeInsets.all(8.0),
-                      child: TutorCard(
-                        tutor: vm
-                            .tutors[index], // recorro la lista de tutores en vm.tutors donde List<TutorSummary>
-                      ), // toca decirle que parametro-> tutor:
+                      child: TutorCard(tutor: tutors[index]),
                     );
                   },
                 ),
