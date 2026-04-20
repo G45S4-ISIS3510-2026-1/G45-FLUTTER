@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import '../repositories/user_repository.dart';
 import '../models/user.dart' as u;
 import 'package:shared_preferences/shared_preferences.dart';
+
 enum AuthState {
   loading,
   login,
@@ -18,67 +19,90 @@ class AuthViewModel extends ChangeNotifier {
   factory AuthViewModel() => instance;
   AuthViewModel.internal();
 
-  u.User? userCache;
+  // ── Estado observable ──────────────────────────────────────
+  AuthState _authState = AuthState.loading;
+  AuthState get authState => _authState;
 
-  Future<u.User?> getUserCache() async {
-    if (userCache != null) {
-      return userCache;
+  u.User? userCache;
+  String? errorMessage;
+
+  // ── Inicialización ─────────────────────────────────────────
+  Future<void> initState() async {
+    setAuthState(AuthState.loading);
+
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      setAuthState(AuthState.login);
+      return;
     }
 
     userCache = await userInCache();
-    return userCache;
+
+    if (userCache == null) {
+      await syncWithBackend(user);
+    } else {
+      resolveState();
+    }
   }
 
-  Future<u.User?> updateUserInterestedSkills(u.User user,String major) async {
+  // ── Skills ─────────────────────────────────────────────────
+  Future<void> updateUserInterestedSkills(u.User user, String major) async {
     final updatedUser = await repository.updateUserInterestedSkills(user, major);
     if (updatedUser != null) {
       userCache = updatedUser;
       await saveUserInCache(updatedUser);
+      resolveState();
     }
-    return updatedUser;
   }
 
-  Future<AuthState> handleLogin() async {
-    final user = FirebaseAuth.instance.currentUser;
-    if (user == null) {
-      return AuthState.login;
-    }
-
-    u.User? backendUser = await repository.findUser(user.email ?? "");
-    if (backendUser == null) {
-      backendUser = await repository.createUser(
-        user.uid,
-        user.displayName ?? "",
-        user.email ?? "",
-      );
-
-      await saveUserInCache(backendUser);
-
-      return AuthState.selectSkills;
-    }
-
-    await saveUserInCache(backendUser);
-
-    if (backendUser.interestedSkills.isEmpty) {
-      return AuthState.selectSkills;
-    }
-
-    return AuthState.home;
+  Future<u.User?> getUserCache() async {
+    if (userCache != null) return userCache;
+    userCache = await userInCache();
+    return userCache;
   }
 
+  // ── Caché ──────────────────────────────────────────────────
   Future<void> saveUserInCache(u.User user) async {
     final prefs = await SharedPreferences.getInstance();
-    final userJson = user.toJson();
-    await prefs.setString('usuario', jsonEncode(userJson));
+    await prefs.setString('usuario', jsonEncode(user.toJson()));
   }
 
   Future<u.User?> userInCache() async {
     final prefs = await SharedPreferences.getInstance();
     final userData = prefs.getString('usuario');
-    if (userData == null) {
-      return null;
-    }
-
+    if (userData == null) return null;
     return u.User.fromJson(jsonDecode(userData));
+  }
+
+  // ── Privados ───────────────────────────────────────────────
+  Future<void> syncWithBackend(User firebaseUser) async {
+    try {
+      u.User? backendUser = await repository.findUser(firebaseUser.email ?? '');
+
+      backendUser ??= await repository.createUser(
+        firebaseUser.uid,
+        firebaseUser.displayName ?? '',
+        firebaseUser.email ?? '',
+      );
+
+      userCache = backendUser;
+      await saveUserInCache(backendUser);
+      resolveState();
+    } catch (e) {
+      errorMessage = 'Error al sincronizar usuario: $e';
+      setAuthState(AuthState.login);
+    }
+  }
+
+  void resolveState() {
+    final next = (userCache?.interestedSkills.isEmpty ?? true)
+        ? AuthState.selectSkills
+        : AuthState.home;
+    setAuthState(next);
+  }
+
+  void setAuthState(AuthState newState) {
+    _authState = newState;
+    notifyListeners();
   }
 }
