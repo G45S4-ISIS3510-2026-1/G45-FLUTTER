@@ -39,9 +39,9 @@ class AuthViewModel extends ChangeNotifier {
     userCache = await userInCache();
 
     if (userCache == null) {
-      await _syncWithBackend(user);
+      await syncWithBackend(user);
     } else {
-      _resolveState();
+      resolveState();
     }
   }
 
@@ -51,7 +51,7 @@ class AuthViewModel extends ChangeNotifier {
     if (updatedUser != null) {
       userCache = updatedUser;
       await saveUserInCache(updatedUser);
-      _resolveState();
+      resolveState();
     }
   }
 
@@ -75,7 +75,7 @@ class AuthViewModel extends ChangeNotifier {
   }
 
   // ── Privados ───────────────────────────────────────────────
-  Future<void> _syncWithBackend(User firebaseUser) async {
+  Future<void> syncWithBackend(User firebaseUser) async {
     try {
       u.User? backendUser = await repository.findUser(firebaseUser.email ?? '');
 
@@ -87,14 +87,14 @@ class AuthViewModel extends ChangeNotifier {
 
       userCache = backendUser;
       await saveUserInCache(backendUser);
-      _resolveState();
+      resolveState();
     } catch (e) {
       errorMessage = 'Error al sincronizar usuario: $e';
       setAuthState(AuthState.login);
     }
   }
 
-  void _resolveState() {
+  void resolveState() {
     final next = (userCache?.interestedSkills.isEmpty ?? true)
         ? AuthState.selectSkills
         : AuthState.home;
