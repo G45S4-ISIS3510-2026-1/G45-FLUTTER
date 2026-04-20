@@ -66,9 +66,9 @@ class MyApp extends StatelessWidget {
         // ---------------------------
         // LOGIN SWITCH
         // ---------------------------
-        home: SKIP_LOGIN
-          ? const WidgetTree()
-          : Consumer<AuthViewModel>(
+        home:
+          
+          Consumer<AuthViewModel>(
               builder: (context, authVM, _) {
                 switch (authVM.authState) {
                   case AuthState.loading:

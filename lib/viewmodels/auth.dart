@@ -27,6 +27,7 @@ class AuthViewModel extends ChangeNotifier {
 
   void startListening() {
     FirebaseAuth.instance.authStateChanges().listen((user) async {
+      // await FirebaseAuth.instance.signOut();
       if (user == null) {
         setAuthState(AuthState.login);
         return;
