@@ -19,33 +19,28 @@ class AuthViewModel extends ChangeNotifier {
   factory AuthViewModel() => instance;
   AuthViewModel.internal();
 
-  // ── Estado observable ──────────────────────────────────────
   AuthState _authState = AuthState.loading;
   AuthState get authState => _authState;
 
   u.User? userCache;
   String? errorMessage;
 
-  // ── Inicialización ─────────────────────────────────────────
-  Future<void> initState() async {
-    setAuthState(AuthState.loading);
+  void startListening() {
+    FirebaseAuth.instance.authStateChanges().listen((user) async {
+      if (user == null) {
+        setAuthState(AuthState.login);
+        return;
+      }
 
-    final user = FirebaseAuth.instance.currentUser;
-    if (user == null) {
-      setAuthState(AuthState.login);
-      return;
-    }
-
-    userCache = await userInCache();
-
-    if (userCache == null) {
-      await syncWithBackend(user);
-    } else {
-      resolveState();
-    }
+      userCache = await userInCache();
+      if (userCache == null) {
+        await syncWithBackend(user);
+      } else {
+        resolveState();
+      }
+    });
   }
 
-  // ── Skills ─────────────────────────────────────────────────
   Future<void> updateUserInterestedSkills(u.User user, String major) async {
     final updatedUser = await repository.updateUserInterestedSkills(user, major);
     if (updatedUser != null) {
@@ -61,7 +56,6 @@ class AuthViewModel extends ChangeNotifier {
     return userCache;
   }
 
-  // ── Caché ──────────────────────────────────────────────────
   Future<void> saveUserInCache(u.User user) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('usuario', jsonEncode(user.toJson()));
@@ -74,7 +68,6 @@ class AuthViewModel extends ChangeNotifier {
     return u.User.fromJson(jsonDecode(userData));
   }
 
-  // ── Privados ───────────────────────────────────────────────
   Future<void> syncWithBackend(User firebaseUser) async {
     try {
       u.User? backendUser = await repository.findUser(firebaseUser.email ?? '');

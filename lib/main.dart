@@ -20,7 +20,7 @@ import 'package:provider/provider.dart';
 // true = salta login
 // false = usa Firebase normal
 // ---------------------------
-const bool SKIP_LOGIN = true;
+const bool SKIP_LOGIN = false;
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -56,7 +56,7 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => SkillsViewModel()..loadSkills()),
         ChangeNotifierProvider(create: (_) => ReservationDetailViewModel()),
         ChangeNotifierProvider(create: (_) => ReservationGatewayViewModel()),
-        ChangeNotifierProvider(create: (_) => AuthViewModel()..initState()),
+        ChangeNotifierProvider(create: (_) => AuthViewModel()..startListening()),
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
