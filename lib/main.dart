@@ -52,6 +52,7 @@ class MyApp extends StatelessWidget {
 
     return MultiProvider(
       providers: [
+        ChangeNotifierProvider(create: (_) => AuthViewModel()),
         ChangeNotifierProvider(create: (_) => TutorViewModel(UserRepository())),
         ChangeNotifierProvider(create: (_) => SkillsViewModel()..loadSkills()),
         ChangeNotifierProvider(create: (_) => ReservationDetailViewModel()),
