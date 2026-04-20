@@ -56,6 +56,7 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => SkillsViewModel()..loadSkills()),
         ChangeNotifierProvider(create: (_) => ReservationDetailViewModel()),
         ChangeNotifierProvider(create: (_) => ReservationGatewayViewModel()),
+        ChangeNotifierProvider(create: (_) => AuthViewModel()..initState()),
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
@@ -66,47 +67,23 @@ class MyApp extends StatelessWidget {
         // LOGIN SWITCH
         // ---------------------------
         home: SKIP_LOGIN
-            ? const WidgetTree() // entra directo sin login
-            : StreamBuilder<User?>(
-                stream: FirebaseAuth.instance.authStateChanges(),
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
+          ? const WidgetTree()
+          : Consumer<AuthViewModel>(
+              builder: (context, authVM, _) {
+                switch (authVM.authState) {
+                  case AuthState.loading:
                     return const Scaffold(
                       body: Center(child: CircularProgressIndicator()),
                     );
-                  }
-
-                  if (!snapshot.hasData) {
+                  case AuthState.login:
                     return const LoginRegistPage();
-                  }
-
-                  final authVM = AuthViewModel();
-
-                  return FutureBuilder<AuthState>(
-                    future: authVM.handleLogin(),
-                    builder: (context, snap) {
-                      if (!snap.hasData) {
-                        return Scaffold(
-                          body: Center(
-                            child: CircularProgressIndicator(),
-                          ),
-                        );
-                      }
-
-                      switch (snap.data!) {
-                        case AuthState.selectSkills:
-                          return const SelectSkills();
-
-                        case AuthState.home:
-                          return const WidgetTree();
-
-                        default:
-                          return const LoginRegistPage();
-                      }
-                    },
-                  );
-                },
-              ),
+                  case AuthState.selectSkills:
+                    return const SelectSkills();
+                  case AuthState.home:
+                    return const WidgetTree();
+                }
+              },
+            ),
       ),
     );
   }
