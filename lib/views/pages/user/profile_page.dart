@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:g45_flutter/models/user.dart';
 import 'package:g45_flutter/repositories/user_repository.dart';
 import 'package:g45_flutter/viewmodels/auth.dart';
+import 'package:g45_flutter/views/pages/user/pqr_page.dart';
 import 'package:g45_flutter/widgets/profile/profile_extra_info.dart';
 import 'package:g45_flutter/widgets/profile/profile_header.dart';
 import 'package:g45_flutter/widgets/profile/profile_options.dart';
@@ -130,63 +131,71 @@ class _ProfilePageState extends State<ProfilePage> {
     return Scaffold(
       backgroundColor: Colors.black,
       body: SafeArea(
-        child: Column(
-          children: [
-            //-------------------------------------
-            // HEADER
-            //-------------------------------------
-            ProfileHeader(user: user!),
-
-            //-------------------------------------
-            // STATS
-            //-------------------------------------
-            ProfileStats(user: user!),
-
-            //-------------------------------------
-            // EXTRA INFO
-            //-------------------------------------
-            ProfileExtraInfo(user: user!),
-
-            //-------------------------------------
-            // OPTIONS
-            //-------------------------------------
-            ProfileOptions(
-              onReservationsTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => const ReservationHistoryPage(),
-                  ),
-                );
-              },
-              onReviewsTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => const ReviewsPage()),
-                );
-              },
-              onFavoritesTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => const FavoritesPage()),
-                );
-              },
-            ),
-
-            //-------------------------------------
-            // LOGOUT
-            //-------------------------------------
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: ElevatedButton(
-                onPressed: () async {
-                  //await authVM.logout();
+        child: SingleChildScrollView(
+          child: Column(
+            children: [
+              //-------------------------------------
+              // HEADER
+              //-------------------------------------
+              ProfileHeader(user: user!),
+          
+              //-------------------------------------
+              // STATS
+              //-------------------------------------
+              ProfileStats(user: user!),
+          
+              //-------------------------------------
+              // EXTRA INFO
+              //-------------------------------------
+              ProfileExtraInfo(user: user!),
+          
+              //-------------------------------------
+              // OPTIONS
+              //-------------------------------------
+              ProfileOptions(
+                onReservationsTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const ReservationHistoryPage(),
+                    ),
+                  );
                 },
-                style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-                child: const Text("Cerrar Sesión"),
+                onReviewsTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const ReviewsPage()),
+                  );
+                },
+                onFavoritesTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const FavoritesPage()),
+                  );
+                },
+                onPqrTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const PqrPage()),
+                  );
+                },
               ),
-            ),
-          ],
+          
+              //-------------------------------------
+              // LOGOUT
+              //-------------------------------------
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: ElevatedButton(
+                  onPressed: () async {
+                    //await authVM.logout();
+                  },
+                  style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                  child: const Text("Cerrar Sesión"),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
