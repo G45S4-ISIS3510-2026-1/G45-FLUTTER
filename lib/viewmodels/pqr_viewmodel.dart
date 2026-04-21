@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:g45_flutter/viewmodels/auth.dart';
 import '../repositories/pqr_repository.dart';
 
 class PqrViewModel extends ChangeNotifier {
@@ -37,6 +38,17 @@ class PqrViewModel extends ChangeNotifier {
     }
 
     //-------------------------------------
+    // OBTENER USUARIO REAL
+    //-------------------------------------
+    final user = await AuthViewModel().getUserCache();
+
+    if (user == null) {
+      _errorMessage = "Usuario no disponible";
+      notifyListeners();
+      return false;
+    }
+
+    //-------------------------------------
     // LOADING
     //-------------------------------------
     _isLoading = true;
@@ -48,7 +60,7 @@ class PqrViewModel extends ChangeNotifier {
       // LLAMAR REPOSITORY
       //-------------------------------------
       await _repo.createPqr(
-        userId: "123", // TODO:Conectar con Auth para obtener ID real
+        userId: user.id,
         type: type,
         description: description,
         sessionId: sessionId,

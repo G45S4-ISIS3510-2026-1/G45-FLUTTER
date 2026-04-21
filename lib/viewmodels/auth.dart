@@ -33,7 +33,7 @@ class AuthViewModel extends ChangeNotifier {
       }
 
       try {
-        // 🔥 importante para redirect login
+        // importante para redirect login
         await firebaseUser.reload();
 
         userCache = await userInCache();

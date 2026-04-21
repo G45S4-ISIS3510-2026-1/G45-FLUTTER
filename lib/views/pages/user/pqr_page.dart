@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:g45_flutter/services/analytics_service.dart';
 import 'package:g45_flutter/viewmodels/pqr_viewmodel.dart';
 import 'package:provider/provider.dart';
 
@@ -10,12 +11,25 @@ class PqrPage extends StatefulWidget {
 }
 
 class _PqrPageState extends State<PqrPage> {
+  //----------------------------------
+  // INIT
+  //----------------------------------
+
+  @override
+  void initState() {
+    super.initState();
+
+    //----------------------------------
+    // TAG DE SERVICIO (Crashlytics)
+    //----------------------------------
+    AnalyticsService.instance.setCurrentService("pqr");
+  }
+
   //-------------------------------------
   // STATE
   //-------------------------------------
   String? selectedType;
-  final TextEditingController descriptionController =
-      TextEditingController();
+  final TextEditingController descriptionController = TextEditingController();
 
   int? selectedSessionIndex;
 
@@ -52,8 +66,10 @@ class _PqrPageState extends State<PqrPage> {
                     Row(
                       children: [
                         IconButton(
-                          icon:
-                              const Icon(Icons.arrow_back, color: Colors.white),
+                          icon: const Icon(
+                            Icons.arrow_back,
+                            color: Colors.white,
+                          ),
                           onPressed: () => Navigator.pop(context),
                         ),
                         const SizedBox(width: 8),
@@ -94,12 +110,15 @@ class _PqrPageState extends State<PqrPage> {
                         style: TextStyle(color: Colors.white54),
                       ),
                       items: const [
+                        DropdownMenuItem(value: "queja", child: Text("Queja")),
                         DropdownMenuItem(
-                            value: "queja", child: Text("Queja")),
+                          value: "reclamo",
+                          child: Text("Reclamo"),
+                        ),
                         DropdownMenuItem(
-                            value: "reclamo", child: Text("Reclamo")),
-                        DropdownMenuItem(
-                            value: "peticion", child: Text("Petición")),
+                          value: "peticion",
+                          child: Text("Petición"),
+                        ),
                       ],
                       onChanged: (value) {
                         setState(() {
@@ -150,7 +169,9 @@ class _PqrPageState extends State<PqrPage> {
                         Text(
                           "OPCIONAL",
                           style: TextStyle(
-                              color: Colors.blueAccent, fontSize: 12),
+                            color: Colors.blueAccent,
+                            fontSize: 12,
+                          ),
                         ),
                       ],
                     ),
@@ -187,12 +208,18 @@ class _PqrPageState extends State<PqrPage> {
                                 Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Text(session["title"]!,
-                                        style: const TextStyle(
-                                            color: Colors.white)),
-                                    Text("Tutor: ${session["tutor"]}",
-                                        style: const TextStyle(
-                                            color: Colors.white54)),
+                                    Text(
+                                      session["title"]!,
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                    Text(
+                                      "Tutor: ${session["tutor"]}",
+                                      style: const TextStyle(
+                                        color: Colors.white54,
+                                      ),
+                                    ),
                                   ],
                                 ),
                                 const Spacer(),
@@ -222,23 +249,28 @@ class _PqrPageState extends State<PqrPage> {
                             : () async {
                                 final success = await vm.sendPqr(
                                   type: selectedType,
-                                  description:
-                                      descriptionController.text,
-                                  sessionId:
-                                      selectedSessionIndex?.toString(),
+                                  description: descriptionController.text,
+                                  sessionId: selectedSessionIndex?.toString(),
                                 );
 
                                 if (success) {
+                                  await AnalyticsService.instance.logEvent('pqr_submit', {
+                                    'type': selectedType,
+                                    'has_description': descriptionController.text.isNotEmpty,
+                                    'has_session': selectedSessionIndex != null,
+                                  });
                                   ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                        content:
-                                            Text("PQR enviada correctamente")),
+                                    const SnackBar(content: Text("PQR enviada correctamente")),
                                   );
+                                  // Clear form after successful submission
+                                  setState(() {
+                                    selectedType = null;
+                                    descriptionController.clear();
+                                    selectedSessionIndex = null;
+                                  });
                                 } else {
                                   ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                        content: Text(
-                                            vm.errorMessage ?? "Error")),
+                                    SnackBar(content: Text(vm.errorMessage ?? "Error")),
                                   );
                                 }
                               },
@@ -248,8 +280,7 @@ class _PqrPageState extends State<PqrPage> {
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(30),
                           ),
-                          padding:
-                              const EdgeInsets.symmetric(vertical: 16),
+                          padding: const EdgeInsets.symmetric(vertical: 16),
                         ),
                         child: vm.isLoading
                             ? const CircularProgressIndicator(
@@ -257,8 +288,7 @@ class _PqrPageState extends State<PqrPage> {
                               )
                             : const Text(
                                 "Enviar Reporte >",
-                                style:
-                                    TextStyle(fontWeight: FontWeight.bold),
+                                style: TextStyle(fontWeight: FontWeight.bold),
                               ),
                       ),
                     ),
@@ -270,8 +300,7 @@ class _PqrPageState extends State<PqrPage> {
                     //-------------------------------------
                     const Text(
                       "Tu reporte será revisado por el equipo administrativo en un plazo de 24 a 48 horas hábiles.",
-                      style:
-                          TextStyle(color: Colors.white54, fontSize: 12),
+                      style: TextStyle(color: Colors.white54, fontSize: 12),
                       textAlign: TextAlign.center,
                     ),
                   ],

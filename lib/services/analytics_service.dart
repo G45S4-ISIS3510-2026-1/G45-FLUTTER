@@ -4,6 +4,7 @@ import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:g45_flutter/config/api_config.dart';
 import 'package:http/http.dart' as http;
+import 'package:g45_flutter/viewmodels/auth.dart';
 
 class AnalyticsService {
   static final AnalyticsService instance = AnalyticsService._();
@@ -49,11 +50,13 @@ class AnalyticsService {
 
   Future<void> _post(String eventType, Map<String, dynamic> metadata) async {
     try {
+      final user = AuthViewModel().userCache;
+
       await http.post(
         Uri.parse('${ApiConfig.analyticsUrl}/analytics/event'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
-          'user_id': 'flutter_user',
+          'user_id': user?.id ?? 'anonymous',
           'event_type': eventType,
           'metadata': metadata,
           'timestamp': DateTime.now().toIso8601String(),
@@ -61,4 +64,7 @@ class AnalyticsService {
       );
     } catch (_) {}
   }
+  Future<void> setUserId(String userId) async {
+  await _fa.setUserId(id: userId);
+}
 }
