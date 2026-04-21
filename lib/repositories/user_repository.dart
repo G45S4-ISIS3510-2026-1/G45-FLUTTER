@@ -77,7 +77,7 @@ class UserRepository {
     );
 
     if (resp.statusCode != 201) {
-      print("❌ BACKEND ERROR: ${resp.body}");
+      print("BACKEND ERROR: ${resp.body}");
       throw Exception("Error creando usuario en backend");
     }
 
