@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:g45_flutter/models/user.dart';
 import 'package:g45_flutter/repositories/user_repository.dart';
+import 'package:g45_flutter/services/conection_service.dart';
 import 'package:g45_flutter/viewmodels/auth.dart';
 import 'package:g45_flutter/widgets/profile/profile_extra_info.dart';
 import 'package:g45_flutter/widgets/profile/profile_header.dart';
@@ -28,6 +29,7 @@ class ProfilePage extends StatefulWidget {
 
 class _ProfilePageState extends State<ProfilePage> {
   final UserRepository _userRepo = UserRepository();
+  final authVM = AuthViewModel();
 
   User? user;
   bool isLoading = true;
@@ -179,8 +181,10 @@ class _ProfilePageState extends State<ProfilePage> {
             Padding(
               padding: const EdgeInsets.all(16),
               child: ElevatedButton(
-                onPressed: () async {
-                  //await authVM.logout();
+                onPressed: () {
+                  ConnectionService().checkAndExecute(context, () async {
+                    await authVM.logout();
+                  });
                 },
                 style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
                 child: const Text("Cerrar Sesión"),

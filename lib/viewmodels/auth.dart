@@ -1,8 +1,7 @@
-// ignore_for_file: prefer_conditional_assignment
-
 import 'dart:convert';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:g45_flutter/services/conection_service.dart';
 import '../repositories/user_repository.dart';
 import '../models/user.dart' as u;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -29,34 +28,40 @@ class AuthViewModel extends ChangeNotifier {
 
   void startListening() {
     FirebaseAuth.instance.authStateChanges().listen((user) async {
-      // await FirebaseAuth.instance.signOut();
+      setAuthState(AuthState.loading);
+
       if (user == null) {
         setAuthState(AuthState.login);
         return;
       }
 
-      userCache = await userInCache();
-      if (userCache == null) {
-        await syncWithBackend(user);
-      } else {
+      userCache = await getUserCache();
+
+      if (userCache != null && !ConnectionService().hasConnection) {
         resolveState();
+        return;
       }
+
+      await syncWithBackend(user);
     });
   }
 
   Future<void> updateUserInterestedSkills(u.User user, String major) async {
-    final updatedUser = await repository.updateUserInterestedSkills(user, major);
-    if (updatedUser != null) {
-      userCache = updatedUser;
-      await saveUserInCache(updatedUser);
+    setAuthState(AuthState.loading);
+
+    try {
+      final updatedUser = await repository.updateUserInterestedSkills(user, major);
+      if (updatedUser != null) {
+        userCache = updatedUser;
+        await saveUserInCache(updatedUser);
+        resolveState();
+      } else {
+        resolveState();
+      }
+    } catch (e) {
+      errorMessage = 'Error al guardar carrera: $e';
       resolveState();
     }
-  }
-
-  Future<u.User?> getUserCache() async {
-    if (userCache != null) return userCache;
-    userCache = await userInCache();
-    return userCache;
   }
 
   Future<void> saveUserInCache(u.User user) async {
@@ -64,7 +69,7 @@ class AuthViewModel extends ChangeNotifier {
     await prefs.setString('usuario', jsonEncode(user.toJson()));
   }
 
-  Future<u.User?> userInCache() async {
+  Future<u.User?> getUserCache() async {
     final prefs = await SharedPreferences.getInstance();
     final userData = prefs.getString('usuario');
     if (userData == null) return null;
@@ -75,7 +80,7 @@ class AuthViewModel extends ChangeNotifier {
     try {
       u.User? backendUser = await repository.findUser(firebaseUser.email ?? '');
 
-      if(backendUser == null) {
+      if (backendUser == null) {
         backendUser = await repository.createUser(
           firebaseUser.uid,
           firebaseUser.displayName ?? 'Usuario',
@@ -87,7 +92,6 @@ class AuthViewModel extends ChangeNotifier {
       await saveUserInCache(backendUser);
       resolveState();
     } catch (e) {
-      // Si el usuario fue borrado de Firebase
       await FirebaseAuth.instance.signOut();
       final prefs = await SharedPreferences.getInstance();
       await prefs.remove('usuario');
@@ -107,5 +111,16 @@ class AuthViewModel extends ChangeNotifier {
   void setAuthState(AuthState newState) {
     _authState = newState;
     notifyListeners();
+  }
+
+  Future<void> logout() async {
+    setAuthState(AuthState.loading);
+
+    await FirebaseAuth.instance.signOut();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove('usuario');
+    userCache = null;
+
+    setAuthState(AuthState.login);
   }
 }

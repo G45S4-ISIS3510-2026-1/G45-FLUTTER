@@ -45,7 +45,9 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
-    cargarDatos(); // Cargamos el usuario apenas entre a la página
+    Future.microtask(() async {
+      await cargarDatos();
+    });
     Future.microtask(() {
       Provider.of<TutorViewModel>(context, listen: false).loadTutors();
     });
@@ -55,13 +57,12 @@ class _HomePageState extends State<HomePage> {
     u.User? user = await authVM.getUserCache();
     print(user);
     if (user != null) {
+      nombre = user.name;
       final listaSesiones = await sessionVM.getSessionsByStudent(user.id);
       setState(() {
-        nombre = user.name;
         sesiones = listaSesiones;
       });
     }
-    // await FirebaseAuth.instance.signOut();
   }
 
   @override

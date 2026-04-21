@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:flutter/material.dart';
 import 'package:internet_connection_checker_plus/internet_connection_checker_plus.dart';
 
 class ConnectionService {
@@ -42,6 +43,23 @@ class ConnectionService {
   void updateStateConnection(bool newState) {
     hasConnection = newState;
     connectionController.add(newState);
+  }
+
+  Future<bool> checkAndExecute(BuildContext context, Future<void> Function() action) async {
+    await checkRealConnection();
+
+    if (!hasConnection) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Sin conexión a internet'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return false;
+    }
+
+    await action();
+    return true;
   }
 
 }
