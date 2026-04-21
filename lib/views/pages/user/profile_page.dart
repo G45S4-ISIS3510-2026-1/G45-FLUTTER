@@ -11,14 +11,15 @@ import 'package:provider/provider.dart';
 import 'package:g45_flutter/views/pages/user/reservation_history_page.dart';
 import 'package:g45_flutter/views/pages/user/reviews_page.dart';
 import 'package:g45_flutter/views/pages/user/favorites_page.dart';
+import 'package:g45_flutter/views/pages/tutor/become_tutor.dart';
 
 // -------------------------------------
 // DEV FLAG
 // true = no llama backend
 // false = flujo normal
 // -------------------------------------
-const bool SKIP_PROFILE_FETCH = true; // no llama backend
-const bool DEV_MODE = true; // permite mock si no hay cache
+const bool SKIP_PROFILE_FETCH = false; // no llama backend
+const bool DEV_MODE = false; // permite mock si no hay cache
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -123,14 +124,14 @@ class _ProfilePageState extends State<ProfilePage> {
 
   @override
   Widget build(BuildContext context) {
-    //final authVM = Provider.of<AuthViewModel>(context);
+    final authVM = Provider.of<AuthViewModel>(context);
 
     if (isLoading || user == null) {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: Colors.transparent,
       body: SafeArea(
         child: Column(
           children: [
@@ -139,6 +140,52 @@ class _ProfilePageState extends State<ProfilePage> {
             //-------------------------------------
             ProfileHeader(user: user!),
 
+            //-------------------------------------
+            // VOLVERSE TUTOR O VER AGENDA
+            //-------------------------------------
+            if (user!.isTutoring)
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                child: SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: () {
+                      // navegar a agenda
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFFFFD15C),
+                      foregroundColor: Colors.black,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10)),
+                    ),
+                    child: const Text("Ver agenda de tutor"),
+                  ),
+                ),
+              )
+            else
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                child: SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => const BecomeTutor()),
+                      );
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFFFFD15C),
+                      foregroundColor: Colors.black,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10)),
+                    ),
+                    child: const Text("Conviertete en tutor!"),
+                  ),
+                ),
+              ),
             //-------------------------------------
             // STATS
             //-------------------------------------
