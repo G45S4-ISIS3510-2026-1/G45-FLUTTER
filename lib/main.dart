@@ -1,9 +1,5 @@
-import 'dart:ui';
-
-import 'package:firebase_analytics/firebase_analytics.dart';
-import 'package:firebase_core/firebase_core.dart';
-import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/material.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:g45_flutter/core/theme.dart';
 import 'package:g45_flutter/firebase_options.dart';
 import 'package:g45_flutter/repositories/user_repository.dart';
@@ -18,29 +14,26 @@ import 'package:g45_flutter/views/widget_tree.dart';
 import 'package:provider/provider.dart';
 
 // ---------------------------
-// CAMBIAR AQUÍ
-// true = salta login
-// false = usa Firebase normal
+// CAMBIAR AQUÍ PARA SALTAR LOGIN
 // ---------------------------
-const bool SKIP_LOGIN = true;
+const bool SKIP_LOGIN = false;
 
+// ---------------------------
+// MAIN 
+// ---------------------------
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
 
-  // BQ1: capture all Flutter and platform errors
-  FlutterError.onError = FirebaseCrashlytics.instance.recordFlutterFatalError;
-  PlatformDispatcher.instance.onError = (error, stack) {
-    FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
-    return true;
-  };
-
-  final FirebaseAnalytics analytics = FirebaseAnalytics.instance;
-  await analytics.setAnalyticsCollectionEnabled(true);
   runApp(const MyApp());
 }
 
+// ---------------------------
+// APP
+// ---------------------------
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
@@ -50,21 +43,19 @@ class MyApp extends StatelessWidget {
 
     return MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (_) => AuthViewModel()),
+        ChangeNotifierProvider(
+          create: (_) => AuthViewModel()..initState(),
+        ),
         ChangeNotifierProvider(create: (_) => TutorViewModel(UserRepository())),
         ChangeNotifierProvider(create: (_) => SkillsViewModel()..loadSkills()),
         ChangeNotifierProvider(create: (_) => ReservationDetailViewModel()),
         ChangeNotifierProvider(create: (_) => ReservationGatewayViewModel()),
-        ChangeNotifierProvider(create: (_) => AuthViewModel()..initState()),
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
         title: 'Flutter Demo',
         theme: materialTheme.dark(),
 
-        // ---------------------------
-        // LOGIN SWITCH
-        // ---------------------------
         home: SKIP_LOGIN
             ? const WidgetTree()
             : Consumer<AuthViewModel>(
@@ -74,10 +65,13 @@ class MyApp extends StatelessWidget {
                       return const Scaffold(
                         body: Center(child: CircularProgressIndicator()),
                       );
+
                     case AuthState.login:
                       return const LoginRegistPage();
+
                     case AuthState.selectSkills:
                       return const SelectSkills();
+
                     case AuthState.home:
                       return const WidgetTree();
                   }

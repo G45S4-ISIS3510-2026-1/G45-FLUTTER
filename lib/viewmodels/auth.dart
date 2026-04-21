@@ -15,37 +15,42 @@ enum AuthState {
 class AuthViewModel extends ChangeNotifier {
   final repository = UserRepository();
 
-  static final AuthViewModel instance = AuthViewModel.internal();
-  factory AuthViewModel() => instance;
-  AuthViewModel.internal();
-
-  // ── Estado observable ──────────────────────────────────────
   AuthState _authState = AuthState.loading;
   AuthState get authState => _authState;
 
   u.User? userCache;
   String? errorMessage;
 
-  // ── Inicialización ─────────────────────────────────────────
-  Future<void> initState() async {
+  // ── INIT (REACTIVO) ───────────────────────────────────────
+  void initState() {
     setAuthState(AuthState.loading);
 
-    final user = FirebaseAuth.instance.currentUser;
-    if (user == null) {
-      setAuthState(AuthState.login);
-      return;
-    }
+    FirebaseAuth.instance.idTokenChanges().listen((firebaseUser) async {
+      if (firebaseUser == null) {
+        userCache = null;
+        setAuthState(AuthState.login);
+        return;
+      }
 
-    userCache = await userInCache();
+      try {
+        // 🔥 importante para redirect login
+        await firebaseUser.reload();
 
-    if (userCache == null) {
-      await syncWithBackend(user);
-    } else {
-      resolveState();
-    }
+        userCache = await userInCache();
+
+        if (userCache == null) {
+          await syncWithBackend(firebaseUser);
+        } else {
+          resolveState();
+        }
+      } catch (e) {
+        errorMessage = "Error auth: $e";
+        setAuthState(AuthState.login);
+      }
+    });
   }
 
-  // ── Skills ─────────────────────────────────────────────────
+  // ── SKILLS ────────────────────────────────────────────────
   Future<void> updateUserInterestedSkills(u.User user, String major) async {
     final updatedUser = await repository.updateUserInterestedSkills(user, major);
     if (updatedUser != null) {
@@ -61,7 +66,7 @@ class AuthViewModel extends ChangeNotifier {
     return userCache;
   }
 
-  // ── Caché ──────────────────────────────────────────────────
+  // ── CACHE ────────────────────────────────────────────────
   Future<void> saveUserInCache(u.User user) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('usuario', jsonEncode(user.toJson()));
@@ -74,10 +79,11 @@ class AuthViewModel extends ChangeNotifier {
     return u.User.fromJson(jsonDecode(userData));
   }
 
-  // ── Privados ───────────────────────────────────────────────
+  // ── BACKEND ───────────────────────────────────────────────
   Future<void> syncWithBackend(User firebaseUser) async {
     try {
-      u.User? backendUser = await repository.findUser(firebaseUser.email ?? '');
+      u.User? backendUser =
+          await repository.findUser(firebaseUser.email ?? '');
 
       backendUser ??= await repository.createUser(
         firebaseUser.uid,
@@ -94,15 +100,28 @@ class AuthViewModel extends ChangeNotifier {
     }
   }
 
+  // ── STATE LOGIC ───────────────────────────────────────────
   void resolveState() {
     final next = (userCache?.interestedSkills.isEmpty ?? true)
         ? AuthState.selectSkills
         : AuthState.home;
+
     setAuthState(next);
   }
 
   void setAuthState(AuthState newState) {
     _authState = newState;
     notifyListeners();
+  }
+
+  // ── LOGOUT ────────────────────────────────────────────────
+  Future<void> logout() async {
+    await FirebaseAuth.instance.signOut();
+    userCache = null;
+
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove('usuario');
+
+    setAuthState(AuthState.login);
   }
 }
