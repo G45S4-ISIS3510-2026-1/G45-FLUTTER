@@ -91,8 +91,6 @@ class _ReservationGatewayPageState extends State<ReservationGatewayPage> {
     return [];
   }
 
-  String studentId = AuthViewModel.instance.userCache!.id;
-
   List<DateTime> getNextDays() {
     return List.generate(
       5,
@@ -228,6 +226,16 @@ class _ReservationGatewayPageState extends State<ReservationGatewayPage> {
               ),
               ElevatedButton(
                 onPressed: () async {
+                  final authVM = Provider.of<AuthViewModel>(
+                    context,
+                    listen: false,
+                  );
+                  if (authVM.userCache == null) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Usuario no cargado')),
+                    );
+                    return;
+                  }
                   if (selectedDate == null) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(content: Text('Por favor seleccione una fecha')),
@@ -273,7 +281,7 @@ class _ReservationGatewayPageState extends State<ReservationGatewayPage> {
                     },
                     scheduledAt: selectedDate!,
                     status: 'Pendiente',
-                    studentId: studentId,
+                    studentId: authVM.userCache!.id,
                     tutorId: widget.tutor.id.toString(),
                     verifCode: '',
                   );
