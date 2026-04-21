@@ -1,6 +1,8 @@
+import 'dart:ui';
+
 import 'package:firebase_analytics/firebase_analytics.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/material.dart';
 import 'package:g45_flutter/core/theme.dart';
 import 'package:g45_flutter/firebase_options.dart';
@@ -25,21 +27,17 @@ const bool SKIP_LOGIN = true;
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  try {
-    if (Firebase.apps.isEmpty) {
-      await Firebase.initializeApp(
-        options: DefaultFirebaseOptions.currentPlatform,
-      );
-    }
-  } catch (e) {
-    if (!e.toString().contains('duplicate-app')) {
-      rethrow;
-    }
-  }
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+
+  // BQ1: capture all Flutter and platform errors
+  FlutterError.onError = FirebaseCrashlytics.instance.recordFlutterFatalError;
+  PlatformDispatcher.instance.onError = (error, stack) {
+    FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
+    return true;
+  };
 
   final FirebaseAnalytics analytics = FirebaseAnalytics.instance;
   await analytics.setAnalyticsCollectionEnabled(true);
-
   runApp(const MyApp());
 }
 
@@ -68,23 +66,23 @@ class MyApp extends StatelessWidget {
         // LOGIN SWITCH
         // ---------------------------
         home: SKIP_LOGIN
-          ? const WidgetTree()
-          : Consumer<AuthViewModel>(
-              builder: (context, authVM, _) {
-                switch (authVM.authState) {
-                  case AuthState.loading:
-                    return const Scaffold(
-                      body: Center(child: CircularProgressIndicator()),
-                    );
-                  case AuthState.login:
-                    return const LoginRegistPage();
-                  case AuthState.selectSkills:
-                    return const SelectSkills();
-                  case AuthState.home:
-                    return const WidgetTree();
-                }
-              },
-            ),
+            ? const WidgetTree()
+            : Consumer<AuthViewModel>(
+                builder: (context, authVM, _) {
+                  switch (authVM.authState) {
+                    case AuthState.loading:
+                      return const Scaffold(
+                        body: Center(child: CircularProgressIndicator()),
+                      );
+                    case AuthState.login:
+                      return const LoginRegistPage();
+                    case AuthState.selectSkills:
+                      return const SelectSkills();
+                    case AuthState.home:
+                      return const WidgetTree();
+                  }
+                },
+              ),
       ),
     );
   }
