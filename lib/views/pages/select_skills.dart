@@ -31,22 +31,24 @@ class _SelectSkillsState extends State<SelectSkills> {
   }
 
   Future<void> saveSelectedMajor(String selectedMajor) async {
-    u.User? miUsuario = await authVM.getUsuarioCache();
+    u.User? miUsuario = await authVM.getUserCache();
     final theme = Theme.of(context);
 
-    if(miUsuario == null) {
+    if (miUsuario == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text("Error: Usuario no encontrado en cache"),
           backgroundColor: theme.colorScheme.onSurface,
         ),
       );
-      return ;
+      return;
     }
 
-    final resp = await authVM.updateUsuarioInterestedSkills(miUsuario, selectedMajor);
+    await authVM.updateUserInterestedSkills(miUsuario, selectedMajor);
 
-    if (resp != null) {
+    final updated = await authVM.getUserCache();
+
+    if (updated != null && updated.interestedSkills.isNotEmpty) {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -54,13 +56,12 @@ class _SelectSkillsState extends State<SelectSkills> {
             backgroundColor: theme.colorScheme.primary,
           ),
         );
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (context) => const WidgetTree()),
+          (route) => false,
+        );
       }
-      Navigator.pushAndRemoveUntil(
-        context,
-        MaterialPageRoute(builder: (context) => const WidgetTree()),
-        (route) => false,
-      );
-
     } else {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -71,8 +72,6 @@ class _SelectSkillsState extends State<SelectSkills> {
         );
       }
     }
-
-
   }
 
 

@@ -7,7 +7,13 @@ class TutorViewModel extends ChangeNotifier {
 
   List<TutorSummary> tutors = [];
   bool isLoading = false;
+  bool _isFetchingMore = false;
   String? errorMessage;
+
+  int _limit = 20;
+
+  int get limit => _limit;
+  bool get isFetchingMore => _isFetchingMore;
 
   TutorViewModel(this.repo);
 
@@ -20,6 +26,7 @@ class TutorViewModel extends ChangeNotifier {
 
     isLoading = true;
     errorMessage = null;
+    _limit = 20;
     notifyListeners();
 
     try {
@@ -27,6 +34,7 @@ class TutorViewModel extends ChangeNotifier {
         name: name,
         skillIds: skillIds,
         major: major,
+        limit: _limit,
       );
     } catch (e) {
       errorMessage = "Error cargando tutores";
@@ -34,6 +42,29 @@ class TutorViewModel extends ChangeNotifier {
     }
 
     isLoading = false;
+    notifyListeners();
+  }
+
+  Future<void> loadMoreTutors() async {
+    if (_isFetchingMore) return;
+
+    _isFetchingMore = true;
+    _limit += 20;
+
+    try {
+      final newTutors = await repo.getTutors(limit: _limit);
+
+      if (newTutors.length == tutors.length) {
+        _isFetchingMore = false;
+        return;
+      }
+
+      tutors = newTutors;
+    } catch (e) {
+      errorMessage = "Error cargando más tutores";
+    }
+
+    _isFetchingMore = false;
     notifyListeners();
   }
 }

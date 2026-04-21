@@ -3,7 +3,7 @@ import 'dart:ui';
 import 'package:g45_flutter/models/user.dart';
 
 class TutorInfoSection extends StatefulWidget {
-   final User tutor;
+  final User tutor;
 
   const TutorInfoSection({super.key, required this.tutor});
 
@@ -11,7 +11,8 @@ class TutorInfoSection extends StatefulWidget {
   State<TutorInfoSection> createState() => _TutorInfoSectionState();
 }
 
-class _TutorInfoSectionState extends State<TutorInfoSection> {//necesito quitar censura por eso statefull
+class _TutorInfoSectionState extends State<TutorInfoSection> {
+  //necesito quitar censura por eso statefull
   bool isUnlocked = false;
   @override
   Widget build(BuildContext context) {
@@ -91,6 +92,7 @@ class _TutorInfoSectionState extends State<TutorInfoSection> {//necesito quitar 
                       padding: const EdgeInsets.symmetric(horizontal: 16),
                       child: Text(
                         "Información de contacto oculta",
+                        textAlign: TextAlign.center,
                         style: TextStyle(
                           color: Colors.white,
                           fontSize: 18,
@@ -99,12 +101,14 @@ class _TutorInfoSectionState extends State<TutorInfoSection> {//necesito quitar 
                       ),
                     ),
                     SizedBox(height: 8),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      child: Text(
-                        "Reserva una sesión para entrar en contacto con el tutor",
-                        textAlign: TextAlign.center,
-                        style: TextStyle(color: Colors.white70),
+                    Flexible(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        child: Text(
+                          "Reserva una sesión para entrar en contacto con el tutor",
+                          textAlign: TextAlign.center,
+                          style: TextStyle(color: Colors.white70),
+                        ),
                       ),
                     ),
                   ],

@@ -123,9 +123,12 @@ class TutorCard extends StatelessWidget {
             Row(
               children: [
                 //Rating
+                Icon(Icons.star, color: Colors.amber, size: 18),
+                SizedBox(width: 4),
                 Text(
-                  "⭐ ",
-                  //"⭐ ${tutor["rating"]}",
+                  (tutor.rating ?? 0) == 0
+                      ? "Nuevo"
+                      : tutor.rating!.toStringAsFixed(1),
                   style: TextStyle(color: Colors.white),
                 ),
                 Spacer(),

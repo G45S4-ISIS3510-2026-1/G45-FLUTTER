@@ -15,14 +15,31 @@ import 'package:g45_flutter/views/pages/select_skills.dart';
 import 'package:g45_flutter/views/widget_tree.dart';
 import 'package:provider/provider.dart';
 
+// ---------------------------
+// CAMBIAR AQUÍ
+// true = salta login
+// false = usa Firebase normal
+// ---------------------------
+const bool SKIP_LOGIN = true;
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  try {
+    if (Firebase.apps.isEmpty) {
+      await Firebase.initializeApp(
+        options: DefaultFirebaseOptions.currentPlatform,
+      );
+    }
+  } catch (e) {
+    if (!e.toString().contains('duplicate-app')) {
+      rethrow;
+    }
+  }
 
   final FirebaseAnalytics analytics = FirebaseAnalytics.instance;
-
   await analytics.setAnalyticsCollectionEnabled(true);
+
   runApp(const MyApp());
 }
 
@@ -35,55 +52,39 @@ class MyApp extends StatelessWidget {
 
     return MultiProvider(
       providers: [
+        ChangeNotifierProvider(create: (_) => AuthViewModel()),
         ChangeNotifierProvider(create: (_) => TutorViewModel(UserRepository())),
         ChangeNotifierProvider(create: (_) => SkillsViewModel()..loadSkills()),
         ChangeNotifierProvider(create: (_) => ReservationDetailViewModel()),
         ChangeNotifierProvider(create: (_) => ReservationGatewayViewModel()),
+        ChangeNotifierProvider(create: (_) => AuthViewModel()..initState()),
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
         title: 'Flutter Demo',
         theme: materialTheme.dark(),
-        //home: const WidgetTree(),
-        home: StreamBuilder<User?>(
-          stream: FirebaseAuth.instance.authStateChanges(),
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return const Scaffold(
-                body: Center(child: CircularProgressIndicator()),
-              );
-            }
 
-            if (!snapshot.hasData) {
-              return const LoginRegistPage();
-            }
-            final authVM = AuthViewModel();
-
-            return FutureBuilder<AuthState>(
-              future: authVM.handleLogin(),
-              builder: (context, snap) {
-                if (!snap.hasData) {
-                  return Scaffold(
-                    body: Center(
-                      child: CircularProgressIndicator()
-                    ),
-                  );
-                }
-
-                switch (snap.data!) {
+        // ---------------------------
+        // LOGIN SWITCH
+        // ---------------------------
+        home: SKIP_LOGIN
+          ? const WidgetTree()
+          : Consumer<AuthViewModel>(
+              builder: (context, authVM, _) {
+                switch (authVM.authState) {
+                  case AuthState.loading:
+                    return const Scaffold(
+                      body: Center(child: CircularProgressIndicator()),
+                    );
+                  case AuthState.login:
+                    return const LoginRegistPage();
                   case AuthState.selectSkills:
                     return const SelectSkills();
-
                   case AuthState.home:
                     return const WidgetTree();
-
-                  default:
-                    return const LoginRegistPage();
                 }
               },
-            );
-          },
-        ),
+            ),
       ),
     );
   }

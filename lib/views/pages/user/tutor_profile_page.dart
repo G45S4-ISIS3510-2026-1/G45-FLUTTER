@@ -28,6 +28,7 @@ class TutorProfilePage extends StatefulWidget {
 class _TutorProfilePageState extends State<TutorProfilePage> {
   User? tutor;
   bool isLoading = true;
+  bool showAllReviews = false;
 
   //ANALYTICS ENGINE
   final FirebaseAnalytics analytics = FirebaseAnalytics.instance;
@@ -115,16 +116,15 @@ class _TutorProfilePageState extends State<TutorProfilePage> {
     if (isLoading || tutor == null) {
       return Scaffold(body: Center(child: CircularProgressIndicator()));
     }
+    final reviewsToShow = showAllReviews
+        ? reviewsList
+        : reviewsList.take(2).toList();
     final skillsVM = Provider.of<SkillsViewModel>(context);
     final tutorSkills = tutor?.tutoringSkills ?? [];
     final skillNames = skillsVM.skills
         .where((skill) => tutorSkills.contains(skill.id))
         .map((skill) => skill.label ?? "")
         .toList();
-
-    if (isLoading || tutor == null) {
-      return Scaffold(body: Center(child: CircularProgressIndicator()));
-    }
     return Scaffold(
       body: SingleChildScrollView(
         //--------------------------------------------------
@@ -144,34 +144,49 @@ class _TutorProfilePageState extends State<TutorProfilePage> {
                     child: Image.network(
                       tutor!.profileImageUrl ?? "",
                       fit: BoxFit.cover,
-                      //por si falla imagen no mate toda la pagina
+                      filterQuality: FilterQuality.high, // 🔥 mejora render
                       errorBuilder: (context, error, stackTrace) {
-                        return Container(
-                          color: Colors.grey,
-                          child: Icon(Icons.person, size: 50),
-                        );
+                        return Container(color: Colors.black);
                       },
                     ),
                   ),
                   // 2. overlay (gradiente o sombra)
                   // 3. botones back + like
                   Positioned(
-                    //boton back (Derecha)
+                    // Botón de regreso (Derecha)
                     top: 40,
                     left: 16,
-                    child: IconButton(
-                      icon: Icon(Icons.arrow_back),
-                      onPressed: () => Navigator.pop(context),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(color: Colors.black26, blurRadius: 6),
+                        ],
+                      ),
+                      child: IconButton(
+                        icon: Icon(Icons.arrow_back, color: Colors.black),
+                        onPressed: () => Navigator.pop(context),
+                      ),
                     ),
                   ),
 
                   Positioned(
-                    //Boton like (Izquierda)
+                    // Botón de favorito (Izquierda)
                     top: 40,
                     right: 16,
-                    child: IconButton(
-                      icon: Icon(Icons.favorite_border),
-                      onPressed: () {},
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(color: Colors.black26, blurRadius: 6),
+                        ],
+                      ),
+                      child: IconButton(
+                        icon: Icon(Icons.favorite_border, color: Colors.black),
+                        onPressed: () {},
+                      ),
                     ),
                   ),
                   //4. info (nombre, carrera)
@@ -274,7 +289,10 @@ class _TutorProfilePageState extends State<TutorProfilePage> {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
-                        buildStat("PUNTAJE", "4.9 ⭐"),
+                        buildStat(
+                          "PUNTAJE",
+                          "${tutor!.tutorRating != null ? tutor!.tutorRating!.toStringAsFixed(1) : 'Nuevo'} ⭐",
+                        ),
                         buildDivider(),
                         buildStat("TUTORÍAS", "+120"),
                         buildDivider(),
@@ -330,19 +348,33 @@ class _TutorProfilePageState extends State<TutorProfilePage> {
                   SizedBox(height: 10),
 
                   // top 2 reviews
-                  Column(
-                    children: reviewsList.take(2).map((review) {
-                      // TODO: PARA LIMITAR A 2 RESEÑAS, CAMBIAR DESPUÉS A TODAS
-                      return ReviewCard(review: review);
-                    }).toList(),
-                  ),
+                  reviewsList.isEmpty
+                      ? Padding(
+                          padding: EdgeInsets.symmetric(vertical: 20),
+                          child: Text(
+                            "Este tutor aún no tiene reseñas",
+                            style: TextStyle(color: Colors.white70),
+                          ),
+                        )
+                      : Column(
+                          children: reviewsToShow.map((review) {
+                            return ReviewCard(review: review);
+                          }).toList(),
+                        ),
 
-                  TextButton(
-                    onPressed: () {
-                      // navegar a pantalla completa
-                    },
-                    child: Text("Ver todas las reseñas"),
-                  ),
+                  if (reviewsList.length > 2)
+                    TextButton(
+                      onPressed: () {
+                        setState(() {
+                          showAllReviews = !showAllReviews;
+                        });
+                      },
+                      child: Text(
+                        showAllReviews
+                            ? "Ver menos"
+                            : "Ver todas las reseñas (${reviewsList.length})",
+                      ),
+                    ),
 
                   SizedBox(height: 20),
                   //-----------------------------------------------------------------------

@@ -13,6 +13,7 @@ class User {
   final List<dynamic> paymentMethods;
   final int? sessionPrice;
   final String? profileImageUrl;
+  final double? tutorRating;
 
   User({
     required this.id,
@@ -29,6 +30,7 @@ class User {
     required this.paymentMethods,
     required this.sessionPrice,
     required this.profileImageUrl,
+    required this.tutorRating,
   });
 
   factory User.fromMock(Map<String, dynamic> json) {
@@ -65,6 +67,7 @@ class User {
             json["price"]?.toString().replaceAll(RegExp(r'[^0-9]'), '') ?? "",
           ),
       profileImageUrl: json["profileImageUrl"] ?? json["image"],
+      tutorRating: (json["tutorRating"] ?? json["rating"])?.toDouble(),
     );
   }
 
@@ -84,6 +87,7 @@ class User {
       paymentMethods: List<dynamic>.from(json["paymentMethods"]),
       sessionPrice: json["sessionPrice"],
       profileImageUrl: json["profileImageUrl"],
+      tutorRating: (json["tutorRating"] ?? json["rating"])?.toDouble(),
     );
   }
 
@@ -103,6 +107,7 @@ class User {
       "paymentMethods": paymentMethods,
       "sessionPrice": sessionPrice,
       "profileImageUrl": profileImageUrl,
+      "tutorRating": tutorRating,
     };
   }
 }

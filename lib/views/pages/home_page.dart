@@ -11,6 +11,8 @@ import 'package:g45_flutter/widgets/tutor_card.dart';
 import 'package:g45_flutter/widgets/tutor_card_small.dart';
 import 'package:provider/provider.dart';
 
+// import 'package:firebase_auth/firebase_auth.dart';
+// Ejecuta esto para limpiar la instancia actua
 import '../../viewmodels/auth.dart';
 
 class HomePage extends StatefulWidget {
@@ -49,7 +51,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future<void> cargarDatos() async {
-    u.User? user = await authVM.getUsuarioCache();
+    u.User? user = await authVM.getUserCache();
     if (user != null) {
       final listaSesiones = await sessionVM.getSessionsByStudent(user.id);
       setState(() {
@@ -57,6 +59,7 @@ class _HomePageState extends State<HomePage> {
         sesiones = listaSesiones;
       });
     }
+    // await FirebaseAuth.instance.signOut();
   }
 
   @override

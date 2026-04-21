@@ -1,8 +1,10 @@
 import 'dart:convert';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
 import '../repositories/user_repository.dart';
 import '../models/user.dart' as u;
 import 'package:shared_preferences/shared_preferences.dart';
+
 enum AuthState {
   loading,
   login,
@@ -10,76 +12,97 @@ enum AuthState {
   home,
 }
 
-class AuthViewModel {
+class AuthViewModel extends ChangeNotifier {
   final repository = UserRepository();
 
   static final AuthViewModel instance = AuthViewModel.internal();
   factory AuthViewModel() => instance;
   AuthViewModel.internal();
 
-  u.User? usuarioCache;
+  // ── Estado observable ──────────────────────────────────────
+  AuthState _authState = AuthState.loading;
+  AuthState get authState => _authState;
 
-  Future<u.User?> getUsuarioCache() async {
-    if (usuarioCache != null) {
-      return usuarioCache;
-    }
+  u.User? userCache;
+  String? errorMessage;
 
-    usuarioCache = await usuarioEnCache();
-    return usuarioCache;
-  }
+  // ── Inicialización ─────────────────────────────────────────
+  Future<void> initState() async {
+    setAuthState(AuthState.loading);
 
-  Future<u.User?> updateUsuarioInterestedSkills(u.User user,String major) async {
-    final updatedUser = await repository.updateUsuarioInterestedSkills(user, major);
-    if (updatedUser != null) {
-      usuarioCache = updatedUser;
-      await guardarUsuarioCache(updatedUser);
-    }
-    return updatedUser;
-  }
-
-  Future<AuthState> handleLogin() async {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) {
-      return AuthState.login;
+      setAuthState(AuthState.login);
+      return;
     }
 
-    u.User? backendUser = await repository.findUser(user.email ?? "");
+    userCache = await userInCache();
 
-    if (backendUser == null) {
-      backendUser = await repository.createUser(
-        user.uid,
-        user.displayName ?? "",
-        user.email ?? "",
-      );
-
-
-      await guardarUsuarioCache(backendUser);
-
-      return AuthState.selectSkills;
+    if (userCache == null) {
+      await syncWithBackend(user);
+    } else {
+      resolveState();
     }
-
-    await guardarUsuarioCache(backendUser);
-
-    if (backendUser.interestedSkills.isEmpty) {
-      return AuthState.selectSkills;
-    }
-
-    return AuthState.home;
   }
 
-  Future<void> guardarUsuarioCache(u.User user) async {
+  // ── Skills ─────────────────────────────────────────────────
+  Future<void> updateUserInterestedSkills(u.User user, String major) async {
+    final updatedUser = await repository.updateUserInterestedSkills(user, major);
+    if (updatedUser != null) {
+      userCache = updatedUser;
+      await saveUserInCache(updatedUser);
+      resolveState();
+    }
+  }
+
+  Future<u.User?> getUserCache() async {
+    if (userCache != null) return userCache;
+    userCache = await userInCache();
+    return userCache;
+  }
+
+  // ── Caché ──────────────────────────────────────────────────
+  Future<void> saveUserInCache(u.User user) async {
     final prefs = await SharedPreferences.getInstance();
-    final userJson = user.toJson();
-    await prefs.setString('usuario', jsonEncode(userJson));
+    await prefs.setString('usuario', jsonEncode(user.toJson()));
   }
 
-  Future<u.User?> usuarioEnCache() async {
+  Future<u.User?> userInCache() async {
     final prefs = await SharedPreferences.getInstance();
     final userData = prefs.getString('usuario');
-    if (userData == null) {
-      return null;
-    }
-
+    if (userData == null) return null;
     return u.User.fromJson(jsonDecode(userData));
+  }
+
+  // ── Privados ───────────────────────────────────────────────
+  Future<void> syncWithBackend(User firebaseUser) async {
+    try {
+      u.User? backendUser = await repository.findUser(firebaseUser.email ?? '');
+
+      backendUser ??= await repository.createUser(
+        firebaseUser.uid,
+        firebaseUser.displayName ?? '',
+        firebaseUser.email ?? '',
+      );
+
+      userCache = backendUser;
+      await saveUserInCache(backendUser);
+      resolveState();
+    } catch (e) {
+      errorMessage = 'Error al sincronizar usuario: $e';
+      setAuthState(AuthState.login);
+    }
+  }
+
+  void resolveState() {
+    final next = (userCache?.interestedSkills.isEmpty ?? true)
+        ? AuthState.selectSkills
+        : AuthState.home;
+    setAuthState(next);
+  }
+
+  void setAuthState(AuthState newState) {
+    _authState = newState;
+    notifyListeners();
   }
 }
