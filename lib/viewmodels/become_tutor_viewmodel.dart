@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import '../../repositories/skills_repository.dart';
+import '../../repositories/user_repository.dart';
 import '../../models/skills.dart';
 
 class BecomeTutorViewModel extends ChangeNotifier {
   final repo = SkillRepository();
+  final userRepo = UserRepository();
 
   List<String> majors = [];
   List<Skill> availableSkills = [];
@@ -26,8 +28,6 @@ class BecomeTutorViewModel extends ChangeNotifier {
     "saturday": [],
   };
 
-  bool isLoading = false;
-
   final List<String> days = [
     "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"
   ];
@@ -40,6 +40,9 @@ class BecomeTutorViewModel extends ChangeNotifier {
     "Viernes": "friday",
     "Sábado": "saturday",
   };
+
+  bool isLoading = false;
+  bool becomedTutor = false;
 
   Future<void> loadMajors() async {
     isLoading = true;
@@ -146,26 +149,45 @@ class BecomeTutorViewModel extends ChangeNotifier {
 
   String? errorMessage;
 
-  Future<void> becomeTutor() async {
+  Future<void> becomeTutor(String userId) async {
     errorMessage = null;
+    isLoading = true;
+    notifyListeners();
 
     if (addedSkillIds.isEmpty && availabilityDisplay.isEmpty) {
       errorMessage = "Debes agregar al menos una skill y una disponibilidad";
+      isLoading = false;
       notifyListeners();
       return;
     }
     if (addedSkillIds.isEmpty) {
       errorMessage = "Debes agregar al menos una skill";
+      isLoading = false;
       notifyListeners();
       return;
     }
     if (availabilityDisplay.isEmpty) {
       errorMessage = "Debes agregar al menos una disponibilidad";
+      isLoading = false;
       notifyListeners();
       return;
     }
 
-    // TODO: llamar al repo
-    notifyListeners();
+    try {
+
+      await userRepo.becomeTutor(
+        userId,
+        addedSkillIds,
+        availability,
+      );
+      isLoading = false;
+      becomedTutor = true;
+      notifyListeners();
+
+    } catch (e) {
+      errorMessage = "Error al hacerte tutor: $e";
+      isLoading = false;
+      notifyListeners();
+    }
   }
 }

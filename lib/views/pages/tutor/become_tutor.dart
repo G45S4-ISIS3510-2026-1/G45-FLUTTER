@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:g45_flutter/viewmodels/become_tutor_viewmodel.dart';
+import 'package:g45_flutter/viewmodels/auth.dart';
 import 'package:provider/provider.dart';
 import '../../../models/skills.dart';
+import 'package:g45_flutter/services/conection_service.dart';
 
 class BecomeTutor extends StatefulWidget {
   const BecomeTutor({super.key});
@@ -22,7 +24,21 @@ class BecomeTutorState extends State<BecomeTutor> {
   @override
   Widget build(BuildContext context) {
     final vm = Provider.of<BecomeTutorViewModel>(context);
+    final connectionService = ConnectionService();
+    final authVM = Provider.of<AuthViewModel>(context);
     final theme = Theme.of(context);
+    if(vm.isLoading) {
+      return Scaffold(
+        appBar: AppBar(title: const Text("Hacerme tutor")),
+        body: const Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    if (vm.becomedTutor) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        Navigator.pop(context);
+      });
+    }
 
     return Scaffold(
       appBar: AppBar(title: const Text("Hacerme tutor")),
@@ -93,9 +109,7 @@ class BecomeTutorState extends State<BecomeTutor> {
                 Expanded(
                   child: DropdownButtonFormField<Skill>(
                     value: vm.selectedSkill,
-                    hint: Text(vm.selectedMajor == null
-                        ? "Primero selecciona una carrera"
-                        : "Selecciona una skill"),
+                    hint: Text(vm.selectedMajor == null? "Primero selecciona una carrera" : "Selecciona una skill"),
                     items: vm.availableSkills.map((s) =>
                         DropdownMenuItem<Skill>(value: s, child: Text(s.label))).toList(),
                     onChanged: vm.selectedMajor == null
@@ -191,7 +205,7 @@ class BecomeTutorState extends State<BecomeTutor> {
                 onDeleted: () => vm.removeAvailability(entry["key"]!, entry["iso"]!),
               )).toList(),
             ),
-          
+
             const SizedBox(height: 32),
             if (vm.errorMessage != null)
               Padding(
@@ -204,8 +218,16 @@ class BecomeTutorState extends State<BecomeTutor> {
 
             SizedBox(
               width: double.infinity,
-              child: ElevatedButton(
-                onPressed: vm.becomeTutor,
+              child:ElevatedButton(
+                onPressed: () {
+                  if (connectionService.hasConnection) {
+                    vm.becomeTutor(authVM.userCache!.id);
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text("Sin conexión a internet")),
+                    );
+                  }
+                },
                 style: ElevatedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   backgroundColor: const Color(0xFFFFD15C),

@@ -4,10 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:internet_connection_checker_plus/internet_connection_checker_plus.dart';
 
 class ConnectionService {
+
   static final ConnectionService instance = ConnectionService.internal();
-  
   factory ConnectionService() => instance;
-  
   ConnectionService.internal();
 
   bool hasConnection = true;

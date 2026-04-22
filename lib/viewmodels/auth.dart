@@ -101,6 +101,13 @@ class AuthViewModel extends ChangeNotifier {
     }
   }
 
+  Future<void> refreshUser() async {
+    final firebaseUser = FirebaseAuth.instance.currentUser;
+    if (firebaseUser != null) {
+      await syncWithBackend(firebaseUser);
+    }
+  }
+
   void resolveState() {
     final next = (userCache?.interestedSkills.isEmpty ?? true)
         ? AuthState.selectSkills

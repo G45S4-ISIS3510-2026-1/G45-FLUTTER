@@ -146,4 +146,38 @@ class UserRepository {
 
     return User.fromJson(jsonDecode(resp.body));
   }
+
+  Future<User> becomeTutor( String userId, List<String> skillIds, Map<String, List<String>> availability) async{
+
+    final tutoringUrl = Uri.parse("$baseUrl/$userId/tutoring?is_tutoring=true");
+    final tutoringResp = await http.patch(tutoringUrl);
+
+    if (tutoringResp.statusCode != 200) {
+      throw Exception("Error activando modo tutor");
+    }
+
+    final skillsUrl = Uri.parse("$baseUrl/$userId/tutoring-skills");
+    final skillsResp = await http.patch(
+      skillsUrl,
+      headers: {"Content-Type": "application/json"},
+      body: jsonEncode(skillIds),
+    );
+
+    if (skillsResp.statusCode != 200) {
+      throw Exception("Error actualizando skills");
+    }
+
+    final availabilityUrl = Uri.parse("$baseUrl/$userId/availability");
+    final availabilityResp = await http.patch(
+      availabilityUrl,
+      headers: {"Content-Type": "application/json"},
+      body: jsonEncode(availability),
+    );
+
+    if (availabilityResp.statusCode != 200) {
+      throw Exception("Error actualizando disponibilidad");
+    }
+
+    return User.fromJson(jsonDecode(availabilityResp.body));
+  }
 }
