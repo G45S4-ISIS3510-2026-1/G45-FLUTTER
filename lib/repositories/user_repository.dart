@@ -180,4 +180,20 @@ class UserRepository {
 
     return User.fromJson(jsonDecode(availabilityResp.body));
   }
+
+  Future<List<TutorSummary>> getRecommendations(List<String> ids) async {
+    final url = Uri.parse("${ApiConfig.baseUrl}/recommendations");
+    final resp = await http.post(
+      url,
+      headers: {"Content-Type": "application/json"},
+      body: jsonEncode(ids),
+    );
+
+    if (resp.statusCode != 200) {
+      throw Exception("Error obteniendo recomendaciones");
+    }
+
+    final List data = jsonDecode(resp.body);
+    return data.map((json) => TutorSummary.fromJson(json)).toList();
+  }
 }

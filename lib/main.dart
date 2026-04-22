@@ -6,6 +6,7 @@ import 'package:g45_flutter/core/theme.dart';
 import 'package:g45_flutter/firebase_options.dart';
 import 'package:g45_flutter/repositories/user_repository.dart';
 import 'package:g45_flutter/viewmodels/auth.dart';
+import 'package:g45_flutter/services/recent_viewed.dart';
 import 'package:g45_flutter/viewmodels/reservation_detail_viewmodel.dart';
 import 'package:g45_flutter/viewmodels/reservation_gateway_viewmodel.dart';
 import 'package:g45_flutter/viewmodels/skills_viewmodel.dart';
@@ -25,6 +26,7 @@ const bool SKIP_LOGIN = false;
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await RecentViewedService().init();
 
   try {
     if (Firebase.apps.isEmpty) {

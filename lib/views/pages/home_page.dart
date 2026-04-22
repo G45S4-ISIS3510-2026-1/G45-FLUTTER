@@ -28,7 +28,7 @@ class _HomePageState extends State<HomePage> {
   String nombre = "Usuario";
   List<Session> sesiones = [];
   final ScrollController _scrollController = ScrollController(); // Define the ScrollController
-
+  
   List<TutorSummary> tutoresDestacados = tutores
       .map(
         (t) => TutorSummary(
@@ -50,6 +50,7 @@ class _HomePageState extends State<HomePage> {
     });
     Future.microtask(() {
       Provider.of<TutorViewModel>(context, listen: false).loadTutors();
+      Provider.of<TutorViewModel>(context, listen: false).loadRecommendations();
     });
   }
 
@@ -68,6 +69,7 @@ class _HomePageState extends State<HomePage> {
   @override
 Widget build(BuildContext context) {
   final viewmodel = Provider.of<TutorViewModel>(context);
+  
 
   return CustomScrollView(
     controller: _scrollController,

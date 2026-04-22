@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
 import '../repositories/user_repository.dart';
 import '../models/tutor_summary.dart';
+import 'package:g45_flutter/services/recent_viewed.dart';
 
 class TutorViewModel extends ChangeNotifier {
   final UserRepository repo;
 
   List<TutorSummary> tutors = [];
+  List<TutorSummary> recommendedTutors = [];
   bool isLoading = false;
+  
   bool _isFetchingMore = false;
   String? errorMessage;
 
@@ -66,5 +69,17 @@ class TutorViewModel extends ChangeNotifier {
 
     _isFetchingMore = false;
     notifyListeners();
+  }
+
+  Future<void> loadRecommendations() async {
+    final ids = RecentViewedService().ids;
+    if (ids.isEmpty) return;
+    
+    try {
+      recommendedTutors = await repo.getRecommendations(ids);
+      notifyListeners();
+    } catch (e) {
+      
+    }
   }
 }
