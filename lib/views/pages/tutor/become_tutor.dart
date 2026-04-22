@@ -1,83 +1,27 @@
 import 'package:flutter/material.dart';
-import '../../../repositories/skills_repository.dart';
+import 'package:g45_flutter/viewmodels/become_tutor_viewmodel.dart';
+import 'package:provider/provider.dart';
+import '../../../models/skills.dart';
 
 class BecomeTutor extends StatefulWidget {
   const BecomeTutor({super.key});
 
   @override
-  State<BecomeTutor> createState() => _BecomeTutorState();
+  State<BecomeTutor> createState() => BecomeTutorState();
 }
 
-class _BecomeTutorState extends State<BecomeTutor> {
-  final repo = SkillRepository();
-
-  String? profileImageUrl;
-
-  final TextEditingController majorController = TextEditingController();
-  String? selectedMajor;
-
-  String? selectedSkill;
-  final List<String> addedSkills = [];
-
-  final List<String> availabilities = [];
-  String? selectedDay;
-  TimeOfDay? selectedTime;
-
-  List<String> majors = [];
-  List<String> availableSkills = [];
-
-  final List<String> days = [
-    "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"
-  ];
-
+class BecomeTutorState extends State<BecomeTutor> {
   @override
   void initState() {
     super.initState();
-    loadMajors();
-  }
-
-  Future<void> loadMajors() async {
-    final data = await repo.getMajors();
-    setState(() => majors = data);
-  }
-
-  Future<void> loadSkillsByMajor(String major) async {
-    // TODO: conectar con repo.getByMajor(major) cuando esté disponible
-    setState(() => availableSkills = []);
-  }
-
-  void addSkill() {
-    if (selectedSkill != null && !addedSkills.contains(selectedSkill)) {
-      setState(() {
-        addedSkills.add(selectedSkill!);
-        selectedSkill = null;
-      });
-    }
-  }
-
-  Future<void> pickTime() async {
-    final picked = await showTimePicker(
-      context: context,
-      initialTime: TimeOfDay.now(),
+    Future.microtask(() =>
+      Provider.of<BecomeTutorViewModel>(context, listen: false).loadMajors()
     );
-    if (picked != null) {
-      setState(() => selectedTime = picked);
-    }
-  }
-
-  void addAvailability() {
-    if (selectedDay != null && selectedTime != null) {
-      final entry = "$selectedDay - ${selectedTime!.format(context)}";
-      setState(() {
-        availabilities.add(entry);
-        selectedDay = null;
-        selectedTime = null;
-      });
-    }
   }
 
   @override
   Widget build(BuildContext context) {
+    final vm = Provider.of<BecomeTutorViewModel>(context);
     final theme = Theme.of(context);
 
     return Scaffold(
@@ -86,9 +30,9 @@ class _BecomeTutorState extends State<BecomeTutor> {
         padding: const EdgeInsets.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-
-            // ── Foto de perfil ────────────────────────────
+          children: [ 
+            // ------------------------------------- //
+            // FOTO DE PERFIL
             Center(
               child: GestureDetector(
                 onTap: () {
@@ -97,10 +41,10 @@ class _BecomeTutorState extends State<BecomeTutor> {
                 child: CircleAvatar(
                   radius: 50,
                   backgroundColor: theme.colorScheme.secondary,
-                  backgroundImage: profileImageUrl != null
-                      ? NetworkImage(profileImageUrl!)
+                  backgroundImage: vm.profileImageUrl != null
+                      ? NetworkImage(vm.profileImageUrl!)
                       : null,
-                  child: profileImageUrl == null
+                  child: vm.profileImageUrl == null
                       ? Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
@@ -112,28 +56,20 @@ class _BecomeTutorState extends State<BecomeTutor> {
                 ),
               ),
             ),
-
-            const SizedBox(height: 28),
-
-            // ── Major autocomplete ────────────────────────
+            // ------------------------------------- //
+            // CARRERA
+            const SizedBox(height: 24),
             Text("Tu carrera", style: theme.textTheme.titleMedium),
             const SizedBox(height: 8),
-            majors.isEmpty
+            vm.isLoading
                 ? const CircularProgressIndicator()
                 : Autocomplete<String>(
                     optionsBuilder: (value) {
-                      if (value.text.isEmpty) return majors;
-                      return majors.where((m) =>
+                      if (value.text.isEmpty) return vm.majors;
+                      return vm.majors.where((m) =>
                           m.toLowerCase().contains(value.text.toLowerCase()));
                     },
-                    onSelected: (value) {
-                      setState(() {
-                        selectedMajor = value;
-                        selectedSkill = null;
-                        addedSkills.clear();
-                      });
-                      loadSkillsByMajor(value);
-                    },
+                    onSelected: (value) => vm.selectMajor(value),
                     fieldViewBuilder: (context, controller, focusNode, onSubmitted) {
                       return TextField(
                         controller: controller,
@@ -146,22 +82,25 @@ class _BecomeTutorState extends State<BecomeTutor> {
                     },
                   ),
 
+            // ------------------------------------- //
+            // SKILLS
             const SizedBox(height: 24),
 
-            // ── Skills ────────────────────────────────────
             Text("Skills que puedes tutorear", style: theme.textTheme.titleMedium),
             const SizedBox(height: 8),
             Row(
               children: [
                 Expanded(
-                  child: DropdownButtonFormField<String>(
-                    value: selectedSkill,
-                    hint: Text(selectedMajor == null ? "Primero selecciona una carrera" : "Selecciona una skill"),
-                    items: availableSkills.map((s) =>
-                        DropdownMenuItem(value: s, child: Text(s))).toList(),
-                    onChanged: selectedMajor == null
+                  child: DropdownButtonFormField<Skill>(
+                    value: vm.selectedSkill,
+                    hint: Text(vm.selectedMajor == null
+                        ? "Primero selecciona una carrera"
+                        : "Selecciona una skill"),
+                    items: vm.availableSkills.map((s) =>
+                        DropdownMenuItem<Skill>(value: s, child: Text(s.label))).toList(),
+                    onChanged: vm.selectedMajor == null
                         ? null
-                        : (val) => setState(() => selectedSkill = val),
+                        : (val) => vm.selectSkill(val),
                     decoration: InputDecoration(
                       border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
                     ),
@@ -169,7 +108,7 @@ class _BecomeTutorState extends State<BecomeTutor> {
                 ),
                 const SizedBox(width: 8),
                 ElevatedButton(
-                  onPressed: selectedSkill == null ? null : addSkill,
+                  onPressed: vm.selectedSkill == null ? null : vm.addSkill,
                   style: ElevatedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
                   ),
@@ -177,32 +116,33 @@ class _BecomeTutorState extends State<BecomeTutor> {
                 ),
               ],
             ),
-            if (addedSkills.isNotEmpty) ...[
-              const SizedBox(height: 12),
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: addedSkills.map((s) => Chip(
-                  label: Text(s),
-                  onDeleted: () => setState(() => addedSkills.remove(s)),
-                )).toList(),
-              ),
-            ],
+            // ------------------------------------- //
+            // LISTA SKILLS
+            const SizedBox(height: 12),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: vm.addedSkills.map((s) => Chip(
+                label: Text(s),
+                onDeleted: () => vm.removeSkill(s),
+              )).toList(),
+            ),
 
+            // ------------------------------------- //
+            // DISPONIBILIDADES
             const SizedBox(height: 24),
 
-            // ── Disponibilidades ──────────────────────────
             Text("Disponibilidades", style: theme.textTheme.titleMedium),
             const SizedBox(height: 8),
             Row(
               children: [
                 Expanded(
                   child: DropdownButtonFormField<String>(
-                    value: selectedDay,
+                    value: vm.selectedDay,
                     hint: const Text("Día"),
-                    items: days.map((d) =>
+                    items: vm.days.map((d) =>
                         DropdownMenuItem(value: d, child: Text(d))).toList(),
-                    onChanged: (val) => setState(() => selectedDay = val),
+                    onChanged: (val) => vm.selectDay(val),
                     decoration: InputDecoration(
                       border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
                     ),
@@ -211,22 +151,28 @@ class _BecomeTutorState extends State<BecomeTutor> {
                 const SizedBox(width: 8),
                 Expanded(
                   child: GestureDetector(
-                    onTap: pickTime,
+                    onTap: () async {
+                      final picked = await showTimePicker(
+                        context: context,
+                        initialTime: TimeOfDay.now(),
+                      );
+                      if (picked != null) vm.selectTime(picked);
+                    },
                     child: InputDecorator(
                       decoration: InputDecoration(
                         border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
                       ),
                       child: Text(
-                        selectedTime == null
+                        vm.selectedTime == null
                             ? "Hora"
-                            : selectedTime!.format(context),
+                            : vm.selectedTime!.format(context),
                       ),
                     ),
                   ),
                 ),
                 const SizedBox(width: 8),
                 ElevatedButton(
-                  onPressed: (selectedDay == null || selectedTime == null) ? null : addAvailability,
+                  onPressed: (vm.selectedDay == null || vm.selectedTime == null) ? null : () => vm.addAvailability(),
                   style: ElevatedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
                   ),
@@ -234,28 +180,32 @@ class _BecomeTutorState extends State<BecomeTutor> {
                 ),
               ],
             ),
-            if (availabilities.isNotEmpty) ...[
-              const SizedBox(height: 12),
-              ...availabilities.map((a) => ListTile(
-                dense: true,
-                leading: const Icon(Icons.schedule),
-                title: Text(a),
-                trailing: IconButton(
-                  icon: const Icon(Icons.close, size: 18),
-                  onPressed: () => setState(() => availabilities.remove(a)),
-                ),
-              )),
-            ],
-
+            // ------------------------------------- //
+            // LISTA DISPONIBILIDADES
+            const SizedBox(height: 12),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: vm.availabilityDisplay.map((entry) => Chip(
+                label: Text(vm.formatSlot(entry["key"]!, entry["iso"]!)),
+                onDeleted: () => vm.removeAvailability(entry["key"]!, entry["iso"]!),
+              )).toList(),
+            ),
+          
             const SizedBox(height: 32),
+            if (vm.errorMessage != null)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 12),
+                child: Text(
+                  vm.errorMessage!,
+                  style: const TextStyle(color: Colors.red),
+                ),
+              ),
 
-            // ── Botón final ───────────────────────────────
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                onPressed: () {
-                  // TODO: conectar con VM para hacerse tutor
-                },
+                onPressed: vm.becomeTutor,
                 style: ElevatedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   backgroundColor: const Color(0xFFFFD15C),
@@ -265,7 +215,6 @@ class _BecomeTutorState extends State<BecomeTutor> {
                 child: const Text("Hacerme tutor", style: TextStyle(fontWeight: FontWeight.bold)),
               ),
             ),
-
             const SizedBox(height: 20),
           ],
         ),

@@ -10,6 +10,7 @@ import 'package:g45_flutter/viewmodels/reservation_detail_viewmodel.dart';
 import 'package:g45_flutter/viewmodels/reservation_gateway_viewmodel.dart';
 import 'package:g45_flutter/viewmodels/skills_viewmodel.dart';
 import 'package:g45_flutter/viewmodels/tutor_viewmodel.dart';
+import 'package:g45_flutter/viewmodels/become_tutor_viewmodel.dart';
 import 'package:g45_flutter/views/pages/login/login_regist_page.dart';
 import 'package:g45_flutter/views/pages/select_skills.dart';
 import 'package:g45_flutter/views/widget_tree.dart';
@@ -58,6 +59,7 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => ReservationDetailViewModel()),
         ChangeNotifierProvider(create: (_) => ReservationGatewayViewModel()),
         ChangeNotifierProvider(create: (_) => AuthViewModel()..startListening()),
+        ChangeNotifierProvider(create: (_) => BecomeTutorViewModel()),
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,

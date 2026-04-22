@@ -1,26 +1,45 @@
 import 'package:flutter/material.dart';
 import '../../repositories/skills_repository.dart';
+import '../../models/skills.dart';
 
 class BecomeTutorViewModel extends ChangeNotifier {
   final repo = SkillRepository();
 
   List<String> majors = [];
-  List<String> availableSkills = [];
+  List<Skill> availableSkills = [];
 
   String? selectedMajor;
-  String? selectedSkill;
+  Skill? selectedSkill;
   String? selectedDay;
   TimeOfDay? selectedTime;
   String? profileImageUrl;
 
   List<String> addedSkills = [];
-  List<String> availabilities = [];
+  List<String> addedSkillIds = [];
+
+  Map<String, List<String>> availability = {
+    "monday": [],
+    "tuesday": [],
+    "wednesday": [],
+    "thursday": [],
+    "friday": [],
+    "saturday": [],
+  };
 
   bool isLoading = false;
 
   final List<String> days = [
-    "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"
+    "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"
   ];
+
+  final Map<String, String> dayToKey = {
+    "Lunes": "monday",
+    "Martes": "tuesday",
+    "Miércoles": "wednesday",
+    "Jueves": "thursday",
+    "Viernes": "friday",
+    "Sábado": "saturday",
+  };
 
   Future<void> loadMajors() async {
     isLoading = true;
@@ -35,28 +54,36 @@ class BecomeTutorViewModel extends ChangeNotifier {
     selectedMajor = major;
     selectedSkill = null;
     addedSkills.clear();
+    addedSkillIds.clear();
     availableSkills = [];
     notifyListeners();
-    // TODO: availableSkills = await repo.getByMajor(major);
+    availableSkills = await repo.getByMajor(major);
     notifyListeners();
   }
 
-  void selectSkill(String? skill) {
+  void selectSkill(Skill? skill) {
     selectedSkill = skill;
     notifyListeners();
   }
 
-  void addSkill() {
-    if (selectedSkill != null && !addedSkills.contains(selectedSkill)) {
-      addedSkills.add(selectedSkill!);
-      selectedSkill = null;
-      notifyListeners();
-    }
+  bool addSkill() {
+    if (selectedSkill == null) return false;
+    if (addedSkills.contains(selectedSkill!.label)) return false;
+
+    addedSkills.add(selectedSkill!.label);
+    addedSkillIds.add(selectedSkill!.id);
+    selectedSkill = null;
+    notifyListeners();
+    return true;
   }
 
-  void removeSkill(String skill) {
-    addedSkills.remove(skill);
-    notifyListeners();
+  void removeSkill(String label) {
+    final index = addedSkills.indexOf(label);
+    if (index != -1) {
+      addedSkills.removeAt(index);
+      addedSkillIds.removeAt(index);
+      notifyListeners();
+    }
   }
 
   void selectDay(String? day) {
@@ -69,22 +96,76 @@ class BecomeTutorViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  void addAvailability(BuildContext context) {
-    if (selectedDay != null && selectedTime != null) {
-      final entry = "$selectedDay - ${selectedTime!.format(context)}";
-      availabilities.add(entry);
-      selectedDay = null;
-      selectedTime = null;
-      notifyListeners();
-    }
-  }
+  void addAvailability() {
+    if (selectedDay == null || selectedTime == null) return;
 
-  void removeAvailability(String availability) {
-    availabilities.remove(availability);
+    final key = dayToKey[selectedDay]!;
+    final now = DateTime.now();
+
+    final weekdayTarget = dayToKey.keys.toList().indexOf(selectedDay!) + 1;
+    int daysUntil = weekdayTarget - now.weekday;
+    if (daysUntil <= 0) daysUntil += 7;
+
+    final targetDate = now.add(Duration(days: daysUntil));
+    final dt = DateTime(
+      targetDate.year,
+      targetDate.month,
+      targetDate.day,
+      selectedTime!.hour,
+      selectedTime!.minute,
+    );
+
+    availability[key]!.add(dt.toIso8601String());
+    selectedDay = null;
+    selectedTime = null;
     notifyListeners();
   }
 
+  void removeAvailability(String key, String isoString) {
+    availability[key]!.remove(isoString);
+    notifyListeners();
+  }
+
+  List<Map<String, String>> get availabilityDisplay {
+    final List<Map<String, String>> result = [];
+    availability.forEach((key, slots) {
+      for (final iso in slots) {
+        result.add({"key": key, "iso": iso});
+      }
+    });
+    return result;
+  }
+
+  String formatSlot(String key, String isoString) {
+    final dt = DateTime.parse(isoString);
+    final dayLabel = dayToKey.entries.firstWhere((e) => e.value == key).key;
+    final hour = dt.hour.toString().padLeft(2, '0');
+    final minute = dt.minute.toString().padLeft(2, '0');
+    return "$dayLabel - $hour:$minute";
+  }
+
+  String? errorMessage;
+
   Future<void> becomeTutor() async {
-    // TODO: conectar con repo para hacerse tutor
+    errorMessage = null;
+
+    if (addedSkillIds.isEmpty && availabilityDisplay.isEmpty) {
+      errorMessage = "Debes agregar al menos una skill y una disponibilidad";
+      notifyListeners();
+      return;
+    }
+    if (addedSkillIds.isEmpty) {
+      errorMessage = "Debes agregar al menos una skill";
+      notifyListeners();
+      return;
+    }
+    if (availabilityDisplay.isEmpty) {
+      errorMessage = "Debes agregar al menos una disponibilidad";
+      notifyListeners();
+      return;
+    }
+
+    // TODO: llamar al repo
+    notifyListeners();
   }
 }
