@@ -79,8 +79,8 @@ class SessionRepository {
   }
 
   // UPDATE? cancelSession
-  Future<Session> cancelSession(Session session) async {
-    final url = Uri.parse("$baseUrl/${session.id}/cancel");
+  Future<Session> cancelSession(Session session, String participantId) async {
+    final url = Uri.parse("$baseUrl/${session.id}/$participantId/cancel");
     final resp = await http.patch(url);
 
     if (resp.statusCode != 200) {
@@ -91,14 +91,14 @@ class SessionRepository {
   }
 
   // UPDATE? confirmSession
-  Future<Session> confirmSession(Session session) async {
+  Future<Session> confirmSession(Session session, String participantId, String verifCode) async {
     final url = Uri.parse(
-      "$baseUrl/${session.id}/confirm?verif_code=${session.verifCode}",
+      "$baseUrl/${session.id}/$participantId/confirm?verif_code=$verifCode",
     );
     final resp = await http.patch(url);
 
     if (resp.statusCode != 200) {
-      throw Exception("Error confirmando sesión: ${resp.statusCode}");
+      throw Exception("Error confirmando sesión: ${resp.body}");
     }
 
     return Session.fromJson(jsonDecode(resp.body));

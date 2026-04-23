@@ -1,5 +1,4 @@
 import 'package:firebase_analytics/firebase_analytics.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:g45_flutter/core/theme.dart';
@@ -68,23 +67,23 @@ class MyApp extends StatelessWidget {
         // LOGIN SWITCH
         // ---------------------------
         home: SKIP_LOGIN
-          ? const WidgetTree()
-          : Consumer<AuthViewModel>(
-              builder: (context, authVM, _) {
-                switch (authVM.authState) {
-                  case AuthState.loading:
-                    return const Scaffold(
-                      body: Center(child: CircularProgressIndicator()),
-                    );
-                  case AuthState.login:
-                    return const LoginRegistPage();
-                  case AuthState.selectSkills:
-                    return const SelectSkills();
-                  case AuthState.home:
-                    return const WidgetTree();
-                }
-              },
-            ),
+            ? const WidgetTree()
+            : Consumer<AuthViewModel>(
+                builder: (context, authVM, _) {
+                  switch (authVM.authState) {
+                    case AuthState.loading:
+                      return const Scaffold(
+                        body: Center(child: CircularProgressIndicator()),
+                      );
+                    case AuthState.login:
+                      return const LoginRegistPage();
+                    case AuthState.selectSkills:
+                      return const SelectSkills();
+                    case AuthState.home:
+                      return const WidgetTree();
+                  }
+                },
+              ),
       ),
     );
   }

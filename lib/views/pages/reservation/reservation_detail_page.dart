@@ -5,6 +5,7 @@ import 'package:g45_flutter/widgets/gradient_background.dart';
 import 'package:g45_flutter/widgets/qr_code_widget.dart';
 import 'package:g45_flutter/widgets/session_card_widget.dart';
 import 'package:g45_flutter/widgets/simple_user_card_widget.dart';
+import 'package:g45_flutter/viewmodels/auth.dart';
 
 class ReservationDetailPage extends StatefulWidget {
   const ReservationDetailPage({super.key, required this.session});
@@ -17,11 +18,15 @@ class ReservationDetailPage extends StatefulWidget {
 
 class ReservationDetailPageState extends State<ReservationDetailPage> {
   final ReservationDetailViewModel viewModel = ReservationDetailViewModel();
-  final bool isTutorView = false;
+  late bool isTutorView;
+  late String currentUserId;
 
   @override
   void initState() {
     super.initState();
+    currentUserId = AuthViewModel.instance.userCache!.id;
+    isTutorView = widget.session.tutorId == currentUserId;
+    
     viewModel.loadParticipants(
       widget.session.tutorId,
       widget.session.studentId,
@@ -104,64 +109,68 @@ class ReservationDetailPageState extends State<ReservationDetailPage> {
                             isTutor: false,
                           ),
                       ],
-                      SizedBox(height: 16),
-                      QrCodeWidget(
-                        verifCode: widget.session.verifCode,
-                        isTutor: true,
-                      ),
-                      SizedBox(height: 16),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: [
-                          ElevatedButton(
-                            onPressed: () {
-                              showDialog(
-                                context: context,
-                                builder: (context) {
-                                  return AlertDialog(
-                                    title: Text('Cancelar reserva'),
-                                    content: Text(
-                                      '¿Está seguro de que desea cancelar la reserva?',
-                                    ),
-                                    actions: [
-                                      TextButton(
-                                        onPressed: () {
-                                          Navigator.pop(context);
-                                        },
-                                        child: Text('Cancelar'),
+                      if (widget.session.status == 'Pendiente') ...[
+                        SizedBox(height: 16),
+                        QrCodeWidget(
+                          verifCode: widget.session.verifCode,
+                          isTutor: isTutorView,
+                          onCodeScanned: (code) {
+                            viewModel.confirmSession(widget.session, currentUserId, code);
+                          },
+                        ),
+                        SizedBox(height: 16),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            ElevatedButton(
+                              onPressed: () {
+                                showDialog(
+                                  context: context,
+                                  builder: (context) {
+                                    return AlertDialog(
+                                      title: Text('Cancelar reserva'),
+                                      content: Text(
+                                        '¿Está seguro de que desea cancelar la reserva?',
                                       ),
-                                      TextButton(
-                                        onPressed: () {
-                                          Navigator.pop(context);
-                                          Navigator.pop(context);
-                                          viewModel.cancelSession(
-                                            widget.session,
-                                          );
-                                        },
-                                        child: Text('Confirmar'),
-                                      ),
-                                    ],
-                                  );
-                                },
-                              );
-                            },
-                            child: Text(
-                              'Cancelar',
-                              style: TextStyle(color: Colors.white),
+                                      actions: [
+                                        TextButton(
+                                          onPressed: () {
+                                            Navigator.pop(context);
+                                          },
+                                          child: Text('Cancelar'),
+                                        ),
+                                        TextButton(
+                                          onPressed: () {
+                                            Navigator.pop(context);
+                                            viewModel.cancelSession(
+                                              widget.session,
+                                              currentUserId,
+                                            );
+                                          },
+                                          child: Text('Confirmar'),
+                                        ),
+                                      ],
+                                    );
+                                  },
+                                );
+                              },
+                              child: Text(
+                                'Cancelar',
+                                style: TextStyle(color: Colors.white),
+                              ),
                             ),
-                          ),
-                          ElevatedButton(
-                            onPressed: () {
-                              Navigator.pop(context);
-                              viewModel.confirmSession(widget.session);
-                            },
-                            child: Text(
-                              'Confirmar',
-                              style: TextStyle(color: Colors.white),
+                            ElevatedButton(
+                              onPressed: () {
+                                viewModel.confirmSession(widget.session, currentUserId, widget.session.verifCode);
+                              },
+                              child: Text(
+                                'Confirmar',
+                                style: TextStyle(color: Colors.white),
+                              ),
                             ),
-                          ),
-                        ],
-                      ),
+                          ],
+                        ),
+                      ],
                     ],
                   ),
                 ],
