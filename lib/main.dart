@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:g45_flutter/core/theme.dart';
 import 'package:g45_flutter/firebase_options.dart';
 import 'package:g45_flutter/repositories/user_repository.dart';
+import 'package:g45_flutter/viewmodels/agenda_viewmodel.dart';
 import 'package:g45_flutter/viewmodels/auth.dart';
 import 'package:g45_flutter/viewmodels/reservation_detail_viewmodel.dart';
 import 'package:g45_flutter/viewmodels/reservation_gateway_viewmodel.dart';
@@ -57,12 +58,9 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => ReservationDetailViewModel()),
         ChangeNotifierProvider(create: (_) => ReservationGatewayViewModel()),
         ChangeNotifierProvider(create: (_) => AuthViewModel()..initState()),
+        ChangeNotifierProvider(create: (_) => AgendaViewModel()),
       ],
       child: MaterialApp(
-        debugShowCheckedModeBanner: false,
-        title: 'Flutter Demo',
-        theme: materialTheme.dark(),
-
         // ---------------------------
         // LOGIN SWITCH
         // ---------------------------
