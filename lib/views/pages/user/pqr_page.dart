@@ -1,7 +1,11 @@
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
+import 'package:g45_flutter/repositories/pqr_repository.dart';
 import 'package:g45_flutter/services/analytics_service.dart';
+import 'package:g45_flutter/viewmodels/auth.dart';
 import 'package:g45_flutter/viewmodels/pqr_viewmodel.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class PqrPage extends StatefulWidget {
   const PqrPage({super.key});
@@ -23,6 +27,10 @@ class _PqrPageState extends State<PqrPage> {
     // TAG DE SERVICIO (Crashlytics)
     //----------------------------------
     AnalyticsService.instance.setCurrentService("pqr");
+    //----------------------------------
+    // CARGAR DRAFT
+    //----------------------------------
+    _loadDraft();
   }
 
   //-------------------------------------
@@ -40,6 +48,19 @@ class _PqrPageState extends State<PqrPage> {
     {"date": "20", "title": "Cálculo Diferencial", "tutor": "Camilo Rivas"},
     {"date": "18", "title": "Física Mecánica", "tutor": "Sofía Méndez"},
   ];
+
+  //-------------------------------------
+  // DRAFT STORAGE
+  //-------------------------------------
+  void _saveDraft() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString("pqr_draft", descriptionController.text);
+  }
+
+  void _loadDraft() async {
+    final prefs = await SharedPreferences.getInstance();
+    descriptionController.text = prefs.getString("pqr_draft") ?? "";
+  }
 
   //-------------------------------------
   // BUILD
@@ -140,6 +161,7 @@ class _PqrPageState extends State<PqrPage> {
 
                     TextField(
                       controller: descriptionController,
+                      onChanged: (value) => _saveDraft(),
                       maxLines: 5,
                       style: const TextStyle(color: Colors.white),
                       decoration: InputDecoration(
@@ -236,6 +258,75 @@ class _PqrPageState extends State<PqrPage> {
                       }),
                     ),
 
+                    //-------------------------------------
+                    // LISTA DE PQRS
+                    //-------------------------------------
+                    Builder(
+                      builder: (context) {
+                        final user = AuthViewModel().userCache;
+
+                        if (user == null) {
+                          return const SizedBox();
+                        }
+
+                        return FutureBuilder(
+                          future: PqrRepository().getPqrsByAuthor(user.id),
+                          builder: (context, snapshot) {
+                            if (!snapshot.hasData) {
+                              return const Center(
+                                child: CircularProgressIndicator(),
+                              );
+                            }
+
+                            final pqrs = snapshot.data as List;
+
+                            if (pqrs.isEmpty) {
+                              return const Text(
+                                "No tienes PQRS aún",
+                                style: TextStyle(color: Colors.white54),
+                              );
+                            }
+
+                            return ListView.builder(
+                              shrinkWrap: true,
+                              physics: const NeverScrollableScrollPhysics(),
+                              itemCount: pqrs.length,
+                              itemBuilder: (context, index) {
+                                final pqr = pqrs[index];
+
+                                return Container(
+                                  margin: const EdgeInsets.only(bottom: 10),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white10,
+                                    borderRadius: BorderRadius.circular(15),
+                                  ),
+                                  child: ListTile(
+                                    title: Text(
+                                      pqr["type"] ?? "",
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                    subtitle: Text(
+                                      pqr["description"] ?? "",
+                                      style: const TextStyle(
+                                        color: Colors.white70,
+                                      ),
+                                    ),
+                                    trailing: Text(
+                                      pqr["status"] ?? "",
+                                      style: const TextStyle(
+                                        color: Colors.white38,
+                                      ),
+                                    ),
+                                  ),
+                                );
+                              },
+                            );
+                          },
+                        );
+                      },
+                    ),
                     const Spacer(),
 
                     //-------------------------------------
@@ -247,6 +338,17 @@ class _PqrPageState extends State<PqrPage> {
                         onPressed: vm.isLoading
                             ? null
                             : () async {
+                                final connectivity = await Connectivity()
+                                    .checkConnectivity();
+                                //eventual conncetivity check before sending pqr d
+                                if (connectivity == ConnectivityResult.none) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text("Sin conexión a internet"),
+                                    ),
+                                  );
+                                  return;
+                                }
                                 final success = await vm.sendPqr(
                                   type: selectedType,
                                   description: descriptionController.text,
@@ -254,15 +356,34 @@ class _PqrPageState extends State<PqrPage> {
                                 );
 
                                 if (success) {
-                                  await AnalyticsService.instance.logEvent('pqr_submit', {
-                                    'type': selectedType,
-                                    'has_description': descriptionController.text.isNotEmpty,
-                                    'has_session': selectedSessionIndex != null,
-                                  });
+                                  await AnalyticsService.instance.logEvent(
+                                    'pqr_submit',
+                                    {
+                                      'type': selectedType,
+                                      'has_description':
+                                          descriptionController.text.isNotEmpty,
+                                      'has_session':
+                                          selectedSessionIndex != null,
+                                    },
+                                  );
                                   ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(content: Text("PQR enviada correctamente")),
+                                    const SnackBar(
+                                      content: Text(
+                                        "PQR enviada correctamente",
+                                      ),
+                                    ),
                                   );
                                   // Clear form after successful submission
+                                  //----------------------------------
+                                  // LIMPIAR DRAFT
+                                  //----------------------------------
+                                  final prefs =
+                                      await SharedPreferences.getInstance();
+                                  await prefs.remove("pqr_draft");
+
+                                  //----------------------------------
+                                  // UI UPDATE
+                                  //----------------------------------
                                   setState(() {
                                     selectedType = null;
                                     descriptionController.clear();
@@ -270,7 +391,9 @@ class _PqrPageState extends State<PqrPage> {
                                   });
                                 } else {
                                   ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(content: Text(vm.errorMessage ?? "Error")),
+                                    SnackBar(
+                                      content: Text(vm.errorMessage ?? "Error"),
+                                    ),
                                   );
                                 }
                               },

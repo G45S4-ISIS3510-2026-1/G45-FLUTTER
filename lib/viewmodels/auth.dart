@@ -5,12 +5,7 @@ import '../repositories/user_repository.dart';
 import '../models/user.dart' as u;
 import 'package:shared_preferences/shared_preferences.dart';
 
-enum AuthState {
-  loading,
-  login,
-  selectSkills,
-  home,
-}
+enum AuthState { loading, login, selectSkills, home }
 
 class AuthViewModel extends ChangeNotifier {
   final repository = UserRepository();
@@ -52,7 +47,10 @@ class AuthViewModel extends ChangeNotifier {
 
   // ── SKILLS ────────────────────────────────────────────────
   Future<void> updateUserInterestedSkills(u.User user, String major) async {
-    final updatedUser = await repository.updateUserInterestedSkills(user, major);
+    final updatedUser = await repository.updateUserInterestedSkills(
+      user,
+      major,
+    );
     if (updatedUser != null) {
       userCache = updatedUser;
       await saveUserInCache(updatedUser);
@@ -82,8 +80,7 @@ class AuthViewModel extends ChangeNotifier {
   // ── BACKEND ───────────────────────────────────────────────
   Future<void> syncWithBackend(User firebaseUser) async {
     try {
-      u.User? backendUser =
-          await repository.findUser(firebaseUser.email ?? '');
+      u.User? backendUser = await repository.findUser(firebaseUser.email ?? '');
 
       backendUser ??= await repository.createUser(
         firebaseUser.uid,
@@ -95,8 +92,16 @@ class AuthViewModel extends ChangeNotifier {
       await saveUserInCache(backendUser);
       resolveState();
     } catch (e) {
-      errorMessage = 'Error al sincronizar usuario: $e';
-      setAuthState(AuthState.login);
+      //----------------------------------
+      // FALLBACK CACHE
+      //----------------------------------
+      userCache = await userInCache();
+
+      if (userCache != null) {
+        resolveState();
+      } else {
+        setAuthState(AuthState.login);
+      }
     }
   }
 

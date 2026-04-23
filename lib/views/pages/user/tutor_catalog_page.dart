@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:g45_flutter/services/analytics_service.dart';
 import 'package:g45_flutter/viewmodels/tutor_viewmodel.dart';
-import 'package:g45_flutter/widgets/tutor_card.dart';
+import 'package:g45_flutter/widgets/tutor/tutor_card.dart';
 import 'package:provider/provider.dart';
 
 class CatalogPage extends StatefulWidget {

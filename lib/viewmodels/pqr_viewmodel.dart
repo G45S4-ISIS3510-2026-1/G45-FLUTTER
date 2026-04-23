@@ -60,7 +60,7 @@ class PqrViewModel extends ChangeNotifier {
       // LLAMAR REPOSITORY
       //-------------------------------------
       await _repo.createPqr(
-        userId: user.id,
+        authorId: user.id,
         type: type,
         description: description,
         sessionId: sessionId,
@@ -72,7 +72,6 @@ class PqrViewModel extends ChangeNotifier {
       _isLoading = false;
       notifyListeners();
       return true;
-
     } catch (e) {
       //-------------------------------------
       // ERROR

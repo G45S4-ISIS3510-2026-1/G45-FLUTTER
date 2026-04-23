@@ -1,8 +1,10 @@
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:g45_flutter/viewmodels/review_viewmodel.dart';
 import 'package:g45_flutter/widgets/tutor/tutor_review_card.dart';
 import 'package:provider/provider.dart';
 import 'package:g45_flutter/models/review.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:g45_flutter/services/analytics_service.dart';
 
@@ -20,16 +22,37 @@ class _TutorReviewsSectionState extends State<TutorReviewsSection> {
   int rating = 0;
   bool showAll = false;
   DateTime? _startTime;
+  //-------------------------------------
+  //  DRAFT REVIEW (CACHE)
+  //-------------------------------------
+  void _saveReviewDraft() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString("review_draft_${widget.tutorId}", _controller.text);
+  }
+
+  void _loadReviewDraft() async {
+    final prefs = await SharedPreferences.getInstance();
+    _controller.text = prefs.getString("review_draft_${widget.tutorId}") ?? "";
+  }
+
+  Future<void> _clearReviewDraft() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove("review_draft_${widget.tutorId}");
+  }
 
   @override
   void initState() {
     super.initState();
 
     //----------------------------------
-    // 🔥 INICIO MEDICIÓN TIEMPO
+    //  INICIO MEDICIÓN TIEMPO
     //----------------------------------
     _startTime = DateTime.now();
 
+    //----------------------------------
+    //  INICIO MEDICIÓN TIEMPO
+    //----------------------------------
+    _loadReviewDraft();
     //----------------------------------
     // TAG DE SERVICIO (Crashlytics)
     //----------------------------------
@@ -57,7 +80,7 @@ class _TutorReviewsSectionState extends State<TutorReviewsSection> {
   @override
   void dispose() {
     //----------------------------------
-    // 🔥 FIN MEDICIÓN TIEMPO
+    // FIN MEDICIÓN TIEMPO
     //----------------------------------
     if (_startTime != null) {
       final seconds = DateTime.now().difference(_startTime!).inSeconds;
@@ -211,6 +234,7 @@ class _TutorReviewsSectionState extends State<TutorReviewsSection> {
                   //------------------------------------------
                   TextField(
                     controller: _controller,
+                    onChanged: (value) => _saveReviewDraft(),
                     maxLines: 4,
                     style: const TextStyle(color: Colors.white),
                     decoration: InputDecoration(
@@ -243,6 +267,24 @@ class _TutorReviewsSectionState extends State<TutorReviewsSection> {
                         onPressed: vm.isLoading
                             ? null
                             : () async {
+                                //----------------------------------
+                                //
+                                //----------------------------------
+                                final connectivity = await Connectivity()
+                                    .checkConnectivity();
+
+                                if (connectivity == ConnectivityResult.none) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text("Sin conexión a internet"),
+                                    ),
+                                  );
+                                  return;
+                                }
+
+                                //----------------------------------
+                                // ENVÍO NORMAL
+                                //----------------------------------
                                 final success = await vm.createReview(
                                   tutorId: widget.tutorId,
                                   rating: rating,
@@ -251,7 +293,7 @@ class _TutorReviewsSectionState extends State<TutorReviewsSection> {
 
                                 if (success) {
                                   //----------------------------------
-                                  // BQ IX ANALYTICS
+                                  // ANALYTICS
                                   //----------------------------------
                                   AnalyticsService.instance.logEvent(
                                     "review_submit",
@@ -261,7 +303,7 @@ class _TutorReviewsSectionState extends State<TutorReviewsSection> {
                                       "tutor_id": widget.tutorId,
                                     },
                                   );
-
+                                  await _clearReviewDraft();
                                   Navigator.pop(context);
                                   _controller.clear();
                                   rating = 0;

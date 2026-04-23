@@ -16,7 +16,7 @@ import 'package:provider/provider.dart';
 // ---------------------------
 // CAMBIAR AQUÍ PARA SALTAR LOGIN
 // ---------------------------
-const bool SKIP_LOGIN = false;
+const bool SKIP_LOGIN = true;
 
 // ---------------------------
 // MAIN 
