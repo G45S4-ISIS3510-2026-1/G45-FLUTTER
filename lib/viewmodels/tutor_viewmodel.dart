@@ -8,15 +8,12 @@ class TutorViewModel extends ChangeNotifier {
 
   List<TutorSummary> tutors = [];
   List<TutorSummary> recommendedTutors = [];
+  List<String> lastLoadedIds = [];
   bool isLoading = false;
-  
-  bool _isFetchingMore = false;
+  bool isFetchingMore = false;
   String? errorMessage;
 
-  int _limit = 20;
-
-  int get limit => _limit;
-  bool get isFetchingMore => _isFetchingMore;
+  int limit = 20;
 
   TutorViewModel(this.repo);
 
@@ -29,7 +26,7 @@ class TutorViewModel extends ChangeNotifier {
 
     isLoading = true;
     errorMessage = null;
-    _limit = 20;
+    limit = 20;
     notifyListeners();
 
     try {
@@ -37,7 +34,7 @@ class TutorViewModel extends ChangeNotifier {
         name: name,
         skillIds: skillIds,
         major: major,
-        limit: _limit,
+        limit: limit,
       );
     } catch (e) {
       errorMessage = "Error cargando tutores";
@@ -49,16 +46,16 @@ class TutorViewModel extends ChangeNotifier {
   }
 
   Future<void> loadMoreTutors() async {
-    if (_isFetchingMore) return;
+    if (isFetchingMore) return;
 
-    _isFetchingMore = true;
-    _limit += 20;
+    isFetchingMore = true;
+    limit += 20;
 
     try {
-      final newTutors = await repo.getTutors(limit: _limit);
+      final newTutors = await repo.getTutors(limit: limit);
 
       if (newTutors.length == tutors.length) {
-        _isFetchingMore = false;
+        isFetchingMore = false;
         return;
       }
 
@@ -67,19 +64,19 @@ class TutorViewModel extends ChangeNotifier {
       errorMessage = "Error cargando más tutores";
     }
 
-    _isFetchingMore = false;
+    isFetchingMore = false;
     notifyListeners();
   }
 
   Future<void> loadRecommendations() async {
     final ids = RecentViewedService().ids;
     if (ids.isEmpty) return;
-    
+    if (ids.toString() == lastLoadedIds.toString()) return;
+    lastLoadedIds = List.from(ids);
+
     try {
       recommendedTutors = await repo.getRecommendations(ids);
       notifyListeners();
-    } catch (e) {
-      
-    }
+    } catch (e) {}
   }
 }

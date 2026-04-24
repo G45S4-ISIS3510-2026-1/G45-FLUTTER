@@ -22,13 +22,12 @@ class Session {
       skill: Map<String, dynamic>.from(json['skill']),
       scheduledAt: DateTime.parse(json['scheduledAt']),
       status: json['status'],
-      studentId: json['studentId'],
-      tutorId: json['tutorId'],
+      studentId: json['student']['id'],
+      tutorId: json['tutor']['id'],
       verifCode: json['verifCode'],
       id: json['id'],
     );
   }
-
   Map<String, dynamic> toJson() {
     return {
       'id': id,

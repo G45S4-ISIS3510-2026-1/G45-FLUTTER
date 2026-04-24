@@ -7,9 +7,11 @@ class BecomeTutorViewModel extends ChangeNotifier {
   final repo = SkillRepository();
   final userRepo = UserRepository();
 
+  int price = 0;
   List<String> majors = [];
   List<Skill> availableSkills = [];
 
+  String? errorMessage;
   String? selectedMajor;
   Skill? selectedSkill;
   String? selectedDay;
@@ -147,7 +149,11 @@ class BecomeTutorViewModel extends ChangeNotifier {
     return "$dayLabel - $hour:$minute";
   }
 
-  String? errorMessage;
+  void setPrice(int price) {
+    price = price;
+    notifyListeners();
+  }
+
 
   Future<void> becomeTutor(String userId) async {
     errorMessage = null;
@@ -169,6 +175,11 @@ class BecomeTutorViewModel extends ChangeNotifier {
     if (availabilityDisplay.isEmpty) {
       errorMessage = "Debes agregar al menos una disponibilidad";
       isLoading = false;
+      notifyListeners();
+      return;
+    }
+    if (price <= 0) {
+      errorMessage = "Debes ingresar un precio válido";
       notifyListeners();
       return;
     }

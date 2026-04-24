@@ -170,10 +170,12 @@ class _ProfilePageState extends State<ProfilePage> {
                   width: double.infinity,
                   child: ElevatedButton(
                     onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (_) => const BecomeTutor()),
-                      );
+                      ConnectionService().checkAndExecute(context, () async {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (_) => const BecomeTutor()),
+                        );
+                      });
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFFFFD15C),

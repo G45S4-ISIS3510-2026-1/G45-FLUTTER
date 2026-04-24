@@ -195,6 +195,22 @@ class BecomeTutorState extends State<BecomeTutor> {
               ],
             ),
             // ------------------------------------- //
+            // PRECIO
+            const SizedBox(height: 24),
+            Text("Precio por sesión (COP)", style: theme.textTheme.titleMedium),
+            const SizedBox(height: 8),
+            TextField(
+              keyboardType: TextInputType.number,
+              decoration: InputDecoration(
+                hintText: "Ej: 25000",
+                prefixText: "\$ ",
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+              ),
+              onChanged: (val) => vm.setPrice(int.tryParse(val) ?? 0),
+            ),
+            const SizedBox(height: 32),
+
+            // ------------------------------------- //
             // LISTA DISPONIBILIDADES
             const SizedBox(height: 12),
             Wrap(
@@ -220,13 +236,9 @@ class BecomeTutorState extends State<BecomeTutor> {
               width: double.infinity,
               child:ElevatedButton(
                 onPressed: () {
-                  if (connectionService.hasConnection) {
+                  ConnectionService().checkAndExecute(context, () async {
                     vm.becomeTutor(authVM.userCache!.id);
-                  } else {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text("Sin conexión a internet")),
-                    );
-                  }
+                  });
                 },
                 style: ElevatedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(vertical: 16),
