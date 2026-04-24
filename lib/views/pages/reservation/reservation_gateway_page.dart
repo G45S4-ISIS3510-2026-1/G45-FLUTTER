@@ -1,3 +1,4 @@
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:g45_flutter/models/session.dart';
 import 'package:g45_flutter/models/skills.dart';
@@ -228,6 +229,14 @@ class _ReservationGatewayPageState extends State<ReservationGatewayPage> {
               ),
               ElevatedButton(
                 onPressed: () async {
+                  final connectivity = await Connectivity().checkConnectivity();
+                  if (connectivity == ConnectivityResult.none) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text("Sin conexión a internet")),
+                    );
+                    return;
+                  }
+
                   if (selectedDate == null) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(content: Text('Por favor seleccione una fecha')),

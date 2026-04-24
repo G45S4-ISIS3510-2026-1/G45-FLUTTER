@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../config/api_config.dart';
 import '../models/session.dart';
@@ -53,29 +54,55 @@ class SessionRepository {
   // GET getByStudent
   Future<List<Session>> getByStudent(String studentId) async {
     final url = Uri.parse("$baseUrl/by-student/$studentId");
-    final resp = await http.get(url);
+    try {
+      final resp = await http.get(url);
 
-    if (resp.statusCode == 200) {
-      final List data = jsonDecode(resp.body);
-      return data.map((json) => Session.fromJson(json)).toList();
+      if (resp.statusCode == 200) {
+        final List data = jsonDecode(resp.body);
+        final sessions = data.map((json) => Session.fromJson(json)).toList();
+        
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString("agenda_student_$studentId", jsonEncode(data));
+        
+        return sessions;
+      }
+      throw Exception("Error obteniendo sesiones por estudiante: ${resp.statusCode}");
+    } catch (e) {
+      final prefs = await SharedPreferences.getInstance();
+      final cached = prefs.getString("agenda_student_$studentId");
+      if (cached != null) {
+        final List data = jsonDecode(cached);
+        return data.map((json) => Session.fromJson(json)).toList();
+      }
+      return [];
     }
-
-    throw Exception(
-      "Error obteniendo sesiones por estudiante: ${resp.statusCode}",
-    );
   }
 
   // GET getByTutor
   Future<List<Session>> getByTutor(String tutorId) async {
     final url = Uri.parse("$baseUrl/by-tutor/$tutorId");
-    final resp = await http.get(url);
+    try {
+      final resp = await http.get(url);
 
-    if (resp.statusCode == 200) {
-      final List data = jsonDecode(resp.body);
-      return data.map((json) => Session.fromJson(json)).toList();
+      if (resp.statusCode == 200) {
+        final List data = jsonDecode(resp.body);
+        final sessions = data.map((json) => Session.fromJson(json)).toList();
+        
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString("agenda_tutor_$tutorId", jsonEncode(data));
+        
+        return sessions;
+      }
+      throw Exception("Error obteniendo sesiones por tutor: ${resp.statusCode}");
+    } catch (e) {
+      final prefs = await SharedPreferences.getInstance();
+      final cached = prefs.getString("agenda_tutor_$tutorId");
+      if (cached != null) {
+        final List data = jsonDecode(cached);
+        return data.map((json) => Session.fromJson(json)).toList();
+      }
+      return [];
     }
-
-    throw Exception("Error obteniendo sesiones por tutor: ${resp.statusCode}");
   }
 
   // UPDATE? cancelSession

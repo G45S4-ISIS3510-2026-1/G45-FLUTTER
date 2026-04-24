@@ -1,3 +1,4 @@
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:g45_flutter/models/session.dart';
 import 'package:g45_flutter/viewmodels/reservation_detail_viewmodel.dart';
@@ -114,61 +115,61 @@ class ReservationDetailPageState extends State<ReservationDetailPage> {
                         QrCodeWidget(
                           verifCode: widget.session.verifCode,
                           isTutor: isTutorView,
-                          onCodeScanned: (code) {
+                          onCodeScanned: (code) async {
+                            final connectivity = await Connectivity().checkConnectivity();
+                            if (connectivity == ConnectivityResult.none) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text("Sin conexión a internet")),
+                              );
+                              return;
+                            }
                             viewModel.confirmSession(widget.session, currentUserId, code);
                           },
                         ),
                         SizedBox(height: 16),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                          children: [
-                            ElevatedButton(
-                              onPressed: () {
-                                showDialog(
-                                  context: context,
-                                  builder: (context) {
-                                    return AlertDialog(
-                                      title: Text('Cancelar reserva'),
-                                      content: Text(
-                                        '¿Está seguro de que desea cancelar la reserva?',
-                                      ),
-                                      actions: [
-                                        TextButton(
-                                          onPressed: () {
-                                            Navigator.pop(context);
-                                          },
-                                          child: Text('Cancelar'),
-                                        ),
-                                        TextButton(
-                                          onPressed: () {
-                                            Navigator.pop(context);
-                                            viewModel.cancelSession(
-                                              widget.session,
-                                              currentUserId,
-                                            );
-                                          },
-                                          child: Text('Confirmar'),
-                                        ),
-                                      ],
-                                    );
-                                  },
+                        ElevatedButton(
+                          onPressed: () {
+                            showDialog(
+                              context: context,
+                              builder: (context) {
+                                return AlertDialog(
+                                  title: Text('Cancelar reserva'),
+                                  content: Text(
+                                    '¿Está seguro de que desea cancelar la reserva?',
+                                  ),
+                                  actions: [
+                                    TextButton(
+                                      onPressed: () {
+                                        Navigator.pop(context);
+                                      },
+                                      child: Text('No, volver'),
+                                    ),
+                                    TextButton(
+                                      onPressed: () async {
+                                        final connectivity = await Connectivity().checkConnectivity();
+                                        if (connectivity == ConnectivityResult.none) {
+                                          ScaffoldMessenger.of(context).showSnackBar(
+                                            const SnackBar(content: Text("Sin conexión a internet")),
+                                          );
+                                          return;
+                                        }
+                                        Navigator.pop(context);
+                                        viewModel.cancelSession(
+                                          widget.session,
+                                          currentUserId,
+                                        );
+                                      },
+                                      child: Text('Sí, cancelar'),
+                                    ),
+                                  ],
                                 );
                               },
-                              child: Text(
-                                'Cancelar',
-                                style: TextStyle(color: Colors.white),
-                              ),
-                            ),
-                            ElevatedButton(
-                              onPressed: () {
-                                viewModel.confirmSession(widget.session, currentUserId, widget.session.verifCode);
-                              },
-                              child: Text(
-                                'Confirmar',
-                                style: TextStyle(color: Colors.white),
-                              ),
-                            ),
-                          ],
+                            );
+                          },
+                          child: Text(
+                            'Cancelar Reserva',
+                            style: TextStyle(color: Colors.white),
+                          ),
                         ),
                       ],
                     ],
