@@ -12,31 +12,29 @@ class UserRepository {
   final String baseUrl = "${ApiConfig.baseUrl}/users";
   final SkillRepository skillRepo = SkillRepository();
 
-  //buscar user por email retorna un objeeto usuario
-  //OJO: este endpoint puede no existir en el backend
+  //-----------------------------------------------
+  // FIND USER
+  //-----------------------------------------------
   Future<User?> findUser(String email) async {
     final url = Uri.parse("$baseUrl/by-email/$email");
 
     final resp = await http.get(url);
 
-    if (resp.statusCode == 404) {
-      return null;
-    }
-
+    if (resp.statusCode == 404) return null;
     if (resp.statusCode != 200) {
       throw Exception("Error consultando backend");
     }
 
-    final Map<String, dynamic> json = jsonDecode(resp.body);
-    return User.fromJson(json);
+    return User.fromJson(jsonDecode(resp.body));
   }
 
-  //actualizar el major del usuario
+  //-----------------------------------------------
+  // UPDATE SKILLS
+  //-----------------------------------------------
   Future<User?> updateUserInterestedSkills(User user, String major) async {
     final skillsMajor = await skillRepo.getByMajor(major);
     final skillIds = skillsMajor.map((s) => s.id!).toList();
 
-    //endpoint correcto segun backend
     final url = Uri.parse("$baseUrl/${user.id}/interested-skills");
 
     final resp = await http.patch(
@@ -46,17 +44,18 @@ class UserRepository {
     );
 
     if (resp.statusCode != 200) {
-      throw Exception("Error actualizando usuario en backend");
+      throw Exception("Error actualizando usuario");
     }
 
     return User.fromJson(jsonDecode(resp.body));
   }
 
-  //crear usuario params:  id, name, email
+  //-----------------------------------------------
+  // CREATE USER
+  //-----------------------------------------------
   Future<User> createUser(String uid, String name, String email) async {
     final url = Uri.parse("$baseUrl/");
 
-    //si el endpoint no existe, esto puede fallar
     User? usuario;
     try {
       usuario = await findUser(email);
@@ -64,9 +63,7 @@ class UserRepository {
       usuario = null;
     }
 
-    if (usuario != null) {
-      return usuario;
-    }
+    if (usuario != null) return usuario;
 
     final resp = await http.post(
       url,
@@ -86,35 +83,30 @@ class UserRepository {
       }),
     );
 
-    print(resp.statusCode);
-
     if (resp.statusCode != 201) {
-      print("BACKEND ERROR: ${resp.body}");
-      throw Exception("Error creando usuario en backend");
+      throw Exception("Error creando usuario");
     }
 
     return User.fromJson(jsonDecode(resp.body));
   }
 
   //-----------------------------------------------
-  //Llamado de lista de tutores
+  // GET TUTORS
   //-----------------------------------------------
-  //obteneer la lista de tutoreSummary con params opcionales: nombre, lista de skills y major
   Future<List<TutorSummary>> getTutors({
     String? name,
     List<String>? skillIds,
     String? major,
     int limit = 20,
   }) async {
-      final uri = Uri.parse("$baseUrl/tutors/search").replace(
-        queryParameters: {
-          if (name != null) "name": name,
-          if (major != null) "major": major,
-          "limit": limit.toString(),
-        },
-      );
+    final uri = Uri.parse("$baseUrl/tutors/search").replace(
+      queryParameters: {
+        if (name != null) "name": name,
+        if (major != null) "major": major,
+        "limit": limit.toString(),
+      },
+    );
 
-    //agregar skill_ids repetidos manualmente
     final finalUri = skillIds != null && skillIds.isNotEmpty
         ? Uri.parse(
             uri.toString() +
@@ -130,43 +122,58 @@ class UserRepository {
     }
 
     final List data = jsonDecode(resp.body);
-
     return data.map((json) => TutorSummary.fromJson(json)).toList();
   }
 
-  //obtener lista de usuarios por ID
-  Future<User> getUserById(String id) async {
-    //endpoint correcto segun backend
-    final url = Uri.parse("$baseUrl/profile/$id");
+  //-----------------------------------------------
+  // GET USER BY ID (CACHE + FALLBACK)
+  //-----------------------------------------------
+  Future<User?> getUserById(String id) async {
+    final prefs = await SharedPreferences.getInstance();
 
-    final resp = await http.get(url);
+    try {
+      final url = Uri.parse("$baseUrl/profile/$id");
 
-    if (resp.statusCode != 200) {
-      throw Exception("Error obteniendo usuario");
+      final resp = await http.get(url);
+
+      if (resp.statusCode == 200) {
+        final data = jsonDecode(resp.body);
+
+        await prefs.setString("user_$id", jsonEncode(data));
+
+        return User.fromJson(data);
+      } else {
+        throw Exception("Error status ${resp.statusCode}");
+      }
+    } catch (e) {
+      final cached = prefs.getString("user_$id");
+
+      if (cached != null) {
+        return User.fromJson(jsonDecode(cached));
+      }
+
+      return null;
     }
-
-    return User.fromJson(jsonDecode(resp.body));
   }
 
-  Future<User> becomeTutor( String userId, List<String> skillIds, Map<String, List<String>> availability, int price) async{
-
+  //-----------------------------------------------
+  // BECOME TUTOR
+  //-----------------------------------------------
+  Future<User> becomeTutor(
+    String userId,
+    List<String> skillIds,
+    Map<String, List<String>> availability,
+    int price,
+  ) async {
     final tutoringUrl = Uri.parse("$baseUrl/$userId/tutoring?is_tutoring=true");
-    final tutoringResp = await http.patch(tutoringUrl);
-
-    if (tutoringResp.statusCode != 200) {
-      throw Exception("Error activando modo tutor");
-    }
+    await http.patch(tutoringUrl);
 
     final skillsUrl = Uri.parse("$baseUrl/$userId/tutoring-skills");
-    final skillsResp = await http.patch(
+    await http.patch(
       skillsUrl,
       headers: {"Content-Type": "application/json"},
       body: jsonEncode(skillIds),
     );
-
-    if (skillsResp.statusCode != 200) {
-      throw Exception("Error actualizando skills");
-    }
 
     final availabilityUrl = Uri.parse("$baseUrl/$userId/availability");
     final availabilityResp = await http.patch(
@@ -194,8 +201,12 @@ class UserRepository {
     return User.fromJson(jsonDecode(availabilityResp.body));
   }
 
+  //-----------------------------------------------
+  // RECOMMENDATIONS
+  //-----------------------------------------------
   Future<List<TutorSummary>> getRecommendations(List<String> ids) async {
     final url = Uri.parse("${ApiConfig.baseUrl}/recommendations");
+
     final resp = await http.post(
       url,
       headers: {"Content-Type": "application/json"},
@@ -210,14 +221,15 @@ class UserRepository {
     return data.map((json) => TutorSummary.fromJson(json)).toList();
   }
 
-  //--------------------------
-  // FAVORITOS EN CACHE
-  //--------------------------
-    Future<void> saveFavorites(List<String> tutorIds) async {
+  //-----------------------------------------------
+  // FAVORITES CACHE
+  //-----------------------------------------------
+  Future<void> saveFavorites(List<String> tutorIds) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setStringList("favorites", tutorIds);
   }
-    Future<List<String>> getFavorites() async {
+
+  Future<List<String>> getFavorites() async {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getStringList("favorites") ?? [];
   }

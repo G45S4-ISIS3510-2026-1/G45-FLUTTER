@@ -19,24 +19,24 @@ class Review {
 
   factory Review.fromJson(Map<String, dynamic> json) {
     return Review(
-      authorId: json['authorId'],
-      authorName: json['authorName'],
+      authorId: json['authorId'] ?? "",
+      authorName: json['authorName'] ?? "",
       authorImage: json['authorImage'],
-      details: json['details'],
-      rating: (json['rating'] as num).toDouble(),
-      createdAt: DateTime.parse(json['createdAt']),
-      tutorId: json['tutorId'],
+      details: json['details'] ?? json['label'] ?? "",
+      rating: (json['rating'] as num?)?.toDouble() ?? 0.0,
+      createdAt: DateTime.tryParse(json['createdAt'] ?? "") ?? DateTime.now(),
+      tutorId: json['tutorId'] ?? "",
     );
   }
   Map<String, dynamic> toJson() {
-  return {
-    "authorId": authorId,
-    "authorName": authorName,
-    "authorImage": authorImage,
-    "rating": rating,
-    "details": details,
-    "createdAt": createdAt.toIso8601String(),
-    "tutorId": tutorId,
-  };
-}
+    return {
+      "authorId": authorId,
+      "authorName": authorName,
+      "authorImage": authorImage,
+      "rating": rating,
+      "details": details,
+      "createdAt": createdAt.toIso8601String(),
+      "tutorId": tutorId,
+    };
+  }
 }

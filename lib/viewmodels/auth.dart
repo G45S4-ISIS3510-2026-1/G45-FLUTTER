@@ -9,11 +9,11 @@ import 'package:shared_preferences/shared_preferences.dart';
 enum AuthState { loading, login, selectSkills, home }
 
 class AuthViewModel extends ChangeNotifier {
-  final repository = UserRepository();
-
   static final AuthViewModel instance = AuthViewModel.internal();
   factory AuthViewModel() => instance;
   AuthViewModel.internal();
+
+  final repository = UserRepository();
 
   AuthState _authState = AuthState.loading;
   AuthState get authState => _authState;
@@ -45,7 +45,10 @@ class AuthViewModel extends ChangeNotifier {
     setAuthState(AuthState.loading);
 
     try {
-      final updatedUser = await repository.updateUserInterestedSkills(user, major);
+      final updatedUser = await repository.updateUserInterestedSkills(
+        user,
+        major,
+      );
       if (updatedUser != null) {
         userCache = updatedUser;
         await saveUserInCache(updatedUser);
@@ -102,11 +105,16 @@ class AuthViewModel extends ChangeNotifier {
 
     try {
       final fetched = await repository.getUserById(userCache!.id!);
-      userCache = fetched;
-      await saveUserInCache(fetched);
-      notifyListeners();
+
+      if (fetched != null) {
+        userCache = fetched;
+        await saveUserInCache(fetched);
+        notifyListeners();
+      } else {
+        print("No se pudo refrescar (null)");
+      }
     } catch (e) {
-      // queda con el cache, no hacer signOut
+      print("Error refrescando usuario: $e");
     }
   }
 

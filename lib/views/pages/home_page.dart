@@ -23,10 +23,14 @@ class _HomePageState extends State<HomePage> {
   void initState() {
     super.initState();
 
+    //----------------------------------
+    // USER + SESIONES
+    //----------------------------------
     Future.microtask(() async {
       final user = await authVM.getUserCache();
       if (user != null) {
         setState(() => nombre = user.name);
+
         if (mounted) {
           Provider.of<SessionViewModel>(context, listen: false)
               .loadSessionsByStudent(user.id);
@@ -34,6 +38,9 @@ class _HomePageState extends State<HomePage> {
       }
     });
 
+    //----------------------------------
+    // RECOMENDACIONES + SCROLL
+    //----------------------------------
     Future.microtask(() {
       final tutorVM = Provider.of<TutorViewModel>(context, listen: false);
       tutorVM.loadRecommendations();
@@ -50,7 +57,8 @@ class _HomePageState extends State<HomePage> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    Provider.of<TutorViewModel>(context, listen: false).loadRecommendations();
+    Provider.of<TutorViewModel>(context, listen: false)
+        .loadRecommendations();
   }
 
   @override
@@ -59,10 +67,14 @@ class _HomePageState extends State<HomePage> {
     super.dispose();
   }
 
+  //----------------------------------
+  // SNACKBAR (MEJORADO)
+  //----------------------------------
   void showNoConnectionSnackbar() {
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
-        content: Text("Sin conexión a internet, no puedes ver los detalles ahora"),
+        content: Text(
+            "Sin conexión a internet, no puedes ver los detalles ahora"),
         backgroundColor: Colors.red,
       ),
     );
@@ -77,34 +89,45 @@ class _HomePageState extends State<HomePage> {
     return CustomScrollView(
       controller: scrollController,
       slivers: [
+        //----------------------------------
+        // SALUDO
+        //----------------------------------
         SliverToBoxAdapter(
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             child: Text(
               'Hola $nombre!',
-              style: const TextStyle(fontSize: 35, fontWeight: FontWeight.bold),
+              style: const TextStyle(
+                  fontSize: 35, fontWeight: FontWeight.bold),
             ),
           ),
         ),
 
+        //----------------------------------
+        // SESIONES
+        //----------------------------------
         const SliverToBoxAdapter(
           child: Padding(
             padding: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
             child: Text(
-              'Proximas sesiones',
+              'Próximas sesiones',
               style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
             ),
           ),
         ),
 
-        sessionVM.isLoading || tutorVM.isLoading
+        //----------------------------------
+        // LOADING (MEJORADO)
+        //----------------------------------
+        (sessionVM.isLoading || tutorVM.isLoading)
             ? const SliverToBoxAdapter(
                 child: Center(child: CircularProgressIndicator()),
               )
             : sessionVM.studentSessions.isEmpty
                 ? const SliverToBoxAdapter(
                     child: Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                       child: Text("No tienes sesiones próximas"),
                     ),
                   )
@@ -118,14 +141,20 @@ class _HomePageState extends State<HomePage> {
                           }
                         },
                         child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                          child: SessionCardWidget(session: sessionVM.studentSessions[index]),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 16, vertical: 8),
+                          child: SessionCardWidget(
+                            session: sessionVM.studentSessions[index],
+                          ),
                         ),
                       ),
                       childCount: sessionVM.studentSessions.length,
                     ),
                   ),
 
+        //----------------------------------
+        // RECOMENDADOS
+        //----------------------------------
         if (tutorVM.recommendedTutors.isNotEmpty) ...[
           const SliverToBoxAdapter(
             child: Padding(
@@ -137,32 +166,32 @@ class _HomePageState extends State<HomePage> {
             ),
           ),
           SliverToBoxAdapter(
-            child: tutorVM.isLoading
-                ? const Center(child: CircularProgressIndicator())
-                : SizedBox(
-                    height: 200,
-                    child: ListView.builder(
-                      scrollDirection: Axis.horizontal,
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      itemCount: tutorVM.recommendedTutors.length,
-                      itemBuilder: (context, index) => GestureDetector(
-                        onTap: () {
-                          if (!connection.hasConnection) {
-                            showNoConnectionSnackbar();
-                            return;
-                          }
-                        },
-                        child: Padding(
-                          padding: const EdgeInsets.only(right: 12.0),
-                          child: TutorCardSmall(tutor: tutorVM.recommendedTutors[index]),
-                        ),
-                      ),
+            child: SizedBox(
+              height: 200,
+              child: ListView.builder(
+                scrollDirection: Axis.horizontal,
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                itemCount: tutorVM.recommendedTutors.length,
+                itemBuilder: (context, index) => GestureDetector(
+                  onTap: () {
+                    if (!connection.hasConnection) {
+                      showNoConnectionSnackbar();
+                      return;
+                    }
+                  },
+                  child: Padding(
+                    padding: const EdgeInsets.only(right: 12.0),
+                    child: TutorCardSmall(
+                      tutor: tutorVM.recommendedTutors[index],
                     ),
                   ),
+                ),
+              ),
+            ),
           ),
         ],
 
-        const SliverToBoxAdapter(child: SizedBox(height: 5)),
+        const SliverToBoxAdapter(child: SizedBox(height: 10)),
       ],
     );
   }

@@ -1,11 +1,11 @@
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flutter/material.dart';
-import 'package:g45_flutter/models/review.dart';
 import 'package:g45_flutter/models/tutor_summary.dart';
 import 'package:g45_flutter/models/user.dart';
-import 'package:g45_flutter/repositories/review_repository.dart';
 import 'package:g45_flutter/repositories/user_repository.dart';
 import 'package:g45_flutter/services/analytics_service.dart';
+import 'package:g45_flutter/services/recent_viewed.dart';
+import 'package:g45_flutter/viewmodels/review_viewmodel.dart';
 import 'package:g45_flutter/viewmodels/skills_viewmodel.dart';
 import 'package:g45_flutter/views/pages/reservation/reservation_gateway_page.dart';
 import 'package:g45_flutter/widgets/tutor/tutor_info_section.dart';
@@ -14,9 +14,9 @@ import 'package:g45_flutter/services/recent_viewed.dart';
 import 'package:provider/provider.dart';
 
 class TutorProfilePage extends StatefulWidget {
-  //variable de widget
   final String tutorId;
   final dynamic tutor;
+
   const TutorProfilePage({
     super.key,
     required this.tutorId,
@@ -30,7 +30,8 @@ class TutorProfilePage extends StatefulWidget {
 class _TutorProfilePageState extends State<TutorProfilePage> {
   User? tutor;
   bool isLoading = true;
-  bool showAllReviews = false;
+  bool isFavorite = false;
+  List<String> favorites = [];
 
   final FirebaseAnalytics analytics = FirebaseAnalytics.instance;
   DateTime? _startTime;
@@ -38,26 +39,39 @@ class _TutorProfilePageState extends State<TutorProfilePage> {
   @override
   void initState() {
     super.initState();
+
+    //----------------------------------
+    // RECENT VIEWED
+    //----------------------------------
     RecentViewedService().addTutor(widget.tutorId);
-    analytics.logEvent(name: 'test_event');
+
+    //----------------------------------
+    // ANALYTICS
+    //----------------------------------
     _startTime = DateTime.now();
+
     AnalyticsService.instance.setCurrentService('TutorProfile');
     AnalyticsService.instance.logEvent('view_review', {
       'tutor_id': widget.tutorId,
     });
+
+    //----------------------------------
+    // DATA
+    //----------------------------------
+    loadFavorites();
     loadTutor();
   }
 
+  //----------------------------------
+  // LOAD TUTOR
+  //----------------------------------
   Future<void> loadTutor() async {
     try {
       final repo = UserRepository();
-      final reviewRepo = ReviewRepository();
-
-      tutor = await repo.getUserById(widget.tutorId);
-      reviewsList = await reviewRepo.getReviewsByTutor(widget.tutorId);
-      print("REVIEWS RESPONSE: $reviewsList");
+      final result = await repo.getUserById(widget.tutorId);
 
       setState(() {
+        tutor = result;
         isLoading = false;
       });
     } catch (e, stack) {
@@ -67,19 +81,28 @@ class _TutorProfilePageState extends State<TutorProfilePage> {
         e,
         stack,
       );
+
       setState(() {
         isLoading = false;
       });
     }
   }
 
-  List<Review> reviewsList = [];
+  //----------------------------------
+  // FAVORITES
+  //----------------------------------
+  Future<void> loadFavorites() async {
+    final repo = UserRepository();
+    favorites = await repo.getFavorites();
 
-  //-------------------------------
-  // Funciones Auxiliares
-  //-------------------------------
+    setState(() {
+      isFavorite = favorites.contains(widget.tutorId);
+    });
+  }
 
-  //Analytics engine
+  //----------------------------------
+  // DISPOSE (TIME ANALYTICS)
+  //----------------------------------
   @override
   void dispose() {
     if (_startTime != null) {
@@ -87,334 +110,267 @@ class _TutorProfilePageState extends State<TutorProfilePage> {
 
       analytics.logEvent(
         name: 'time_spent_on_reviews',
-        parameters: {'tutor_id': widget.tutorId, 'seconds': seconds},
-        
+        parameters: {
+          'tutor_id': widget.tutorId,
+          'seconds': seconds,
+        },
       );
     }
-print("TUTOR ID: ${widget.tutorId}");
     super.dispose();
   }
 
-  //Fonts para Barra de stats
+  //----------------------------------
+  // UI HELPERS
+  //----------------------------------
   Widget buildStat(String title, String value) {
     return Column(
       children: [
-        Text(
-          title,
-          style: TextStyle(
-            fontSize: 12,
-            color: Colors.white70,
-            letterSpacing: 1.2,
-          ),
-        ),
-        SizedBox(height: 8),
-        Text(
-          value,
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-            color: Colors.white,
-          ),
-        ),
+        Text(title,
+            style: const TextStyle(
+                fontSize: 12, color: Colors.white70, letterSpacing: 1.2)),
+        const SizedBox(height: 8),
+        Text(value,
+            style: const TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Colors.white)),
       ],
     );
   }
 
-  // Linea de separador
   Widget buildDivider() {
     return Container(height: 30, width: 1, color: Colors.white24);
   }
 
+  //----------------------------------
+  // BUILD
+  //----------------------------------
   @override
   Widget build(BuildContext context) {
-    if (isLoading || tutor == null) {
-      return Scaffold(body: Center(child: CircularProgressIndicator()));
+    if (isLoading) {
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
     }
-    final reviewsToShow = showAllReviews
-        ? reviewsList
-        : reviewsList.take(2).toList();
+
+    if (tutor == null) {
+      return const Scaffold(
+        body: Center(
+          child: Text("No se pudo cargar el tutor"),
+        ),
+      );
+    }
+
     final skillsVM = Provider.of<SkillsViewModel>(context);
     final tutorSkills = tutor?.tutoringSkills ?? [];
+
     final skillNames = skillsVM.skills
         .where((skill) => tutorSkills.contains(skill.id))
         .map((skill) => skill.label ?? "")
         .toList();
+
     return Scaffold(
-      body: SingleChildScrollView(
-        //--------------------------------------------------
-        //Columna principal
-        //--------------------------------------------------
-        child: Column(
-          children: [
-            //--------------------------------------------------
-            //Bloque Superior Botones, imagen, informacion Tutor
-            //--------------------------------------------------
-            SizedBox(
-              height: 300,
-              child: Stack(
-                children: [
-                  // 1. imagen fondo
-                  Positioned.fill(
-                    child: Image.network(
-                      tutor!.profileImageUrl ?? "",
-                      fit: BoxFit.cover,
-                      filterQuality: FilterQuality.high, 
-                      errorBuilder: (context, error, stackTrace) {
-                        return Container(color: Colors.black);
-                      },
+      body: SafeArea(
+        child: SingleChildScrollView(
+          child: Column(
+            children: [
+              //----------------------------------
+              // HEADER
+              //----------------------------------
+              SizedBox(
+                height: 300,
+                child: Stack(
+                  children: [
+                    Positioned.fill(
+                      child: Image.network(
+                        tutor!.profileImageUrl ?? "",
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, __, ___) =>
+                            Container(color: Colors.black),
+                      ),
                     ),
-                  ),
-                  // 2. overlay (gradiente o sombra)
-                  // 3. botones back + like
-                  Positioned(
-                    // Botón de regreso (Derecha)
-                    top: 40,
-                    left: 16,
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        shape: BoxShape.circle,
-                        boxShadow: [
-                          BoxShadow(color: Colors.black26, blurRadius: 6),
+
+                    //----------------------------------
+                    // BACK BUTTON
+                    //----------------------------------
+                    Positioned(
+                      top: 40,
+                      left: 16,
+                      child: Container(
+                        decoration: const BoxDecoration(
+                          color: Colors.white,
+                          shape: BoxShape.circle,
+                        ),
+                        child: IconButton(
+                          icon: const Icon(Icons.arrow_back,
+                              color: Colors.black),
+                          onPressed: () => Navigator.pop(context),
+                        ),
+                      ),
+                    ),
+
+                    //----------------------------------
+                    // FAVORITE BUTTON
+                    //----------------------------------
+                    Positioned(
+                      top: 40,
+                      right: 16,
+                      child: Container(
+                        decoration: const BoxDecoration(
+                          color: Colors.white,
+                          shape: BoxShape.circle,
+                        ),
+                        child: IconButton(
+                          icon: Icon(
+                            isFavorite
+                                ? Icons.favorite
+                                : Icons.favorite_border,
+                            color: isFavorite ? Colors.red : Colors.black,
+                          ),
+                          onPressed: () async {
+                            final repo = UserRepository();
+
+                            setState(() {
+                              if (isFavorite) {
+                                favorites.remove(widget.tutorId);
+                              } else {
+                                favorites.add(widget.tutorId);
+                              }
+                              isFavorite = !isFavorite;
+                            });
+
+                            await repo.saveFavorites(favorites);
+                          },
+                        ),
+                      ),
+                    ),
+
+                    //----------------------------------
+                    // INFO
+                    //----------------------------------
+                    Positioned(
+                      bottom: 20,
+                      left: 16,
+                      right: 16,
+                      child: Row(
+                        children: [
+                          CircleAvatar(
+                            radius: 40,
+                            backgroundImage: NetworkImage(
+                              tutor!.profileImageUrl ?? "",
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                tutor!.name ?? "",
+                                style: const TextStyle(
+                                    fontSize: 26,
+                                    fontWeight: FontWeight.bold),
+                              ),
+                              Text(
+                                tutor!.major ?? "",
+                                style: const TextStyle(
+                                    color: Colors.blueAccent),
+                              ),
+                            ],
+                          ),
                         ],
                       ),
-                      child: IconButton(
-                        icon: Icon(Icons.arrow_back, color: Colors.black),
-                        onPressed: () => Navigator.pop(context),
-                      ),
                     ),
-                  ),
-
-                  Positioned(
-                    // Botón de favorito (Izquierda)
-                    top: 40,
-                    right: 16,
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        shape: BoxShape.circle,
-                        boxShadow: [
-                          BoxShadow(color: Colors.black26, blurRadius: 6),
-                        ],
-                      ),
-                      child: IconButton(
-                        icon: Icon(Icons.favorite_border, color: Colors.black),
-                        onPressed: () {},
-                      ),
-                    ),
-                  ),
-                  //4. info (nombre, carrera)
-                  Positioned(
-                    bottom: 20,
-                    left: 16, //centrado
-                    right: 16, //centrado
-                    child: Row(
-                      children: [
-                        //Foto de perfil del tutor
-                        Stack(
-                          children: [
-                            // Marco de la Imagen
-                            Container(
-                              width: 88,
-                              height: 88,
-                              decoration: BoxDecoration(
-                                color: Colors.black,
-                                borderRadius: BorderRadius.circular(24),
-                              ),
-                            ),
-
-                            // Imagen encima
-                            Positioned(
-                              top: 4,
-                              left: 4,
-                              child: Container(
-                                width: 80,
-                                height: 80,
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(20),
-                                  image: DecorationImage(
-                                    image: NetworkImage(
-                                      tutor!.profileImageUrl ?? "",
-                                    ),
-                                    fit: BoxFit.cover,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                        SizedBox(width: 12),
-                        //Información del tutor
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            //renglon Superior
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                //Nombre del tutor
-                                Text(
-                                  tutor!.name ?? "Sin nombre",
-                                  style: TextStyle(
-                                    fontSize: 28,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.white,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            //major del tutor
-                            Text(
-                              tutor!.major ?? "Sin carrera",
-                              style: TextStyle(
-                                fontSize: 14,
-                                color: Colors.blueAccent,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            //--------------------------------------------------
-            //Container Regular debajo de imagen(Sigue colores de la APP)
-            //--------------------------------------------------
-            Container(
-              padding: EdgeInsets.symmetric(vertical: 20, horizontal: 16),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [Color(0xFF0A1A2F), Color(0xFF0D2A52)],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
+                  ],
                 ),
               ),
-              child: Column(
-                children: [
-                  //--------------------------------------------------
-                  //Puntaje, Tutorias, Nivel
-                  //--------------------------------------------------
-                  Padding(
-                    padding: EdgeInsets.symmetric(vertical: 20),
 
-                    child: Row(
+              //----------------------------------
+              // BODY
+              //----------------------------------
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+                child: Column(
+                  children: [
+                    Row(
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
-                        buildStat(
-                          "PUNTAJE",
-                          "${tutor!.tutorRating != null ? tutor!.tutorRating!.toStringAsFixed(1) : 'Nuevo'} ⭐",
-                        ),
+                        buildStat("PUNTAJE",
+                            "${tutor!.tutorRating?.toStringAsFixed(1) ?? 'Nuevo'} ⭐"),
                         buildDivider(),
                         buildStat("TUTORÍAS", "+120"),
                         buildDivider(),
                         buildStat("NIVEL", "Senior"),
                       ],
                     ),
-                  ),
-                  //--------------------------------------------------
-                  //Especialidades
-                  //--------------------------------------------------
-                  //Label de especialidades
-                  Align(
-                    alignment: Alignment.centerLeft,
-                    child: Text(
-                      'Especialidades',
-                      style: TextStyle(
-                        fontSize: 28,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                      ),
+
+                    const SizedBox(height: 20),
+
+                    //----------------------------------
+                    // SKILLS
+                    //----------------------------------
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text("Especialidades",
+                          style: Theme.of(context).textTheme.titleLarge),
                     ),
-                  ),
-                  // Chips de tutoring skilss
-                  Wrap(
-                    spacing: 12,
-                    runSpacing: 12,
-                    children: skillNames
-                        .map(
-                          (skill) => Chip(
-                            label: Text(skill),
-                            backgroundColor: Color(0xFF1A2A40),
-                            labelStyle: TextStyle(color: Colors.blueAccent),
-                          ),
-                        )
-                        .toList(),
-                  ),
-                  SizedBox(height: 10),
-                  //--------------------------------------------------
-                  //Info Personal
-                  SizedBox(height: 140, child: TutorInfoSection(tutor: tutor!)),
-                  // REVIEWS
-                  Align(
-                    alignment: Alignment.centerLeft,
-                    child: Text(
-                      "Reseñas",
-                      style: TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.bold,
-                      ),
+
+                    Wrap(
+                      spacing: 10,
+                      children: skillNames
+                          .map((e) => Chip(label: Text(e)))
+                          .toList(),
                     ),
-                  ),
 
-                  SizedBox(height: 10),
+                    const SizedBox(height: 20),
 
-                  // top 2 reviews
-                  reviewsList.isEmpty
-                      ? Padding(
-                          padding: EdgeInsets.symmetric(vertical: 20),
-                          child: Text(
-                            "Este tutor aún no tiene reseñas",
-                            style: TextStyle(color: Colors.white70),
-                          ),
-                        )
-                      : Column(
-                          children: reviewsToShow.map((review) {
-                            return ReviewCard(review: review);
-                          }).toList(),
-                        ),
+                    //----------------------------------
+                    // INFO
+                    //----------------------------------
+                    SizedBox(
+                      height: 140,
+                      child: TutorInfoSection(tutor: tutor!),
+                    ),
 
-                  if (reviewsList.length > 2)
-                    TextButton(
+                    const SizedBox(height: 20),
+
+                    //----------------------------------
+                    // REVIEWS
+                    //----------------------------------
+                    ChangeNotifierProvider(
+                      create: (_) => ReviewViewModel()
+                        ..loadReviewsByTutor(widget.tutorId),
+                      child: TutorReviewsSection(tutorId: widget.tutorId),
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    //----------------------------------
+                    // BOOK BUTTON
+                    //----------------------------------
+                    ElevatedButton(
                       onPressed: () {
-                        setState(() {
-                          showAllReviews = !showAllReviews;
-                        });
-                      },
-                      child: Text(
-                        showAllReviews
-                            ? "Ver menos"
-                            : "Ver todas las reseñas (${reviewsList.length})",
-                      ),
-                    ),
+                        analytics.logEvent(
+                          name: 'schedule_session',
+                          parameters: {'tutor_id': tutor!.id ?? ""},
+                        );
 
-                  SizedBox(height: 20),
-                  //-----------------------------------------------------------------------
-                  // BOTÓN PRINCIPAL RESERVA
-                  ElevatedButton(
-                    onPressed: () {
-                      analytics.logEvent(
-                        name: 'schedule_session',
-                        parameters: {'tutor_id': tutor!.id ?? ""},
-                      );
-
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => ReservationGatewayPage(
-                            tutor: TutorSummary.fromUser(tutor!),
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => ReservationGatewayPage(
+                              tutor: TutorSummary.fromUser(tutor!),
+                            ),
                           ),
-                        ),
-                      );
-                    },
-                    child: Text("Reservar sesión"),
-                  ),
-                ],
+                        );
+                      },
+                      child: const Text("Reservar sesión"),
+                    ),
+                  ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

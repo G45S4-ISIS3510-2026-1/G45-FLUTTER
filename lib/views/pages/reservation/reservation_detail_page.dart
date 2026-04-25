@@ -1,3 +1,4 @@
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:g45_flutter/models/session.dart';
 import 'package:g45_flutter/viewmodels/reservation_detail_viewmodel.dart';
@@ -5,6 +6,7 @@ import 'package:g45_flutter/widgets/gradient_background.dart';
 import 'package:g45_flutter/widgets/qr_code_widget.dart';
 import 'package:g45_flutter/widgets/session_card_widget.dart';
 import 'package:g45_flutter/widgets/simple_user_card_widget.dart';
+import 'package:g45_flutter/viewmodels/auth.dart';
 
 class ReservationDetailPage extends StatefulWidget {
   const ReservationDetailPage({super.key, required this.session});
@@ -17,11 +19,15 @@ class ReservationDetailPage extends StatefulWidget {
 
 class ReservationDetailPageState extends State<ReservationDetailPage> {
   final ReservationDetailViewModel viewModel = ReservationDetailViewModel();
-  final bool isTutorView = false;
+  late bool isTutorView;
+  late String currentUserId;
 
   @override
   void initState() {
     super.initState();
+    currentUserId = AuthViewModel.instance.userCache!.id;
+    isTutorView = widget.session.tutorId == currentUserId;
+    
     viewModel.loadParticipants(
       widget.session.tutorId,
       widget.session.studentId,
@@ -104,64 +110,71 @@ class ReservationDetailPageState extends State<ReservationDetailPage> {
                             isTutor: false,
                           ),
                       ],
-                      SizedBox(height: 16),
-                      QrCodeWidget(
-                        verifCode: widget.session.verifCode,
-                        isTutor: true,
-                      ),
-                      SizedBox(height: 16),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: [
-                          ElevatedButton(
-                            onPressed: () {
-                              showDialog(
-                                context: context,
-                                builder: (context) {
-                                  return AlertDialog(
-                                    title: Text('Cancelar reserva'),
-                                    content: Text(
-                                      '¿Está seguro de que desea cancelar la reserva?',
-                                    ),
-                                    actions: [
-                                      TextButton(
-                                        onPressed: () {
-                                          Navigator.pop(context);
-                                        },
-                                        child: Text('Cancelar'),
-                                      ),
-                                      TextButton(
-                                        onPressed: () {
-                                          Navigator.pop(context);
-                                          Navigator.pop(context);
-                                          viewModel.cancelSession(
-                                            widget.session,
-                                          );
-                                        },
-                                        child: Text('Confirmar'),
-                                      ),
-                                    ],
-                                  );
-                                },
+                      if (widget.session.status == 'Pendiente') ...[
+                        SizedBox(height: 16),
+                        QrCodeWidget(
+                          verifCode: widget.session.verifCode,
+                          isTutor: isTutorView,
+                          onCodeScanned: (code) async {
+                            final messenger = ScaffoldMessenger.of(context);
+                            final connectivity = await Connectivity().checkConnectivity();
+                            if (connectivity.every((r) => r == ConnectivityResult.none)) {
+                              messenger.showSnackBar(
+                                const SnackBar(content: Text("Sin conexión a internet")),
                               );
-                            },
-                            child: Text(
-                              'Cancelar',
-                              style: TextStyle(color: Colors.white),
-                            ),
+                              return;
+                            }
+                            viewModel.confirmSession(widget.session, currentUserId, code);
+                          },
+                        ),
+                        SizedBox(height: 16),
+                        ElevatedButton(
+                          onPressed: () {
+                            showDialog(
+                              context: context,
+                              builder: (context) {
+                                return AlertDialog(
+                                  title: Text('Cancelar reserva'),
+                                  content: Text(
+                                    '¿Está seguro de que desea cancelar la reserva?',
+                                  ),
+                                  actions: [
+                                    TextButton(
+                                      onPressed: () {
+                                        Navigator.pop(context);
+                                      },
+                                      child: Text('No, volver'),
+                                    ),
+                                    TextButton(
+                                      onPressed: () async {
+                                        final messenger = ScaffoldMessenger.of(context);
+                                        final navigator = Navigator.of(context);
+                                        final connectivity = await Connectivity().checkConnectivity();
+                                        if (connectivity.every((r) => r == ConnectivityResult.none)) {
+                                          messenger.showSnackBar(
+                                            const SnackBar(content: Text("Sin conexión a internet")),
+                                          );
+                                          return;
+                                        }
+                                        navigator.pop();
+                                        viewModel.cancelSession(
+                                          widget.session,
+                                          currentUserId,
+                                        );
+                                      },
+                                      child: Text('Sí, cancelar'),
+                                    ),
+                                  ],
+                                );
+                              },
+                            );
+                          },
+                          child: Text(
+                            'Cancelar Reserva',
+                            style: TextStyle(color: Colors.white),
                           ),
-                          ElevatedButton(
-                            onPressed: () {
-                              Navigator.pop(context);
-                              viewModel.confirmSession(widget.session);
-                            },
-                            child: Text(
-                              'Confirmar',
-                              style: TextStyle(color: Colors.white),
-                            ),
-                          ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ],
                   ),
                 ],
