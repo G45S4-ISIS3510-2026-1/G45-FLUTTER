@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:firebase_analytics/firebase_analytics.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:g45_flutter/config/api_config.dart';
 import 'package:http/http.dart' as http;
@@ -53,7 +54,7 @@ class AnalyticsService {
         Uri.parse('${ApiConfig.analyticsUrl}/analytics/event'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
-          'user_id': 'flutter_user',
+          'user_id': FirebaseAuth.instance.currentUser?.uid ?? 'anonymous',
           'event_type': eventType,
           'metadata': metadata,
           'timestamp': DateTime.now().toIso8601String(),
