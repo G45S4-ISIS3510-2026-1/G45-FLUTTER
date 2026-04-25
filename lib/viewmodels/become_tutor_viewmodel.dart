@@ -179,6 +179,7 @@ class BecomeTutorViewModel extends ChangeNotifier {
       return;
     }
     if (price <= 0) {
+      isLoading = false;
       errorMessage = "Debes ingresar un precio válido";
       notifyListeners();
       return;
