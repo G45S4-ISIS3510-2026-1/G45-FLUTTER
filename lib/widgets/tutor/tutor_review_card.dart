@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:g45_flutter/models/review.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 class ReviewCard extends StatelessWidget {
   final Review review;
@@ -22,15 +23,32 @@ class ReviewCard extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          //-----------------
+          // Con cache de imagen
+          //-----------------
           CircleAvatar(
-            backgroundImage: review.authorImage != null
-                ? NetworkImage(review.authorImage!)
-                : null,
+            radius: 20,
+            backgroundColor: Colors.grey,
+            child: ClipOval(
+              child: review.authorImage != null
+                  ? CachedNetworkImage(
+                      imageUrl: review.authorImage!,
+                      cacheKey: review.authorImage,
+                      width: 40,
+                      height: 40,
+                      fit: BoxFit.cover,
+                      placeholder: (context, url) =>
+                          Container(color: Colors.grey[300]),
+                      errorWidget: (context, url, error) =>
+                          const Icon(Icons.person, color: Colors.white),
+                    )
+                  : const Icon(Icons.person, color: Colors.white),
+            ),
           ),
           SizedBox(width: 10),
 
           Expanded(
-            //Columna  
+            //Columna
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -48,10 +66,7 @@ class ReviewCard extends StatelessWidget {
 
                 SizedBox(height: 4),
                 //FILA DE LA MITAD
-                Text(
-                  review.details,
-                  style: TextStyle(color: Colors.white70),
-                ),
+                Text(review.details, style: TextStyle(color: Colors.white70)),
 
                 SizedBox(height: 4),
                 //FILA DE ABAJO
