@@ -19,18 +19,22 @@ import 'package:g45_flutter/views/widget_tree.dart';
 import 'package:provider/provider.dart';
 
 const bool SKIP_LOGIN = false;
-
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
-  await RecentViewedService().init();
-
-  if (Firebase.apps.isEmpty) {
-    await Firebase.initializeApp(
-      options: DefaultFirebaseOptions.currentPlatform,
-    );
+  
+  try {
+    if (Firebase.apps.isEmpty) {
+      await Firebase.initializeApp(
+        options: DefaultFirebaseOptions.currentPlatform,
+      );
+    } else {
+      Firebase.app();
+    }
+  } catch (e) {
+    print("Error en Firebase init: $e");
   }
 
+  await RecentViewedService().init();
   runApp(const MyApp());
 }
 
