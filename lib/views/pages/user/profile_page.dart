@@ -128,7 +128,7 @@ class _ProfilePageState extends State<ProfilePage> {
                     context,
                     MaterialPageRoute(builder: (_) => const FavoritesPage()),
                   );
-                },
+                }, onPqrTap: () {  },
               ),
               Padding(
                 padding: const EdgeInsets.all(16),
