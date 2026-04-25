@@ -17,26 +17,21 @@ import 'package:g45_flutter/views/pages/select_skills.dart';
 import 'package:g45_flutter/views/widget_tree.dart';
 import 'package:provider/provider.dart';
 
-// ---------------------------
-// CAMBIAR AQUÍ PARA SALTAR LOGIN
-// ---------------------------
 const bool SKIP_LOGIN = false;
 
-// ---------------------------
-// MAIN
-// ---------------------------
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await RecentViewedService().init();
 
-  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  if (Firebase.apps.isEmpty) {
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
+  }
 
   runApp(const MyApp());
 }
 
-// ---------------------------
-// APP
-// ---------------------------
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
@@ -52,7 +47,6 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => ReservationDetailViewModel()),
         ChangeNotifierProvider(create: (_) => ReservationGatewayViewModel()),
         ChangeNotifierProvider(create: (_) => AgendaViewModel()),
-        
         ChangeNotifierProvider(create: (_) => BecomeTutorViewModel()),
         ChangeNotifierProvider(create: (_) => SessionViewModel()),
       ],
@@ -60,28 +54,24 @@ class MyApp extends StatelessWidget {
         debugShowCheckedModeBanner: false,
         title: 'Flutter Demo',
         theme: materialTheme.dark(),
-
-        // ---------------------------
-        // LOGIN SWITCH
-        // ---------------------------
         home: SKIP_LOGIN
-          ? const WidgetTree()
-          : Consumer<AuthViewModel>(
-              builder: (context, authVM, _) {
-                switch (authVM.authState) {
-                  case AuthState.loading:
-                    return const Scaffold(
-                      body: Center(child: CircularProgressIndicator()),
-                    );
-                  case AuthState.login:
-                    return const LoginRegistPage();
-                  case AuthState.selectSkills:
-                    return const SelectSkills();
-                  case AuthState.home:
-                    return const WidgetTree();
-                }
-              },
-            ),
+            ? const WidgetTree()
+            : Consumer<AuthViewModel>(
+                builder: (context, authVM, _) {
+                  switch (authVM.authState) {
+                    case AuthState.loading:
+                      return const Scaffold(
+                        body: Center(child: CircularProgressIndicator()),
+                      );
+                    case AuthState.login:
+                      return const LoginRegistPage();
+                    case AuthState.selectSkills:
+                      return const SelectSkills();
+                    case AuthState.home:
+                      return const WidgetTree();
+                  }
+                },
+              ),
       ),
     );
   }
