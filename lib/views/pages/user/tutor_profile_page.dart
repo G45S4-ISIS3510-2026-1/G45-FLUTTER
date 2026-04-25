@@ -8,8 +8,9 @@ import 'package:g45_flutter/repositories/user_repository.dart';
 import 'package:g45_flutter/services/analytics_service.dart';
 import 'package:g45_flutter/viewmodels/skills_viewmodel.dart';
 import 'package:g45_flutter/views/pages/reservation/reservation_gateway_page.dart';
-import 'package:g45_flutter/widgets/tutor/tutor_info_section.dart';
-import 'package:g45_flutter/widgets/tutor/tutor_review_card.dart';
+import 'package:g45_flutter/widgets/tutor_info_section.dart';
+import 'package:g45_flutter/widgets/tutor_review_card.dart';
+import 'package:g45_flutter/services/recent_viewed.dart';
 import 'package:provider/provider.dart';
 
 class TutorProfilePage extends StatefulWidget {
@@ -37,6 +38,8 @@ class _TutorProfilePageState extends State<TutorProfilePage> {
   @override
   void initState() {
     super.initState();
+    RecentViewedService().addTutor(widget.tutorId);
+    analytics.logEvent(name: 'test_event');
     _startTime = DateTime.now();
     AnalyticsService.instance.setCurrentService('TutorProfile');
     AnalyticsService.instance.logEvent('view_review', {
@@ -155,7 +158,7 @@ print("TUTOR ID: ${widget.tutorId}");
                     child: Image.network(
                       tutor!.profileImageUrl ?? "",
                       fit: BoxFit.cover,
-                      filterQuality: FilterQuality.high, // 🔥 mejora render
+                      filterQuality: FilterQuality.high, 
                       errorBuilder: (context, error, stackTrace) {
                         return Container(color: Colors.black);
                       },

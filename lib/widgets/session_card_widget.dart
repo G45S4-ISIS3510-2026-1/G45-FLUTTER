@@ -75,10 +75,31 @@ class SessionCardWidget extends StatelessWidget {
                     ),
                   ],
                 ),
-                const SizedBox(height: 4),
-                Text(
-                  '${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}',
-                  style: const TextStyle(color: Colors.grey, fontSize: 13),
+              ),
+              const SizedBox(width: 20),
+              SizedBox(width: 12),
+              //Información del tutor
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    //renglon Superior
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        // materia
+                        Text(
+                          session.skill['label'],
+                          style: TextStyle(color: Colors.white),
+                        ),
+                      ],
+                    ),
+                    //major del tutor
+                    Text(
+                      "Edificio Mario Laserna - ML 502",
+                      style: TextStyle(color: Colors.grey),
+                    ),
+                  ],
                 ),
                 if (isTutor != null) ...[
                   const SizedBox(height: 4),

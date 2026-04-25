@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:g45_flutter/services/conection_service.dart';
 import '../repositories/user_repository.dart';
 import '../models/user.dart' as u;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -17,102 +18,105 @@ class AuthViewModel extends ChangeNotifier {
 
   final repository = UserRepository();
 
+  static final AuthViewModel instance = AuthViewModel.internal();
+  factory AuthViewModel() => instance;
+  AuthViewModel.internal();
+
   AuthState _authState = AuthState.loading;
   AuthState get authState => _authState;
 
   u.User? userCache;
   String? errorMessage;
 
-  // ── INIT (REACTIVO) ───────────────────────────────────────
-  void initState() {
-    setAuthState(AuthState.loading);
+  void startListening() {
+    FirebaseAuth.instance.authStateChanges().listen((user) async {
+      setAuthState(AuthState.loading);
 
-    FirebaseAuth.instance.idTokenChanges().listen((firebaseUser) async {
-      if (firebaseUser == null) {
-        userCache = null;
+      if (user == null) {
         setAuthState(AuthState.login);
         return;
       }
 
-      try {
-        // importante para redirect login
-        await firebaseUser.reload();
+      userCache = await getUserCache();
 
-        userCache = await userInCache();
-
-        if (userCache == null) {
-          await syncWithBackend(firebaseUser);
-        } else {
-          resolveState();
-        }
-      } catch (e) {
-        errorMessage = "Error auth: $e";
-        setAuthState(AuthState.login);
+      if (userCache != null && !ConnectionService().hasConnection) {
+        resolveState();
+        return;
       }
+
+      await syncWithBackend(user);
     });
   }
 
-  // ── SKILLS ────────────────────────────────────────────────
   Future<void> updateUserInterestedSkills(u.User user, String major) async {
-    final updatedUser = await repository.updateUserInterestedSkills(
-      user,
-      major,
-    );
-    if (updatedUser != null) {
-      userCache = updatedUser;
-      await saveUserInCache(updatedUser);
+    setAuthState(AuthState.loading);
+
+    try {
+      final updatedUser = await repository.updateUserInterestedSkills(user, major);
+      if (updatedUser != null) {
+        userCache = updatedUser;
+        await saveUserInCache(updatedUser);
+        resolveState();
+      } else {
+        resolveState();
+      }
+    } catch (e) {
+      errorMessage = 'Error al guardar carrera: $e';
       resolveState();
     }
   }
 
-  Future<u.User?> getUserCache() async {
-    if (userCache != null) return userCache;
-    userCache = await userInCache();
-    return userCache;
-  }
-
-  // ── CACHE ────────────────────────────────────────────────
   Future<void> saveUserInCache(u.User user) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('usuario', jsonEncode(user.toJson()));
   }
 
-  Future<u.User?> userInCache() async {
+  Future<u.User?> getUserCache() async {
     final prefs = await SharedPreferences.getInstance();
     final userData = prefs.getString('usuario');
     if (userData == null) return null;
     return u.User.fromJson(jsonDecode(userData));
   }
 
-  // ── BACKEND ───────────────────────────────────────────────
   Future<void> syncWithBackend(User firebaseUser) async {
     try {
       u.User? backendUser = await repository.findUser(firebaseUser.email ?? '');
 
-      backendUser ??= await repository.createUser(
-        firebaseUser.uid,
-        firebaseUser.displayName ?? '',
-        firebaseUser.email ?? '',
-      );
+      if (backendUser == null) {
+        backendUser = await repository.createUser(
+          firebaseUser.uid,
+          firebaseUser.displayName ?? 'Usuario',
+          firebaseUser.email ?? '',
+        );
+      }
 
       userCache = backendUser;
       await saveUserInCache(backendUser);
       resolveState();
     } catch (e) {
-      //----------------------------------
-      // FALLBACK CACHE
-      //----------------------------------
-      userCache = await userInCache();
-
-      if (userCache != null) {
-        resolveState();
-      } else {
-        setAuthState(AuthState.login);
-      }
+      await FirebaseAuth.instance.signOut();
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.remove('usuario');
+      userCache = null;
+      errorMessage = 'Sesión inválida';
+      setAuthState(AuthState.login);
     }
   }
 
-  // ── STATE LOGIC ───────────────────────────────────────────
+  Future<void> refreshUser() async {
+    if (userCache == null) return;
+    if (!ConnectionService().hasConnection) return;
+
+    try {
+      final fetched = await repository.getUserById(userCache!.id!);
+      userCache = fetched;
+      await saveUserInCache(fetched);
+      notifyListeners();
+    } catch (e) {
+      // queda con el cache, no hacer signOut
+    }
+  }
+
   void resolveState() {
     final next = (userCache?.interestedSkills.isEmpty ?? true)
         ? AuthState.selectSkills
@@ -126,13 +130,13 @@ class AuthViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  // ── LOGOUT ────────────────────────────────────────────────
   Future<void> logout() async {
-    await FirebaseAuth.instance.signOut();
-    userCache = null;
+    setAuthState(AuthState.loading);
 
+    await FirebaseAuth.instance.signOut();
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove('usuario');
+    userCache = null;
 
     setAuthState(AuthState.login);
   }
