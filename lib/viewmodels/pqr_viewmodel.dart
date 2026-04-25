@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:g45_flutter/viewmodels/auth.dart';
 import '../repositories/pqr_repository.dart';
 
 class PqrViewModel extends ChangeNotifier {
@@ -14,10 +13,13 @@ class PqrViewModel extends ChangeNotifier {
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
 
+  List pqrs = [];
+
   //-------------------------------------
   // VALIDACIÓN + ENVÍO
   //-------------------------------------
   Future<bool> sendPqr({
+    required String authorId,
     required String? type,
     required String description,
     String? sessionId,
@@ -38,17 +40,6 @@ class PqrViewModel extends ChangeNotifier {
     }
 
     //-------------------------------------
-    // OBTENER USUARIO REAL
-    //-------------------------------------
-    final user = await AuthViewModel().getUserCache();
-
-    if (user == null) {
-      _errorMessage = "Usuario no disponible";
-      notifyListeners();
-      return false;
-    }
-
-    //-------------------------------------
     // LOADING
     //-------------------------------------
     _isLoading = true;
@@ -60,11 +51,16 @@ class PqrViewModel extends ChangeNotifier {
       // LLAMAR REPOSITORY
       //-------------------------------------
       await _repo.createPqr(
-        authorId: user.id,
+        authorId: authorId,
         type: type,
         description: description,
         sessionId: sessionId,
       );
+
+      //-------------------------------------
+      // REFRESH LISTA
+      //-------------------------------------
+      await loadPqrs(authorId);
 
       //-------------------------------------
       // SUCCESS
@@ -73,13 +69,27 @@ class PqrViewModel extends ChangeNotifier {
       notifyListeners();
       return true;
     } catch (e) {
-      //-------------------------------------
-      // ERROR
-      //-------------------------------------
       _isLoading = false;
-      _errorMessage = "Error enviando PQR";
+      _errorMessage = e.toString();
       notifyListeners();
       return false;
     }
+  }
+
+  //-------------------------------------
+  // LOAD PQRS
+  //-------------------------------------
+  Future<void> loadPqrs(String userId) async {
+    _isLoading = true;
+    notifyListeners();
+
+    try {
+      pqrs = await _repo.getPqrsByAuthor(userId);
+    } catch (e) {
+      print("ERROR LOAD PQRS: $e");
+    }
+
+    _isLoading = false;
+    notifyListeners();
   }
 }

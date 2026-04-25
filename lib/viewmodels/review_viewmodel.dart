@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/review.dart';
 import '../repositories/review_repository.dart';
-import '../viewmodels/auth.dart';
 
 class ReviewViewModel extends ChangeNotifier {
   //-------------------------------------
@@ -28,6 +27,7 @@ class ReviewViewModel extends ChangeNotifier {
       _reviews = await _repo.getReviewsByTutor(tutorId);
       _errorMessage = null;
     } catch (e) {
+      print("ERROR LOAD REVIEWS: $e");
       _errorMessage = "Error cargando reseñas";
     }
 
@@ -36,9 +36,10 @@ class ReviewViewModel extends ChangeNotifier {
   }
 
   //-------------------------------------
-  // CREATE REVIEW
+  // CREATE REVIEW (SIN CONTEXT)
   //-------------------------------------
   Future<bool> createReview({
+    required String authorId,
     required String tutorId,
     required int rating,
     required String details,
@@ -66,24 +67,23 @@ class ReviewViewModel extends ChangeNotifier {
     notifyListeners();
 
     try {
-      //-------------------------------------
-      // USER DESDE AUTH
-      //-------------------------------------
-      final user = AuthViewModel().userCache;
-
-      if (user == null) {
-        throw Exception("Usuario no autenticado");
-      }
+      print("====== CREATE REVIEW VM ======");
+      print("AUTHOR ID: $authorId");
+      print("TUTOR ID: $tutorId");
+      print("RATING: $rating");
+      print("DETAILS: $details");
 
       //-------------------------------------
       // POST REVIEW
       //-------------------------------------
       final success = await _repo.createReview(
-        authorId: user.id,
+        authorId: authorId,
         tutorId: tutorId,
         rating: rating,
         details: details,
       );
+
+      print("CREATE REVIEW RESULT: $success");
 
       if (!success) {
         throw Exception("Error backend");
@@ -101,11 +101,16 @@ class ReviewViewModel extends ChangeNotifier {
       notifyListeners();
       return true;
     } catch (e) {
-      //-------------------------------------
-      // ERROR
-      //-------------------------------------
+      print("ERROR CREATE REVIEW VM: $e");
+
       _isLoading = false;
-      _errorMessage = "Error enviando reseña";
+
+      if (e.toString().contains("SocketException")) {
+        _errorMessage = "Sin conexión a internet";
+      } else {
+        _errorMessage = "Sin conexión a internet";
+      }
+
       notifyListeners();
       return false;
     }

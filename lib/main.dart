@@ -5,6 +5,7 @@ import 'package:g45_flutter/firebase_options.dart';
 import 'package:g45_flutter/repositories/user_repository.dart';
 import 'package:g45_flutter/viewmodels/agenda_viewmodel.dart';
 import 'package:g45_flutter/viewmodels/auth.dart';
+import 'package:g45_flutter/viewmodels/pqr_viewmodel.dart';
 import 'package:g45_flutter/services/recent_viewed.dart';
 import 'package:g45_flutter/viewmodels/reservation_detail_viewmodel.dart';
 import 'package:g45_flutter/viewmodels/reservation_gateway_viewmodel.dart';
@@ -46,6 +47,7 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => SkillsViewModel()..loadSkills()),
         ChangeNotifierProvider(create: (_) => ReservationDetailViewModel()),
         ChangeNotifierProvider(create: (_) => ReservationGatewayViewModel()),
+        ChangeNotifierProvider(create: (_) => PqrViewModel()),
         ChangeNotifierProvider(create: (_) => AgendaViewModel()),
         ChangeNotifierProvider(create: (_) => BecomeTutorViewModel()),
         ChangeNotifierProvider(create: (_) => SessionViewModel()),
