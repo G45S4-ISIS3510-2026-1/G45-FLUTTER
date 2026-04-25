@@ -52,13 +52,13 @@ class ReservationDetailViewModel extends ChangeNotifier {
     }
   }
 
-  Future<void> cancelSession(Session session) async {
+  Future<void> cancelSession(Session session, String participantId) async {
     _isLoading = true;
     _errorMessage = null;
     notifyListeners();
 
     try {
-      await _sessionRepo.cancelSession(session);
+      await _sessionRepo.cancelSession(session, participantId);
       await loadSessions(); // Recargar para ver e cambio
     } catch (e) {
       _errorMessage = "Error cancelando sesión: $e";
@@ -68,13 +68,13 @@ class ReservationDetailViewModel extends ChangeNotifier {
     }
   }
 
-  Future<void> confirmSession(Session session) async {
+  Future<void> confirmSession(Session session, String participantId, String verifCode) async {
     _isLoading = true;
     _errorMessage = null;
     notifyListeners();
 
     try {
-      await _sessionRepo.confirmSession(session);
+      await _sessionRepo.confirmSession(session, participantId, verifCode);
       await loadSessions(); // Recargar para ver el cambio
     } catch (e) {
       _errorMessage = "Error confirmando sesión: $e";

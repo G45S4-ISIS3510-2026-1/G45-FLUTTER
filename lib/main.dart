@@ -1,8 +1,9 @@
-import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/material.dart';
 import 'package:g45_flutter/core/theme.dart';
 import 'package:g45_flutter/firebase_options.dart';
 import 'package:g45_flutter/repositories/user_repository.dart';
+import 'package:g45_flutter/viewmodels/agenda_viewmodel.dart';
 import 'package:g45_flutter/viewmodels/auth.dart';
 import 'package:g45_flutter/services/recent_viewed.dart';
 import 'package:g45_flutter/viewmodels/reservation_detail_viewmodel.dart';
@@ -22,15 +23,13 @@ import 'package:provider/provider.dart';
 const bool SKIP_LOGIN = false;
 
 // ---------------------------
-// MAIN 
+// MAIN
 // ---------------------------
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await RecentViewedService().init();
 
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
   runApp(const MyApp());
 }
@@ -47,14 +46,13 @@ class MyApp extends StatelessWidget {
 
     return MultiProvider(
       providers: [
-        ChangeNotifierProvider(
-          create: (_) => AuthViewModel()..initState(),
-        ),
+        ChangeNotifierProvider(create: (_) => AuthViewModel()..startListening()),
         ChangeNotifierProvider(create: (_) => TutorViewModel(UserRepository())),
         ChangeNotifierProvider(create: (_) => SkillsViewModel()..loadSkills()),
         ChangeNotifierProvider(create: (_) => ReservationDetailViewModel()),
         ChangeNotifierProvider(create: (_) => ReservationGatewayViewModel()),
-        ChangeNotifierProvider(create: (_) => AuthViewModel()..startListening()),
+        ChangeNotifierProvider(create: (_) => AgendaViewModel()),
+        
         ChangeNotifierProvider(create: (_) => BecomeTutorViewModel()),
         ChangeNotifierProvider(create: (_) => SessionViewModel()),
       ],

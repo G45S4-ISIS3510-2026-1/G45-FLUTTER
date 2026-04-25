@@ -1,3 +1,4 @@
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:g45_flutter/models/session.dart';
 import 'package:g45_flutter/models/skills.dart';
@@ -123,7 +124,7 @@ class _ReservationGatewayPageState extends State<ReservationGatewayPage> {
                 'Resumen de la tutoría',
                 style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
               ),
-              if (widget.tutor != null) TutorCard(tutor: widget.tutor),
+              TutorCard(tutor: widget.tutor),
               SizedBox(height: 24),
               Text(
                 'Seleccionar fecha',
@@ -201,41 +202,42 @@ class _ReservationGatewayPageState extends State<ReservationGatewayPage> {
                 ),
               const SizedBox(height: 24),
               Card(
-                child: RadioGroup<String>(
-                  groupValue: selectedPaymentMethod,
-                  onChanged: (value) {
-                    setState(() => selectedPaymentMethod = value);
-                  },
-                  child: Column(
-                    children: [
-                      RadioListTile<String>(
-                        value: 'card',
-                        title: const Text('Tarjeta de crédito'),
-                        subtitle: const Text('**** **** **** 1234'),
-                        secondary: const Icon(Icons.credit_card),
-                      ),
-                      RadioListTile<String>(
-                        value: 'cash',
-                        title: const Text('Efectivo'),
-                        subtitle: const Text('Pagar en la sesión'),
-                        secondary: const Icon(Icons.money),
-                      ),
-                    ],
-                  ),
+                child: Column(
+                  children: [
+                    RadioListTile<String>(
+                      value: 'card',
+                      groupValue: selectedPaymentMethod,
+                      title: const Text('Tarjeta de crédito'),
+                      subtitle: const Text('**** **** **** 1234'),
+                      secondary: const Icon(Icons.credit_card),
+                      onChanged: (value) {
+                        setState(() => selectedPaymentMethod = value);
+                      },
+                    ),
+                    RadioListTile<String>(
+                      value: 'cash',
+                      groupValue: selectedPaymentMethod,
+                      title: const Text('Efectivo'),
+                      subtitle: const Text('Pagar en la sesión'),
+                      secondary: const Icon(Icons.money),
+                      onChanged: (value) {
+                        setState(() => selectedPaymentMethod = value);
+                      },
+                    ),
+                  ],
                 ),
               ),
               ElevatedButton(
                 onPressed: () async {
-                  final authVM = Provider.of<AuthViewModel>(
-                    context,
-                    listen: false,
-                  );
-                  if (authVM.userCache == null) {
+                  final connectivity = await Connectivity().checkConnectivity();
+                  if (!mounted) return;
+                  if (connectivity.every((r) => r == ConnectivityResult.none)) {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Usuario no cargado')),
+                      const SnackBar(content: Text("Sin conexión a internet")),
                     );
                     return;
                   }
+
                   if (selectedDate == null) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(content: Text('Por favor seleccione una fecha')),
@@ -281,7 +283,7 @@ class _ReservationGatewayPageState extends State<ReservationGatewayPage> {
                     },
                     scheduledAt: selectedDate!,
                     status: 'Pendiente',
-                    studentId: authVM.userCache!.id,
+                    studentId: AuthViewModel.instance.userCache!.id,
                     tutorId: widget.tutor.id.toString(),
                     verifCode: '',
                   );
@@ -315,7 +317,7 @@ class _ReservationGatewayPageState extends State<ReservationGatewayPage> {
                   }
                 },
                 style: ElevatedButton.styleFrom(
-                  fixedSize: Size(double.infinity, 50),
+                  minimumSize: const Size(double.infinity, 50),
                 ),
                 child: Text('Reservar', style: TextStyle(fontSize: 24)),
               ),

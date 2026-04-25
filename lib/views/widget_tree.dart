@@ -2,12 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:g45_flutter/data/notifiers.dart';
 import 'package:g45_flutter/views/pages/home_page.dart';
 import 'package:g45_flutter/views/pages/messages/messages_page.dart';
+import 'package:g45_flutter/views/pages/user/agenda_page.dart';
 import 'package:g45_flutter/views/pages/user/profile_page.dart';
 import 'package:g45_flutter/views/pages/user/tutor_catalog_page.dart';
 import 'package:g45_flutter/widgets/gradient_background.dart';
 import 'package:g45_flutter/widgets/navbar_widget.dart';
 
-List<Widget> pages = [HomePage(), CatalogPage(), MessagesPage(), ProfilePage()];
+List<Widget> pages = [HomePage(), CatalogPage(), AgendaPage(), ProfilePage()];
 
 class WidgetTree extends StatelessWidget {
   const WidgetTree({super.key});
