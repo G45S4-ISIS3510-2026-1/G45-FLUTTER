@@ -67,10 +67,14 @@ class _HomePageState extends State<HomePage> {
     super.dispose();
   }
 
+  //----------------------------------
+  // SNACKBAR (MEJORADO)
+  //----------------------------------
   void showNoConnectionSnackbar() {
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
-        content: Text("Sin conexión a internet"),
+        content: Text(
+            "Sin conexión a internet, no puedes ver los detalles ahora"),
         backgroundColor: Colors.red,
       ),
     );
@@ -93,8 +97,8 @@ class _HomePageState extends State<HomePage> {
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             child: Text(
               'Hola $nombre!',
-              style:
-                  const TextStyle(fontSize: 35, fontWeight: FontWeight.bold),
+              style: const TextStyle(
+                  fontSize: 35, fontWeight: FontWeight.bold),
             ),
           ),
         ),
@@ -112,7 +116,10 @@ class _HomePageState extends State<HomePage> {
           ),
         ),
 
-        sessionVM.isLoading
+        //----------------------------------
+        // LOADING (MEJORADO)
+        //----------------------------------
+        (sessionVM.isLoading || tutorVM.isLoading)
             ? const SliverToBoxAdapter(
                 child: Center(child: CircularProgressIndicator()),
               )
@@ -137,7 +144,8 @@ class _HomePageState extends State<HomePage> {
                           padding: const EdgeInsets.symmetric(
                               horizontal: 16, vertical: 8),
                           child: SessionCardWidget(
-                              session: sessionVM.studentSessions[index]),
+                            session: sessionVM.studentSessions[index],
+                          ),
                         ),
                       ),
                       childCount: sessionVM.studentSessions.length,
@@ -174,7 +182,8 @@ class _HomePageState extends State<HomePage> {
                   child: Padding(
                     padding: const EdgeInsets.only(right: 12.0),
                     child: TutorCardSmall(
-                        tutor: tutorVM.recommendedTutors[index]),
+                      tutor: tutorVM.recommendedTutors[index],
+                    ),
                   ),
                 ),
               ),

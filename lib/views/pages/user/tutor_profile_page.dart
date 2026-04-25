@@ -40,7 +40,7 @@ class _TutorProfilePageState extends State<TutorProfilePage> {
     super.initState();
 
     //----------------------------------
-    // RECENT VIEWED (TU FEATURE 🔥)
+    // RECENT VIEWED
     //----------------------------------
     RecentViewedService().addTutor(widget.tutorId);
 
@@ -100,7 +100,7 @@ class _TutorProfilePageState extends State<TutorProfilePage> {
   }
 
   //----------------------------------
-  // DISPOSE → TIME ANALYTICS
+  // DISPOSE (TIME ANALYTICS)
   //----------------------------------
   @override
   void dispose() {
@@ -155,10 +155,7 @@ class _TutorProfilePageState extends State<TutorProfilePage> {
     if (tutor == null) {
       return const Scaffold(
         body: Center(
-          child: Text(
-            "No se pudo cargar el tutor",
-            style: TextStyle(color: Colors.white),
-          ),
+          child: Text("No se pudo cargar el tutor"),
         ),
       );
     }

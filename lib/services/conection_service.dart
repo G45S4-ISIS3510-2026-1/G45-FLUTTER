@@ -1,16 +1,18 @@
 import 'dart:async';
+import 'dart:isolate';
 import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:flutter/material.dart';
 import 'package:internet_connection_checker_plus/internet_connection_checker_plus.dart';
 
 class ConnectionService {
   static final ConnectionService instance = ConnectionService.internal();
-  
   factory ConnectionService() => instance;
-  
   ConnectionService.internal();
 
   bool hasConnection = true;
   Timer? timer;
+  Isolate? isolate;
+  ReceivePort? receivePort;
 
   final StreamController<bool> connectionController = StreamController<bool>.broadcast();
   Stream<bool> get connectionStream => connectionController.stream;
@@ -20,17 +22,44 @@ class ConnectionService {
       checkRealConnection();
     });
 
-    timer = Timer.periodic(const Duration(seconds: 5), (time) {
+    timer = Timer.periodic(const Duration(seconds: 1), (time) {
       checkRealConnection();
     });
-    
+
     checkRealConnection();
+    startIsolate();
+  }
+
+  Future<void> startIsolate() async {
+    receivePort = ReceivePort();
+
+    isolate = await Isolate.spawn(
+      isolateCheckConnection,
+      receivePort!.sendPort,
+    );
+
+    receivePort!.listen((message) {
+      if (message is bool && message != hasConnection) {
+        updateStateConnection(message);
+      }
+    });
+  }
+
+  static Future<void> isolateCheckConnection(SendPort sendPort) async {
+    while (true) {
+      await Future.delayed(const Duration(seconds: 10));
+      try {
+        final isAlive = await InternetConnection().hasInternetAccess;
+        sendPort.send(isAlive);
+      } catch (e) {
+        sendPort.send(false);
+      }
+    }
   }
 
   Future<void> checkRealConnection() async {
     try {
       bool isAlive = await InternetConnection().hasInternetAccess;
-      
       if (isAlive != hasConnection) {
         updateStateConnection(isAlive);
       }
@@ -44,4 +73,20 @@ class ConnectionService {
     connectionController.add(newState);
   }
 
+  Future<bool> checkAndExecute(BuildContext context, Future<void> Function() action) async {
+    await checkRealConnection();
+
+    if (!hasConnection) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Sin conexión a internet'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return false;
+    }
+
+    await action();
+    return true;
+  }
 }
