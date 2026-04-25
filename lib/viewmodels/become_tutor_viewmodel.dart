@@ -190,6 +190,7 @@ class BecomeTutorViewModel extends ChangeNotifier {
         userId,
         addedSkillIds,
         availability,
+        price
       );
       isLoading = false;
       becomedTutor = true;

@@ -147,7 +147,7 @@ class UserRepository {
     return User.fromJson(jsonDecode(resp.body));
   }
 
-  Future<User> becomeTutor( String userId, List<String> skillIds, Map<String, List<String>> availability) async{
+  Future<User> becomeTutor( String userId, List<String> skillIds, Map<String, List<String>> availability, int price) async{
 
     final tutoringUrl = Uri.parse("$baseUrl/$userId/tutoring?is_tutoring=true");
     final tutoringResp = await http.patch(tutoringUrl);
@@ -176,6 +176,17 @@ class UserRepository {
 
     if (availabilityResp.statusCode != 200) {
       throw Exception("Error actualizando disponibilidad");
+    }
+
+    final priceUrl = Uri.parse("$baseUrl/$userId/session-price");
+    final priceResp = await http.patch(
+      priceUrl,
+      headers: {"Content-Type": "application/json"},
+      body: jsonEncode({"sessionPrice": price}),
+    );
+
+    if (priceResp.statusCode != 200) {
+      throw Exception("Error actualizando precio");
     }
 
     return User.fromJson(jsonDecode(availabilityResp.body));
