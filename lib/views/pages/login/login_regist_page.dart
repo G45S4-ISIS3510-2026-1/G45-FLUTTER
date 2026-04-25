@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:g45_flutter/services/conection_service.dart';
 
 class LoginRegistPage extends StatelessWidget {
   const LoginRegistPage({super.key});
@@ -81,7 +82,11 @@ class LoginRegistPage extends StatelessWidget {
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton.icon(
-                  onPressed: () => ingresarConUniandes(context), // Llama a la función aquí
+                  onPressed: () {
+                    ConnectionService().checkAndExecute(context, () async {
+                      ingresarConUniandes(context);
+                    });
+                  },
                   icon: Icon(Icons.account_balance, color: theme.colorScheme.primary),
                   label: Text(
                     "ENTRAR CON UNIANDES",

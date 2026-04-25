@@ -12,6 +12,7 @@ import 'package:g45_flutter/views/pages/reservation/reservation_gateway_page.dar
 import 'package:g45_flutter/widgets/tutor/tutor_info_section.dart';
 import 'package:g45_flutter/widgets/tutor/tutor_review_card.dart';
 import 'package:g45_flutter/widgets/tutor/tutor_reviews_section.dart';
+import 'package:g45_flutter/services/recent_viewed.dart';
 import 'package:provider/provider.dart';
 
 class TutorProfilePage extends StatefulWidget {
@@ -41,6 +42,8 @@ class _TutorProfilePageState extends State<TutorProfilePage> {
   @override
   void initState() {
     super.initState();
+    RecentViewedService().addTutor(widget.tutorId);
+    analytics.logEvent(name: 'test_event');
     _startTime = DateTime.now();
     loadFavorites();
     AnalyticsService.instance.setCurrentService('TutorProfile');
@@ -194,6 +197,21 @@ class _TutorProfilePageState extends State<TutorProfilePage> {
                         errorBuilder: (context, error, stackTrace) {
                           return Container(color: Colors.black);
                         },
+                    ),
+                  ),
+                  // 2. overlay (gradiente o sombra)
+                  // 3. botones back + like
+                  Positioned(
+                    // Botón de regreso (Derecha)
+                    top: 40,
+                    left: 16,
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(color: Colors.black26, blurRadius: 6),
+                        ],
                       ),
                     ),
                     // 2. overlay (gradiente o sombra)

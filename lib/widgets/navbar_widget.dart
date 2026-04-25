@@ -4,7 +4,7 @@ import 'package:g45_flutter/data/notifiers.dart';
 const destinations = [
   NavigationDestination(icon: Icon(Icons.home), label: 'Inicio'),
   NavigationDestination(icon: Icon(Icons.import_contacts), label: 'Catálogo'),
-  NavigationDestination(icon: Icon(Icons.message), label: 'Mensajes'),
+  NavigationDestination(icon: Icon(Icons.calendar_month), label: 'Agenda'),
   NavigationDestination(icon: Icon(Icons.person), label: 'Perfil'),
 ];
 

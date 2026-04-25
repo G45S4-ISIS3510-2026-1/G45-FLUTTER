@@ -1,11 +1,11 @@
 class Skill {
-  final String? id;
+  final String id;
   final String? major;
-  final String? label;
+  final String label;
   final String? iconUrl;
 
   Skill({
-    this.id,
+    required this.id,
     required this.major,
     required this.label,
     required this.iconUrl,
