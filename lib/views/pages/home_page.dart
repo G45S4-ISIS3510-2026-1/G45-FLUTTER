@@ -51,15 +51,20 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future<void> cargarDatos() async {
-    u.User? user = await authVM.getUserCache();
+    final user = await authVM.getUserCache();
+
+    if (!mounted) return;
+
     if (user != null) {
       final listaSesiones = await sessionVM.getSessionsByStudent(user.id);
+
+      if (!mounted) return; 
+
       setState(() {
         nombre = user.name;
         sesiones = listaSesiones;
       });
     }
-    // await FirebaseAuth.instance.signOut();
   }
 
   @override
