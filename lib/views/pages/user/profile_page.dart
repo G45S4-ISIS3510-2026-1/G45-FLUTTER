@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:g45_flutter/models/user.dart';
 import 'package:g45_flutter/services/conection_service.dart';
 import 'package:g45_flutter/viewmodels/auth.dart';
+import 'package:g45_flutter/views/pages/user/pqr_page.dart';
 import 'package:g45_flutter/widgets/profile/profile_extra_info.dart';
 import 'package:g45_flutter/widgets/profile/profile_header.dart';
 import 'package:g45_flutter/widgets/profile/profile_options.dart';

@@ -6,6 +6,7 @@ import '../config/api_config.dart';
 import '../models/tutor_summary.dart';
 import '../models/user.dart';
 import 'skills_repository.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class UserRepository {
   final String baseUrl = "${ApiConfig.baseUrl}/users";
@@ -206,5 +207,17 @@ class UserRepository {
 
     final List data = jsonDecode(resp.body);
     return data.map((json) => TutorSummary.fromJson(json)).toList();
+  }
+
+  //--------------------------
+  // FAVORITOS EN CACHE
+  //--------------------------
+    Future<void> saveFavorites(List<String> tutorIds) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setStringList("favorites", tutorIds);
+  }
+    Future<List<String>> getFavorites() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getStringList("favorites") ?? [];
   }
 }

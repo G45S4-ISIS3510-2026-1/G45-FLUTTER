@@ -6,12 +6,7 @@ import '../repositories/user_repository.dart';
 import '../models/user.dart' as u;
 import 'package:shared_preferences/shared_preferences.dart';
 
-enum AuthState {
-  loading,
-  login,
-  selectSkills,
-  home,
-}
+enum AuthState { loading, login, selectSkills, home }
 
 class AuthViewModel extends ChangeNotifier {
   final repository = UserRepository();
@@ -119,6 +114,7 @@ class AuthViewModel extends ChangeNotifier {
     final next = (userCache?.interestedSkills.isEmpty ?? true)
         ? AuthState.selectSkills
         : AuthState.home;
+
     setAuthState(next);
   }
 
