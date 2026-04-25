@@ -60,9 +60,8 @@ class _TutorReviewsSectionState extends State<TutorReviewsSection> {
     //----------------------------------
     // BQ IV — screen view
     //----------------------------------
-    AnalyticsService.instance.logEvent("screen_view", {
-      "screen_name": "TutorProfileReview",
-      "screen_class": "TutorProfile",
+    AnalyticsService.instance.logEvent("view_review", {
+      "tutor_id": widget.tutorId,
     });
   }
 
@@ -334,6 +333,14 @@ class _TutorReviewsSectionState extends State<TutorReviewsSection> {
                               //----------------------------------
                               if (success) {
                                 print(" REVIEW CREADA");
+                                await AnalyticsService.instance
+                                    .logEvent('review_submit', {
+                                      'tutor_id': widget.tutorId,
+                                      'review_length': _controller.text
+                                          .trim()
+                                          .length,
+                                      'rating': rating,
+                                    });
 
                                 await _clearReviewDraft();
                                 _controller.clear();
