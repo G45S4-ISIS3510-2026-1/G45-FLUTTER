@@ -18,13 +18,11 @@ import 'package:g45_flutter/views/pages/select_skills.dart';
 import 'package:g45_flutter/views/widget_tree.dart';
 import 'package:provider/provider.dart';
 
-// 🔥 PARA TEST
-const bool SKIP_LOGIN = true;
+const bool SKIP_LOGIN = false;
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // 🔥 SOLO UNA VEZ
   await RecentViewedService().init();
 
   if (Firebase.apps.isEmpty) {
