@@ -3,7 +3,6 @@ import 'package:g45_flutter/models/session.dart';
 
 class SessionCardWidget extends StatelessWidget {
   final Session session;
-  // null = don't show role badge (e.g. detail page header)
   final bool? isTutor;
 
   const SessionCardWidget({super.key, required this.session, this.isTutor});
@@ -30,7 +29,6 @@ class SessionCardWidget extends StatelessWidget {
       ),
       child: Row(
         children: [
-          // Date circle
           Container(
             width: 60,
             height: 60,
@@ -49,7 +47,6 @@ class SessionCardWidget extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 16),
-          // Info
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -75,31 +72,10 @@ class SessionCardWidget extends StatelessWidget {
                     ),
                   ],
                 ),
-              ),
-              const SizedBox(width: 20),
-              SizedBox(width: 12),
-              //Información del tutor
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    //renglon Superior
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        // materia
-                        Text(
-                          session.skill['label'],
-                          style: TextStyle(color: Colors.white),
-                        ),
-                      ],
-                    ),
-                    //major del tutor
-                    Text(
-                      "Edificio Mario Laserna - ML 502",
-                      style: TextStyle(color: Colors.grey),
-                    ),
-                  ],
+                const SizedBox(height: 4),
+                Text(
+                  '${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}',
+                  style: const TextStyle(color: Colors.grey, fontSize: 13),
                 ),
                 if (isTutor != null) ...[
                   const SizedBox(height: 4),

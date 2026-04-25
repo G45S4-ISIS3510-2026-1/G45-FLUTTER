@@ -36,13 +36,11 @@ class AgendaViewModel extends ChangeNotifier {
         throw Exception("No hay usuario autenticado.");
       }
 
-      final studentFuture = _sessionVM.getSessionsByStudent(user.id);
-      final tutorFuture = _sessionVM.getSessionsByTutor(user.id);
+      await _sessionVM.loadSessionsByStudent(user.id!);
+      await _sessionVM.loadSessionsByTutor(user.id!);
 
-      final results = await Future.wait([studentFuture, tutorFuture]);
-
-      _studentSessions = results[0];
-      _tutorSessions = results[1];
+      _studentSessions = _sessionVM.studentSessions;
+      _tutorSessions = _sessionVM.tutorSessions;
     } catch (e) {
       _errorMessage = "Error cargando la agenda: $e";
     } finally {
