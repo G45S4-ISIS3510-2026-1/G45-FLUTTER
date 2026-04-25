@@ -9,5 +9,5 @@ class ApiConfig {
   // static const String baseUrl = "http://10.0.2.2:8000";
   static const String baseUrl =
       "https://g45-backend.onrender.com"; // Web / Chrome
-  static const String analyticsUrl = "http://127.0.0.1:8001";
+  static const String analyticsUrl = "https://g45-analytics-m.onrender.com";
 }
