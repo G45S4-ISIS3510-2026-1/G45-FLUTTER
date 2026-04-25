@@ -22,7 +22,7 @@ class ConnectionService {
       checkRealConnection();
     });
 
-    timer = Timer.periodic(const Duration(seconds: 5), (time) {
+    timer = Timer.periodic(const Duration(seconds: 1), (time) {
       checkRealConnection();
     });
 

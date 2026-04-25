@@ -102,9 +102,16 @@ class AuthViewModel extends ChangeNotifier {
   }
 
   Future<void> refreshUser() async {
-    final firebaseUser = FirebaseAuth.instance.currentUser;
-    if (firebaseUser != null) {
-      await syncWithBackend(firebaseUser);
+    if (userCache == null) return;
+    if (!ConnectionService().hasConnection) return;
+
+    try {
+      final fetched = await repository.getUserById(userCache!.id!);
+      userCache = fetched;
+      await saveUserInCache(fetched);
+      notifyListeners();
+    } catch (e) {
+      // queda con el cache, no hacer signOut
     }
   }
 

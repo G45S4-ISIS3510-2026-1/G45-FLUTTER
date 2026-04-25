@@ -47,12 +47,9 @@ class BecomeTutorState extends State<BecomeTutor> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [ 
-            // ------------------------------------- //
-            // FOTO DE PERFIL
             Center(
               child: GestureDetector(
                 onTap: () {
-                  // TODO: conectar con image picker
                 },
                 child: CircleAvatar(
                   radius: 50,
@@ -72,8 +69,6 @@ class BecomeTutorState extends State<BecomeTutor> {
                 ),
               ),
             ),
-            // ------------------------------------- //
-            // CARRERA
             const SizedBox(height: 24),
             Text("Tu carrera", style: theme.textTheme.titleMedium),
             const SizedBox(height: 8),
@@ -98,8 +93,6 @@ class BecomeTutorState extends State<BecomeTutor> {
                     },
                   ),
 
-            // ------------------------------------- //
-            // SKILLS
             const SizedBox(height: 24),
 
             Text("Skills que puedes tutorear", style: theme.textTheme.titleMedium),
@@ -108,10 +101,14 @@ class BecomeTutorState extends State<BecomeTutor> {
               children: [
                 Expanded(
                   child: DropdownButtonFormField<Skill>(
+                    isExpanded: true,
                     value: vm.selectedSkill,
-                    hint: Text(vm.selectedMajor == null? "Primero selecciona una carrera" : "Selecciona una skill"),
+                    hint: Text(
+                      vm.selectedMajor == null? "Primero selecciona una carrera" : "Selecciona una skill",
+                      overflow: TextOverflow.ellipsis,
+                    ),
                     items: vm.availableSkills.map((s) =>
-                        DropdownMenuItem<Skill>(value: s, child: Text(s.label))).toList(),
+                        DropdownMenuItem<Skill>(value: s, child: Text(s.label, overflow: TextOverflow.ellipsis))).toList(),
                     onChanged: vm.selectedMajor == null
                         ? null
                         : (val) => vm.selectSkill(val),
@@ -130,8 +127,6 @@ class BecomeTutorState extends State<BecomeTutor> {
                 ),
               ],
             ),
-            // ------------------------------------- //
-            // LISTA SKILLS
             const SizedBox(height: 12),
             Wrap(
               spacing: 8,
@@ -142,8 +137,6 @@ class BecomeTutorState extends State<BecomeTutor> {
               )).toList(),
             ),
 
-            // ------------------------------------- //
-            // DISPONIBILIDADES
             const SizedBox(height: 24),
 
             Text("Disponibilidades", style: theme.textTheme.titleMedium),
@@ -194,8 +187,6 @@ class BecomeTutorState extends State<BecomeTutor> {
                 ),
               ],
             ),
-            // ------------------------------------- //
-            // PRECIO
             const SizedBox(height: 24),
             Text("Precio por sesión (COP)", style: theme.textTheme.titleMedium),
             const SizedBox(height: 8),
@@ -210,8 +201,6 @@ class BecomeTutorState extends State<BecomeTutor> {
             ),
             const SizedBox(height: 32),
 
-            // ------------------------------------- //
-            // LISTA DISPONIBILIDADES
             const SizedBox(height: 12),
             Wrap(
               spacing: 8,

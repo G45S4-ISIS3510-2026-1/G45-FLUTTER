@@ -22,12 +22,18 @@ class Session {
       skill: Map<String, dynamic>.from(json['skill']),
       scheduledAt: DateTime.parse(json['scheduledAt']),
       status: json['status'],
-      studentId: json['student']['id'],
-      tutorId: json['tutor']['id'],
-      verifCode: json['verifCode'],
+      // lee del backend (student.id) o del cache (studentId)
+      studentId: json['student'] != null 
+          ? json['student']['id'] 
+          : json['studentId'] ?? '',
+      tutorId: json['tutor'] != null 
+          ? json['tutor']['id'] 
+          : json['tutorId'] ?? '',
+      verifCode: json['verifCode'] ?? '',
       id: json['id'],
     );
   }
+
   Map<String, dynamic> toJson() {
     return {
       'id': id,

@@ -25,10 +25,13 @@ class SessionViewModel extends ChangeNotifier {
 
     if (ConnectionService().hasConnection) {
       try {
-        studentSessions = await repository.getByStudent(studentId);
-        await saveSessionsCache('student_sessions', studentSessions);
+        final fetched = await repository.getByStudent(studentId);
+        if (fetched != null) {
+          studentSessions = fetched;
+          await saveSessionsCache('student_sessions', studentSessions);
+        }
       } catch (e) {
-        errorMessage = "Error cargando sesiones";
+        print("Error en servidor, cayendo a caché: $e");
         await loadSessionsFromCache('student_sessions', isStudent: true);
       }
     } else {
@@ -46,10 +49,13 @@ class SessionViewModel extends ChangeNotifier {
 
     if (ConnectionService().hasConnection) {
       try {
-        tutorSessions = await repository.getByTutor(tutorId);
-        await saveSessionsCache('tutor_sessions', tutorSessions);
+        final fetched = await repository.getByTutor(tutorId);
+        if (fetched != null) {
+          tutorSessions = fetched;
+          await saveSessionsCache('tutor_sessions', tutorSessions);
+        }
       } catch (e) {
-        errorMessage = "Error cargando sesiones";
+        print("Error en servidor, cayendo a caché: $e");
         await loadSessionsFromCache('tutor_sessions', isStudent: false);
       }
     } else {
@@ -61,6 +67,12 @@ class SessionViewModel extends ChangeNotifier {
   }
 
   Future<Session?> createSession(Session session) async {
+    errorMessage = null;
+    if (!ConnectionService().hasConnection) {
+      errorMessage = "Sin conexión";
+      notifyListeners();
+      return null;
+    }
     try {
       final created = await repository.createSession(session);
       if (created != null) {
@@ -69,26 +81,48 @@ class SessionViewModel extends ChangeNotifier {
       }
       return created;
     } catch (e) {
-      errorMessage = "Error creando sesión: $e";
+      errorMessage = "Error al crear sesión";
       notifyListeners();
       return null;
     }
   }
 
   Future<void> saveSessionsCache(String key, List<Session> sessions) async {
-    final prefs = await SharedPreferences.getInstance();
-    final json = sessions.map((s) => jsonEncode(s.toJson())).toList();
-    await prefs.setStringList(key, json);
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final jsonList = sessions.map((s) => jsonEncode(s.toJson())).toList();
+      await prefs.setStringList(key, jsonList);
+    } catch (e) {
+      print("Error guardando caché: $e");
+    }
   }
 
   Future<void> loadSessionsFromCache(String key, {required bool isStudent}) async {
-    final prefs = await SharedPreferences.getInstance();
-    final json = prefs.getStringList(key) ?? [];
-    final sessions = json.map((s) => Session.fromJson(jsonDecode(s))).toList();
-    if (isStudent) {
-      studentSessions = sessions;
-    } else {
-      tutorSessions = sessions;
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final List<String>? jsonList = prefs.getStringList(key);
+
+      if (jsonList == null || jsonList.isEmpty) {
+        if (isStudent) studentSessions = []; else tutorSessions = [];
+        return;
+      }
+
+      final List<Session> tempSessions = [];
+      for (var jsonStr in jsonList) {
+        final decoded = jsonDecode(jsonStr);
+        if (decoded != null && decoded is Map<String, dynamic>) {
+          tempSessions.add(Session.fromJson(decoded));
+        }
+      }
+
+      if (isStudent) {
+        studentSessions = tempSessions;
+      } else {
+        tutorSessions = tempSessions;
+      }
+    } catch (e) {
+      print("Error procesando caché: $e");
+      if (isStudent) studentSessions = []; else tutorSessions = [];
     }
   }
 }

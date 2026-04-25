@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:g45_flutter/services/conection_service.dart';
 import 'package:g45_flutter/viewmodels/session.dart';
 import 'package:g45_flutter/viewmodels/tutor_viewmodel.dart';
 import 'package:g45_flutter/widgets/session_card_widget.dart';
@@ -58,10 +59,20 @@ class _HomePageState extends State<HomePage> {
     super.dispose();
   }
 
+  void showNoConnectionSnackbar() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text("Sin conexión a internet, no puedes ver los detalles ahora"),
+        backgroundColor: Colors.red,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final tutorVM = Provider.of<TutorViewModel>(context);
     final sessionVM = Provider.of<SessionViewModel>(context);
+    final connection = ConnectionService();
 
     return CustomScrollView(
       controller: scrollController,
@@ -99,9 +110,17 @@ class _HomePageState extends State<HomePage> {
                   )
                 : SliverList(
                     delegate: SliverChildBuilderDelegate(
-                      (context, index) => Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                        child: SessionCardWidget(session: sessionVM.studentSessions[index]),
+                      (context, index) => GestureDetector(
+                        onTap: () {
+                          if (!connection.hasConnection) {
+                            showNoConnectionSnackbar();
+                            return;
+                          }
+                        },
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                          child: SessionCardWidget(session: sessionVM.studentSessions[index]),
+                        ),
                       ),
                       childCount: sessionVM.studentSessions.length,
                     ),
@@ -126,9 +145,17 @@ class _HomePageState extends State<HomePage> {
                       scrollDirection: Axis.horizontal,
                       padding: const EdgeInsets.symmetric(horizontal: 16),
                       itemCount: tutorVM.recommendedTutors.length,
-                      itemBuilder: (context, index) => Padding(
-                        padding: const EdgeInsets.only(right: 12.0),
-                        child: TutorCardSmall(tutor: tutorVM.recommendedTutors[index]),
+                      itemBuilder: (context, index) => GestureDetector(
+                        onTap: () {
+                          if (!connection.hasConnection) {
+                            showNoConnectionSnackbar();
+                            return;
+                          }
+                        },
+                        child: Padding(
+                          padding: const EdgeInsets.only(right: 12.0),
+                          child: TutorCardSmall(tutor: tutorVM.recommendedTutors[index]),
+                        ),
                       ),
                     ),
                   ),
