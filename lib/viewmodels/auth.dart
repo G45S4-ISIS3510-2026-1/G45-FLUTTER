@@ -8,6 +8,13 @@ import 'package:shared_preferences/shared_preferences.dart';
 enum AuthState { loading, login, selectSkills, home }
 
 class AuthViewModel extends ChangeNotifier {
+  static AuthViewModel? _instance;
+  static AuthViewModel get instance => _instance!;
+
+  AuthViewModel() {
+    _instance = this;
+  }
+
   final repository = UserRepository();
 
   AuthState _authState = AuthState.loading;
