@@ -11,7 +11,7 @@ import 'package:g45_flutter/viewmodels/skills_viewmodel.dart';
 import 'package:g45_flutter/views/pages/reservation/reservation_detail_page.dart';
 import 'package:g45_flutter/widgets/date_card_widget.dart';
 import 'package:g45_flutter/widgets/gradient_background.dart';
-import 'package:g45_flutter/widgets/tutor_card.dart';
+import 'package:g45_flutter/widgets/tutor/tutor_card.dart';
 import 'package:provider/provider.dart';
 
 class ReservationGatewayPage extends StatefulWidget {
@@ -91,8 +91,6 @@ class _ReservationGatewayPageState extends State<ReservationGatewayPage> {
     }
     return [];
   }
-
-  String studentId = AuthViewModel.instance.userCache!.id;
 
   List<DateTime> getNextDays() {
     return List.generate(
@@ -282,7 +280,7 @@ class _ReservationGatewayPageState extends State<ReservationGatewayPage> {
                     },
                     scheduledAt: selectedDate!,
                     status: 'Pendiente',
-                    studentId: studentId,
+                    studentId: authVM.userCache!.id,
                     tutorId: widget.tutor.id.toString(),
                     verifCode: '',
                   );

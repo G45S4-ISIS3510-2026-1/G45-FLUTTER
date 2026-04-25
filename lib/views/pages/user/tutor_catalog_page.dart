@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
-
-import 'package:g45_flutter/viewmodels/skills_viewmodel.dart';
+import 'package:g45_flutter/services/analytics_service.dart';
 import 'package:g45_flutter/viewmodels/tutor_viewmodel.dart';
-import 'package:g45_flutter/widgets/tutor_card.dart';
+import 'package:g45_flutter/widgets/tutor/tutor_card.dart';
 import 'package:provider/provider.dart';
 
 class CatalogPage extends StatefulWidget {
@@ -170,6 +169,9 @@ class _CatalogPageState extends State<CatalogPage> {
                             selectedSort = "rating";
                           }
                         });
+                        AnalyticsService.instance.logEvent('filter_applied', {
+                          'filter_name': 'mejor_rating',
+                        });
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: selectedSort == "rating"
@@ -189,6 +191,9 @@ class _CatalogPageState extends State<CatalogPage> {
                           } else {
                             selectedSort = "price";
                           }
+                        });
+                        AnalyticsService.instance.logEvent('filter_applied', {
+                          'filter_name': 'precio',
                         });
                       },
                       style: ElevatedButton.styleFrom(
@@ -238,6 +243,10 @@ class _CatalogPageState extends State<CatalogPage> {
                                 selectedFaculty = facultad;
                               }
                             });
+                            AnalyticsService.instance.logEvent(
+                              'filter_applied',
+                              {'filter_name': facultad},
+                            );
                           },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: isSelected

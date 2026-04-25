@@ -5,10 +5,11 @@ import 'package:g45_flutter/models/tutor_summary.dart';
 import 'package:g45_flutter/models/user.dart';
 import 'package:g45_flutter/repositories/review_repository.dart';
 import 'package:g45_flutter/repositories/user_repository.dart';
+import 'package:g45_flutter/services/analytics_service.dart';
 import 'package:g45_flutter/viewmodels/skills_viewmodel.dart';
 import 'package:g45_flutter/views/pages/reservation/reservation_gateway_page.dart';
-import 'package:g45_flutter/widgets/tutor_info_section.dart';
-import 'package:g45_flutter/widgets/tutor_review_card.dart';
+import 'package:g45_flutter/widgets/tutor/tutor_info_section.dart';
+import 'package:g45_flutter/widgets/tutor/tutor_review_card.dart';
 import 'package:provider/provider.dart';
 
 class TutorProfilePage extends StatefulWidget {
@@ -30,34 +31,43 @@ class _TutorProfilePageState extends State<TutorProfilePage> {
   bool isLoading = true;
   bool showAllReviews = false;
 
-  //ANALYTICS ENGINE
   final FirebaseAnalytics analytics = FirebaseAnalytics.instance;
   DateTime? _startTime;
 
   @override
   void initState() {
     super.initState();
-    analytics.logEvent(name: 'test_event');
     _startTime = DateTime.now();
-
-    analytics.logEvent(
-      name: 'view_tutor_profile',
-      parameters: {'tutor_id': widget.tutorId},
-    );
-
+    AnalyticsService.instance.setCurrentService('TutorProfile');
+    AnalyticsService.instance.logEvent('view_review', {
+      'tutor_id': widget.tutorId,
+    });
     loadTutor();
   }
 
   Future<void> loadTutor() async {
-    final repo = UserRepository();
-    final reviewRepo = ReviewRepository();
+    try {
+      final repo = UserRepository();
+      final reviewRepo = ReviewRepository();
 
-    tutor = await repo.getUserById(widget.tutorId);
-    reviewsList = await reviewRepo.getReviewsByTutor(widget.tutorId);
+      tutor = await repo.getUserById(widget.tutorId);
+      reviewsList = await reviewRepo.getReviewsByTutor(widget.tutorId);
+      print("REVIEWS RESPONSE: $reviewsList");
 
-    setState(() {
-      isLoading = false;
-    });
+      setState(() {
+        isLoading = false;
+      });
+    } catch (e, stack) {
+      await AnalyticsService.instance.reportError(
+        'TutorProfile',
+        'Error loading tutor',
+        e,
+        stack,
+      );
+      setState(() {
+        isLoading = false;
+      });
+    }
   }
 
   List<Review> reviewsList = [];
@@ -75,9 +85,10 @@ class _TutorProfilePageState extends State<TutorProfilePage> {
       analytics.logEvent(
         name: 'time_spent_on_reviews',
         parameters: {'tutor_id': widget.tutorId, 'seconds': seconds},
+        
       );
     }
-
+print("TUTOR ID: ${widget.tutorId}");
     super.dispose();
   }
 

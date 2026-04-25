@@ -1,4 +1,3 @@
-import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:g45_flutter/core/theme.dart';
@@ -16,33 +15,24 @@ import 'package:g45_flutter/views/widget_tree.dart';
 import 'package:provider/provider.dart';
 
 // ---------------------------
-// CAMBIAR AQUÍ
-// true = salta login
-// false = usa Firebase normal
+// CAMBIAR AQUÍ PARA SALTAR LOGIN
 // ---------------------------
 const bool SKIP_LOGIN = true;
 
+// ---------------------------
+// MAIN
+// ---------------------------
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  try {
-    if (Firebase.apps.isEmpty) {
-      await Firebase.initializeApp(
-        options: DefaultFirebaseOptions.currentPlatform,
-      );
-    }
-  } catch (e) {
-    if (!e.toString().contains('duplicate-app')) {
-      rethrow;
-    }
-  }
-
-  final FirebaseAnalytics analytics = FirebaseAnalytics.instance;
-  await analytics.setAnalyticsCollectionEnabled(true);
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
   runApp(const MyApp());
 }
 
+// ---------------------------
+// APP
+// ---------------------------
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
@@ -52,7 +42,7 @@ class MyApp extends StatelessWidget {
 
     return MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (_) => AuthViewModel()),
+        ChangeNotifierProvider(create: (_) => AuthViewModel()..initState()),
         ChangeNotifierProvider(create: (_) => TutorViewModel(UserRepository())),
         ChangeNotifierProvider(create: (_) => SkillsViewModel()..loadSkills()),
         ChangeNotifierProvider(create: (_) => ReservationDetailViewModel()),
@@ -61,9 +51,10 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => AgendaViewModel()),
       ],
       child: MaterialApp(
-        // ---------------------------
-        // LOGIN SWITCH
-        // ---------------------------
+        debugShowCheckedModeBanner: false,
+        title: 'Flutter Demo',
+        theme: materialTheme.dark(),
+
         home: SKIP_LOGIN
             ? const WidgetTree()
             : Consumer<AuthViewModel>(

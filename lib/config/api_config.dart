@@ -7,5 +7,7 @@
 class ApiConfig {
   // ── Toggle this line to switch environments ──
   // static const String baseUrl = "http://10.0.2.2:8000";
-  static const String baseUrl = "https://g45-backend.onrender.com"; // Web / Chrome
+  static const String baseUrl =
+      "https://g45-backend.onrender.com"; // Web / Chrome
+  static const String analyticsUrl = "http://127.0.0.1:8001";
 }

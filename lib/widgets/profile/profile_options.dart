@@ -4,12 +4,15 @@ class ProfileOptions extends StatelessWidget {
   final VoidCallback onReservationsTap;
   final VoidCallback onReviewsTap;
   final VoidCallback onFavoritesTap;
+  final VoidCallback onPqrTap;
 
   const ProfileOptions({
     super.key,
     required this.onReservationsTap,
     required this.onReviewsTap,
     required this.onFavoritesTap,
+    required this.onPqrTap,
+    
   });
 
   @override
@@ -19,6 +22,7 @@ class ProfileOptions extends StatelessWidget {
         _option("Historial de Reservas", onReservationsTap),
         _option("Reseñas", onReviewsTap),
         _option("Tutores Favoritos", onFavoritesTap),
+        _option("PQR / Reportes", onPqrTap), 
       ],
     );
   }

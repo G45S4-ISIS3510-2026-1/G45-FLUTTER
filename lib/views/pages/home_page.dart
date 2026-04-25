@@ -7,8 +7,8 @@ import 'package:g45_flutter/models/user.dart' as u;
 import 'package:g45_flutter/viewmodels/session.dart';
 import 'package:g45_flutter/viewmodels/tutor_viewmodel.dart';
 import 'package:g45_flutter/widgets/session_card_widget.dart';
-import 'package:g45_flutter/widgets/tutor_card.dart';
-import 'package:g45_flutter/widgets/tutor_card_small.dart';
+import 'package:g45_flutter/widgets/tutor/tutor_card.dart';
+import 'package:g45_flutter/widgets/tutor/tutor_card_small.dart';
 import 'package:provider/provider.dart';
 
 // import 'package:firebase_auth/firebase_auth.dart';
