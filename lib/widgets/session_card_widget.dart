@@ -83,10 +83,6 @@ class SessionCardWidget extends StatelessWidget {
                           session.skill['label'],
                           style: TextStyle(color: Colors.white),
                         ),
-                        Text(
-                          "${session.skill['major']}",
-                          style: TextStyle(color: Colors.blue),
-                        ),
                       ],
                     ),
                     //major del tutor
