@@ -182,12 +182,21 @@ class UserRepository {
       body: jsonEncode(availability),
     );
 
-    final priceUrl = Uri.parse("$baseUrl/$userId/session-price");
-    await http.patch(
+    if (availabilityResp.statusCode != 200) {
+      throw Exception("Error actualizando disponibilidad");
+    }
+
+    // Flutter
+    final priceUrl = Uri.parse("$baseUrl/$userId/session-price?new_price=$price");
+
+    final priceResp = await http.patch(
       priceUrl,
       headers: {"Content-Type": "application/json"},
-      body: jsonEncode({"sessionPrice": price}),
     );
+
+    if (priceResp.statusCode != 200) {
+      throw Exception("Error actualizando precio: ${priceResp.body}");
+    }
 
     return User.fromJson(jsonDecode(availabilityResp.body));
   }

@@ -9,7 +9,8 @@ import 'package:g45_flutter/viewmodels/review_viewmodel.dart';
 import 'package:g45_flutter/viewmodels/skills_viewmodel.dart';
 import 'package:g45_flutter/views/pages/reservation/reservation_gateway_page.dart';
 import 'package:g45_flutter/widgets/tutor/tutor_info_section.dart';
-import 'package:g45_flutter/widgets/tutor/tutor_reviews_section.dart';
+import 'package:g45_flutter/widgets/tutor/tutor_review_card.dart';
+import 'package:g45_flutter/services/recent_viewed.dart';
 import 'package:provider/provider.dart';
 
 class TutorProfilePage extends StatefulWidget {

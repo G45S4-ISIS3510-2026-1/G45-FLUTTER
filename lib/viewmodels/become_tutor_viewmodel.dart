@@ -7,7 +7,7 @@ class BecomeTutorViewModel extends ChangeNotifier {
   final repo = SkillRepository();
   final userRepo = UserRepository();
 
-  int price = 0;
+  int setedPrice = 0;
   List<String> majors = [];
   List<Skill> availableSkills = [];
 
@@ -150,7 +150,9 @@ class BecomeTutorViewModel extends ChangeNotifier {
   }
 
   void setPrice(int price) {
-    price = price;
+    setedPrice = price;
+
+    print(setedPrice);
     notifyListeners();
   }
 
@@ -178,7 +180,7 @@ class BecomeTutorViewModel extends ChangeNotifier {
       notifyListeners();
       return;
     }
-    if (price <= 0) {
+    if (setedPrice <= 0) {
       isLoading = false;
       errorMessage = "Debes ingresar un precio válido";
       notifyListeners();
@@ -191,7 +193,7 @@ class BecomeTutorViewModel extends ChangeNotifier {
         userId,
         addedSkillIds,
         availability,
-        price
+        setedPrice
       );
       isLoading = false;
       becomedTutor = true;
