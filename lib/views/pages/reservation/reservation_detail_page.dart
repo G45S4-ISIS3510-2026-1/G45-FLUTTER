@@ -116,9 +116,10 @@ class ReservationDetailPageState extends State<ReservationDetailPage> {
                           verifCode: widget.session.verifCode,
                           isTutor: isTutorView,
                           onCodeScanned: (code) async {
+                            final messenger = ScaffoldMessenger.of(context);
                             final connectivity = await Connectivity().checkConnectivity();
-                            if (connectivity == ConnectivityResult.none) {
-                              ScaffoldMessenger.of(context).showSnackBar(
+                            if (connectivity.every((r) => r == ConnectivityResult.none)) {
+                              messenger.showSnackBar(
                                 const SnackBar(content: Text("Sin conexión a internet")),
                               );
                               return;
@@ -146,14 +147,16 @@ class ReservationDetailPageState extends State<ReservationDetailPage> {
                                     ),
                                     TextButton(
                                       onPressed: () async {
+                                        final messenger = ScaffoldMessenger.of(context);
+                                        final navigator = Navigator.of(context);
                                         final connectivity = await Connectivity().checkConnectivity();
-                                        if (connectivity == ConnectivityResult.none) {
-                                          ScaffoldMessenger.of(context).showSnackBar(
+                                        if (connectivity.every((r) => r == ConnectivityResult.none)) {
+                                          messenger.showSnackBar(
                                             const SnackBar(content: Text("Sin conexión a internet")),
                                           );
                                           return;
                                         }
-                                        Navigator.pop(context);
+                                        navigator.pop();
                                         viewModel.cancelSession(
                                           widget.session,
                                           currentUserId,
