@@ -13,15 +13,18 @@ import 'package:g45_flutter/viewmodels/skills_viewmodel.dart';
 import 'package:g45_flutter/viewmodels/tutor_viewmodel.dart';
 import 'package:g45_flutter/viewmodels/session.dart';
 import 'package:g45_flutter/viewmodels/become_tutor_viewmodel.dart';
+import 'package:g45_flutter/viewmodels/theme_viewmodel.dart';
+import 'package:g45_flutter/services/light_sensor_service.dart';
 import 'package:g45_flutter/views/pages/login/login_regist_page.dart';
 import 'package:g45_flutter/views/pages/select_skills.dart';
 import 'package:g45_flutter/views/widget_tree.dart';
 import 'package:provider/provider.dart';
 
 const bool SKIP_LOGIN = false;
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  
+
   try {
     if (Firebase.apps.isEmpty) {
       await Firebase.initializeApp(
@@ -50,6 +53,9 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(
           create: (_) => AuthViewModel()..startListening(),
         ),
+        ChangeNotifierProvider(
+          create: (_) => ThemeViewModel(LightSensorService())..initialize(),
+        ),
         ChangeNotifierProvider(create: (_) => TutorViewModel(UserRepository())),
         ChangeNotifierProvider(create: (_) => SkillsViewModel()..loadSkills()),
         ChangeNotifierProvider(create: (_) => ReservationDetailViewModel()),
@@ -59,28 +65,34 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => BecomeTutorViewModel()),
         ChangeNotifierProvider(create: (_) => SessionViewModel()),
       ],
-      child: MaterialApp(
-        debugShowCheckedModeBanner: false,
-        title: 'Flutter Demo',
-        theme: materialTheme.dark(),
-        home: SKIP_LOGIN
-            ? const WidgetTree()
-            : Consumer<AuthViewModel>(
-                builder: (context, authVM, _) {
-                  switch (authVM.authState) {
-                    case AuthState.loading:
-                      return const Scaffold(
-                        body: Center(child: CircularProgressIndicator()),
-                      );
-                    case AuthState.login:
-                      return const LoginRegistPage();
-                    case AuthState.selectSkills:
-                      return const SelectSkills();
-                    case AuthState.home:
-                      return const WidgetTree();
-                  }
-                },
-              ),
+      child: Consumer2<AuthViewModel, ThemeViewModel>(
+        builder: (context, authVM, themeVM, _) {
+          return MaterialApp(
+            debugShowCheckedModeBanner: false,
+            title: 'Flutter Demo',
+            theme: materialTheme.light(),
+            darkTheme: materialTheme.dark(),
+            themeMode: themeVM.themeMode,
+            home: SKIP_LOGIN
+                ? const WidgetTree()
+                : Builder(
+                    builder: (context) {
+                      switch (authVM.authState) {
+                        case AuthState.loading:
+                          return const Scaffold(
+                            body: Center(child: CircularProgressIndicator()),
+                          );
+                        case AuthState.login:
+                          return const LoginRegistPage();
+                        case AuthState.selectSkills:
+                          return const SelectSkills();
+                        case AuthState.home:
+                          return const WidgetTree();
+                      }
+                    },
+                  ),
+          );
+        },
       ),
     );
   }
