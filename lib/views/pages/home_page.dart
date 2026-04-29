@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:g45_flutter/data/notifiers.dart';
 import 'package:g45_flutter/services/conection_service.dart';
 import 'package:g45_flutter/viewmodels/session.dart';
 import 'package:g45_flutter/viewmodels/tutor_viewmodel.dart';
 import 'package:g45_flutter/widgets/session_card_widget.dart';
 import 'package:g45_flutter/widgets/tutor/tutor_card_small.dart';
 import 'package:provider/provider.dart';
+
 import '../../../viewmodels/auth.dart';
 
 class HomePage extends StatefulWidget {
@@ -22,14 +24,17 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
+    selectedPageNotifier.addListener(onTabChanged);
 
     Future.microtask(() async {
       final user = await authVM.getUserCache();
       if (user != null) {
         setState(() => nombre = user.name);
         if (mounted) {
-          Provider.of<SessionViewModel>(context, listen: false)
-              .loadSessionsByStudent(user.id);
+          Provider.of<SessionViewModel>(
+            context,
+            listen: false,
+          ).loadSessionsByStudent(user.id);
         }
       }
     });
@@ -47,6 +52,20 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
+  void onTabChanged() {
+    if (selectedPageNotifier.value == 0 && mounted) {
+      Future.microtask(() async {
+        final user = await authVM.getUserCache();
+        if (user != null && mounted) {
+          Provider.of<SessionViewModel>(
+            context,
+            listen: false,
+          ).loadSessionsByStudent(user.id);
+        }
+      });
+    }
+  }
+
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
@@ -55,6 +74,7 @@ class _HomePageState extends State<HomePage> {
 
   @override
   void dispose() {
+    selectedPageNotifier.removeListener(onTabChanged);
     scrollController.dispose();
     super.dispose();
   }
@@ -62,7 +82,9 @@ class _HomePageState extends State<HomePage> {
   void showNoConnectionSnackbar() {
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
-        content: Text("Sin conexión a internet, no puedes ver los detalles ahora"),
+        content: Text(
+          "Sin conexión a internet, no puedes ver los detalles ahora",
+        ),
         backgroundColor: Colors.red,
       ),
     );
@@ -102,29 +124,34 @@ class _HomePageState extends State<HomePage> {
                 child: Center(child: CircularProgressIndicator()),
               )
             : sessionVM.studentSessions.isEmpty
-                ? const SliverToBoxAdapter(
+            ? const SliverToBoxAdapter(
+                child: Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  child: Text("No tienes sesiones próximas"),
+                ),
+              )
+            : SliverList(
+                delegate: SliverChildBuilderDelegate(
+                  (context, index) => GestureDetector(
+                    onTap: () {
+                      if (!connection.hasConnection) {
+                        showNoConnectionSnackbar();
+                        return;
+                      }
+                    },
                     child: Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                      child: Text("No tienes sesiones próximas"),
-                    ),
-                  )
-                : SliverList(
-                    delegate: SliverChildBuilderDelegate(
-                      (context, index) => GestureDetector(
-                        onTap: () {
-                          if (!connection.hasConnection) {
-                            showNoConnectionSnackbar();
-                            return;
-                          }
-                        },
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                          child: SessionCardWidget(session: sessionVM.studentSessions[index]),
-                        ),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 8,
                       ),
-                      childCount: sessionVM.studentSessions.length,
+                      child: SessionCardWidget(
+                        session: sessionVM.studentSessions[index],
+                      ),
                     ),
                   ),
+                  childCount: sessionVM.studentSessions.length,
+                ),
+              ),
 
         if (tutorVM.recommendedTutors.isNotEmpty) ...[
           const SliverToBoxAdapter(
@@ -154,7 +181,9 @@ class _HomePageState extends State<HomePage> {
                         },
                         child: Padding(
                           padding: const EdgeInsets.only(right: 12.0),
-                          child: TutorCardSmall(tutor: tutorVM.recommendedTutors[index]),
+                          child: TutorCardSmall(
+                            tutor: tutorVM.recommendedTutors[index],
+                          ),
                         ),
                       ),
                     ),

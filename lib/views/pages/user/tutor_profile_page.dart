@@ -6,11 +6,11 @@ import 'package:g45_flutter/models/user.dart';
 import 'package:g45_flutter/repositories/review_repository.dart';
 import 'package:g45_flutter/repositories/user_repository.dart';
 import 'package:g45_flutter/services/analytics_service.dart';
+import 'package:g45_flutter/services/recent_viewed.dart';
 import 'package:g45_flutter/viewmodels/skills_viewmodel.dart';
 import 'package:g45_flutter/views/pages/reservation/reservation_gateway_page.dart';
 import 'package:g45_flutter/widgets/tutor/tutor_info_section.dart';
 import 'package:g45_flutter/widgets/tutor/tutor_review_card.dart';
-import 'package:g45_flutter/services/recent_viewed.dart';
 import 'package:provider/provider.dart';
 
 class TutorProfilePage extends StatefulWidget {
@@ -85,13 +85,12 @@ class _TutorProfilePageState extends State<TutorProfilePage> {
     if (_startTime != null) {
       final seconds = DateTime.now().difference(_startTime!).inSeconds;
 
-      analytics.logEvent(
-        name: 'time_spent_on_reviews',
-        parameters: {'tutor_id': widget.tutorId, 'seconds': seconds},
-        
-      );
+      AnalyticsService.instance.logEvent('time_spent_on_reviews', {
+        'tutor_id': widget.tutorId,
+        'seconds': seconds,
+      });
     }
-print("TUTOR ID: ${widget.tutorId}");
+    print("TUTOR ID: ${widget.tutorId}");
     super.dispose();
   }
 
@@ -158,7 +157,7 @@ print("TUTOR ID: ${widget.tutorId}");
                     child: Image.network(
                       tutor!.profileImageUrl ?? "",
                       fit: BoxFit.cover,
-                      filterQuality: FilterQuality.high, 
+                      filterQuality: FilterQuality.high,
                       errorBuilder: (context, error, stackTrace) {
                         return Container(color: Colors.black);
                       },
