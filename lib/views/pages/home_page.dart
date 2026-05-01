@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:g45_flutter/data/notifiers.dart';
 import 'package:g45_flutter/services/conection_service.dart';
 import 'package:g45_flutter/viewmodels/session.dart';
 import 'package:g45_flutter/viewmodels/tutor_viewmodel.dart';
 import 'package:g45_flutter/widgets/session_card_widget.dart';
 import 'package:g45_flutter/widgets/tutor/tutor_card_small.dart';
 import 'package:provider/provider.dart';
+
 import '../../../viewmodels/auth.dart';
 
 class HomePage extends StatefulWidget {
@@ -22,6 +24,7 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
+    selectedPageNotifier.addListener(onTabChanged);
 
     Future.microtask(() async {
       final user = await authVM.getUserCache();
@@ -29,8 +32,10 @@ class _HomePageState extends State<HomePage> {
         setState(() => nombre = user.name);
 
         if (mounted) {
-          Provider.of<SessionViewModel>(context, listen: false)
-              .loadSessionsByStudent(user.id);
+          Provider.of<SessionViewModel>(
+            context,
+            listen: false,
+          ).loadSessionsByStudent(user.id);
         }
       }
     });
@@ -48,6 +53,20 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
+  void onTabChanged() {
+    if (selectedPageNotifier.value == 0 && mounted) {
+      Future.microtask(() async {
+        final user = await authVM.getUserCache();
+        if (user != null && mounted) {
+          Provider.of<SessionViewModel>(
+            context,
+            listen: false,
+          ).loadSessionsByStudent(user.id);
+        }
+      });
+    }
+  }
+
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
@@ -57,6 +76,7 @@ class _HomePageState extends State<HomePage> {
 
   @override
   void dispose() {
+    selectedPageNotifier.removeListener(onTabChanged);
     scrollController.dispose();
     super.dispose();
   }
@@ -66,7 +86,8 @@ class _HomePageState extends State<HomePage> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: const Text(
-            "Sin conexión a internet, no puedes ver los detalles ahora"),
+          "Sin conexión a internet, no puedes ver los detalles ahora",
+        ),
         backgroundColor: colors.error,
       ),
     );
@@ -82,6 +103,7 @@ class _HomePageState extends State<HomePage> {
     return CustomScrollView(
       controller: scrollController,
       slivers: [
+        // 🔹 SALUDO
         SliverToBoxAdapter(
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -96,6 +118,7 @@ class _HomePageState extends State<HomePage> {
           ),
         ),
 
+        // 🔹 TÍTULO SESIONES
         SliverToBoxAdapter(
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
@@ -110,6 +133,7 @@ class _HomePageState extends State<HomePage> {
           ),
         ),
 
+        // 🔹 LISTA SESIONES
         (sessionVM.isLoading || tutorVM.isLoading)
             ? const SliverToBoxAdapter(
                 child: Center(child: CircularProgressIndicator()),
@@ -148,6 +172,7 @@ class _HomePageState extends State<HomePage> {
                     ),
                   ),
 
+        // 🔹 TUTORES DESTACADOS
         if (tutorVM.recommendedTutors.isNotEmpty)
           SliverToBoxAdapter(
             child: Padding(
@@ -163,30 +188,33 @@ class _HomePageState extends State<HomePage> {
             ),
           ),
 
+        // 🔹 LISTA HORIZONTAL TUTORES
         if (tutorVM.recommendedTutors.isNotEmpty)
           SliverToBoxAdapter(
-            child: SizedBox(
-              height: 200,
-              child: ListView.builder(
-                scrollDirection: Axis.horizontal,
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                itemCount: tutorVM.recommendedTutors.length,
-                itemBuilder: (context, index) => GestureDetector(
-                  onTap: () {
-                    if (!connection.hasConnection) {
-                      showNoConnectionSnackbar();
-                      return;
-                    }
-                  },
-                  child: Padding(
-                    padding: const EdgeInsets.only(right: 12.0),
-                    child: TutorCardSmall(
-                      tutor: tutorVM.recommendedTutors[index],
+            child: tutorVM.isLoading
+                ? const Center(child: CircularProgressIndicator())
+                : SizedBox(
+                    height: 200,
+                    child: ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      itemCount: tutorVM.recommendedTutors.length,
+                      itemBuilder: (context, index) => GestureDetector(
+                        onTap: () {
+                          if (!connection.hasConnection) {
+                            showNoConnectionSnackbar();
+                            return;
+                          }
+                        },
+                        child: Padding(
+                          padding: const EdgeInsets.only(right: 12.0),
+                          child: TutorCardSmall(
+                            tutor: tutorVM.recommendedTutors[index],
+                          ),
+                        ),
+                      ),
                     ),
                   ),
-                ),
-              ),
-            ),
           ),
 
         const SliverToBoxAdapter(child: SizedBox(height: 10)),

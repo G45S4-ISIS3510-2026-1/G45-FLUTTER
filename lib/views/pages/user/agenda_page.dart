@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:g45_flutter/data/notifiers.dart';
 import 'package:g45_flutter/models/session.dart';
 import 'package:g45_flutter/viewmodels/agenda_viewmodel.dart';
 import 'package:g45_flutter/viewmodels/auth.dart';
@@ -20,27 +21,48 @@ class _AgendaPageState extends State<AgendaPage> {
   late DateTime _weekStart;
 
   static const _months = [
-    'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
-    'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre',
+    'Enero','Febrero','Marzo','Abril','Mayo','Junio',
+    'Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre',
   ];
+
   static const _dayFull = [
-    'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo',
+    'Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo',
   ];
 
   @override
   void initState() {
     super.initState();
+
     final today = DateTime.now();
     _selectedDate = DateTime(today.year, today.month, today.day);
-    _weekStart = DateTime(today.year, today.month, today.day - (today.weekday - 1));
+    _weekStart = DateTime(
+      today.year,
+      today.month,
+      today.day - (today.weekday - 1),
+    );
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
       Provider.of<AgendaViewModel>(context, listen: false).loadAgenda();
     });
+
+    selectedPageNotifier.addListener(onTabChanged);
+  }
+
+  void onTabChanged() {
+    if (selectedPageNotifier.value == 2 && mounted) {
+      Provider.of<AgendaViewModel>(context, listen: false).loadAgenda();
+    }
+  }
+
+  @override
+  void dispose() {
+    selectedPageNotifier.removeListener(onTabChanged);
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final colors = Theme.of(context).colorScheme;
     final viewModel = Provider.of<AgendaViewModel>(context);
     final userId = AuthViewModel.instance.userCache?.id ?? '';
 
@@ -59,9 +81,13 @@ class _AgendaPageState extends State<AgendaPage> {
     return Scaffold(
       backgroundColor: Colors.transparent,
       appBar: AppBar(
-        title: Text('Mi Agenda',
-            style: TextStyle(
-                fontWeight: FontWeight.bold, color: colorScheme.onSurface)),
+        title: Text(
+          'Mi Agenda',
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            color: colors.onSurface,
+          ),
+        ),
         backgroundColor: Colors.transparent,
         elevation: 0,
       ),
@@ -70,7 +96,8 @@ class _AgendaPageState extends State<AgendaPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Month header + week navigation
+
+              // 🔹 HEADER MES
               Padding(
                 padding: const EdgeInsets.fromLTRB(16, 4, 8, 8),
                 child: Row(
@@ -79,21 +106,22 @@ class _AgendaPageState extends State<AgendaPage> {
                     Text(
                       '${_months[_selectedDate.month - 1]}, ${_selectedDate.year}',
                       style: TextStyle(
-                          color: colorScheme.onSurface,
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold),
+                        color: colors.onSurface,
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                     Row(
                       children: [
                         IconButton(
                           icon: Icon(Icons.chevron_left,
-                              color: colorScheme.onSurfaceVariant),
+                              color: colors.onSurfaceVariant),
                           onPressed: () => setState(() =>
                               _weekStart = _weekStart.subtract(const Duration(days: 7))),
                         ),
                         IconButton(
                           icon: Icon(Icons.chevron_right,
-                              color: colorScheme.onSurfaceVariant),
+                              color: colors.onSurfaceVariant),
                           onPressed: () => setState(() =>
                               _weekStart = _weekStart.add(const Duration(days: 7))),
                         ),
@@ -102,25 +130,29 @@ class _AgendaPageState extends State<AgendaPage> {
                   ],
                 ),
               ),
-              // Day strip — scrollable so DateCardWidget keeps its existing width
+
+              // 🔹 DÍAS
               SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
                 padding: const EdgeInsets.symmetric(horizontal: 8),
                 child: Row(
-                  children: weekDays
-                      .map((date) => Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 4),
-                            child: DateCardWidget(
-                              date: date,
-                              selectedDate: _selectedDate,
-                              onSelected: (d) => setState(() => _selectedDate = d),
-                            ),
-                          ))
-                      .toList(),
+                  children: weekDays.map((date) {
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 4),
+                      child: DateCardWidget(
+                        date: date,
+                        selectedDate: _selectedDate,
+                        onSelected: (d) =>
+                            setState(() => _selectedDate = d),
+                      ),
+                    );
+                  }).toList(),
                 ),
               ),
+
               const SizedBox(height: 12),
-              // Date label + session count
+
+              // 🔹 TEXTO FECHA + COUNT
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: Row(
@@ -129,21 +161,28 @@ class _AgendaPageState extends State<AgendaPage> {
                     Text(
                       '${_dayFull[_selectedDate.weekday - 1]}, ${_selectedDate.day} de ${_months[_selectedDate.month - 1]}',
                       style: TextStyle(
-                          color: colorScheme.onSurfaceVariant, fontSize: 13),
+                        color: colors.onSurfaceVariant,
+                        fontSize: 13,
+                      ),
                     ),
                     if (!viewModel.isLoading)
                       Text(
                         '${filtered.length} SESIONES',
                         style: TextStyle(
-                            color: colorScheme.primary,
-                            fontSize: 13,
-                            fontWeight: FontWeight.bold),
+                          color: colors.primary,
+                          fontSize: 13,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                   ],
                 ),
               ),
+
               const SizedBox(height: 8),
-              Expanded(child: _buildList(viewModel, filtered, userId)),
+
+              Expanded(
+                child: _buildList(viewModel, filtered, userId),
+              ),
             ],
           ),
         ),
@@ -151,15 +190,23 @@ class _AgendaPageState extends State<AgendaPage> {
     );
   }
 
-  Widget _buildList(AgendaViewModel viewModel, List<Session> filtered, String userId) {
-    final colorScheme = Theme.of(context).colorScheme;
+  Widget _buildList(
+      AgendaViewModel viewModel,
+      List<Session> filtered,
+      String userId,
+      ) {
+    final colors = Theme.of(context).colorScheme;
 
-    if (viewModel.isLoading) return const Center(child: CircularProgressIndicator());
+    if (viewModel.isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
 
     if (viewModel.errorMessage != null) {
       return Center(
-        child: Text(viewModel.errorMessage!,
-            style: TextStyle(color: colorScheme.error)),
+        child: Text(
+          viewModel.errorMessage!,
+          style: TextStyle(color: colors.error),
+        ),
       );
     }
 
@@ -168,13 +215,19 @@ class _AgendaPageState extends State<AgendaPage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.calendar_today,
-                size: 64,
-                color: colorScheme.onSurfaceVariant.withAlpha(128)),
+            Icon(
+              Icons.calendar_today,
+              size: 64,
+              color: colors.onSurfaceVariant.withOpacity(0.5),
+            ),
             const SizedBox(height: 16),
-            Text('No hay sesiones para este día',
-                style: TextStyle(
-                    color: colorScheme.onSurfaceVariant, fontSize: 16)),
+            Text(
+              'No hay sesiones para este día',
+              style: TextStyle(
+                color: colors.onSurfaceVariant,
+                fontSize: 16,
+              ),
+            ),
           ],
         ),
       );
@@ -185,14 +238,21 @@ class _AgendaPageState extends State<AgendaPage> {
       itemCount: filtered.length,
       itemBuilder: (context, index) {
         final session = filtered[index];
+
         return Padding(
           padding: const EdgeInsets.only(bottom: 16),
           child: GestureDetector(
             onTap: () => Navigator.push(
               context,
-              MaterialPageRoute(builder: (_) => ReservationDetailPage(session: session)),
+              MaterialPageRoute(
+                builder: (_) =>
+                    ReservationDetailPage(session: session),
+              ),
             ),
-            child: SessionCardWidget(session: session, isTutor: session.tutorId == userId),
+            child: SessionCardWidget(
+              session: session,
+              isTutor: session.tutorId == userId,
+            ),
           ),
         );
       },
