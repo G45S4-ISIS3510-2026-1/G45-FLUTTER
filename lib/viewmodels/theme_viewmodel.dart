@@ -8,16 +8,35 @@ class ThemeViewModel extends ChangeNotifier {
   ThemeViewModel(this.sensorService);
 
   ThemeMode themeMode = ThemeMode.system;
+  bool _isDark = false;
 
   StreamSubscription? subscription;
 
   Future<void> initialize() async {
+    try {
+      // Get initial theme value before listening to stream
+      _isDark = await sensorService.getInitialTheme();
+      themeMode = _isDark ? ThemeMode.dark : ThemeMode.light;
+      notifyListeners();
+    } catch (e) {
+      // Fallback to system theme on error
+      themeMode = ThemeMode.system;
+    }
+
+    // Initialize sensor and listen to changes
     await sensorService.initialize();
 
     subscription = sensorService.isDarkStream.listen((isDark) {
+      _setDark(isDark);
+    });
+  }
+
+  void _setDark(bool isDark) {
+    if (_isDark != isDark) {
+      _isDark = isDark;
       themeMode = isDark ? ThemeMode.dark : ThemeMode.light;
       notifyListeners();
-    });
+    }
   }
 
   @override

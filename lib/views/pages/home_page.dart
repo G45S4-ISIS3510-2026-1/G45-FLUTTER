@@ -23,9 +23,6 @@ class _HomePageState extends State<HomePage> {
   void initState() {
     super.initState();
 
-    //----------------------------------
-    // USER + SESIONES
-    //----------------------------------
     Future.microtask(() async {
       final user = await authVM.getUserCache();
       if (user != null) {
@@ -38,9 +35,6 @@ class _HomePageState extends State<HomePage> {
       }
     });
 
-    //----------------------------------
-    // RECOMENDACIONES + SCROLL
-    //----------------------------------
     Future.microtask(() {
       final tutorVM = Provider.of<TutorViewModel>(context, listen: false);
       tutorVM.loadRecommendations();
@@ -67,21 +61,20 @@ class _HomePageState extends State<HomePage> {
     super.dispose();
   }
 
-  //----------------------------------
-  // SNACKBAR (MEJORADO)
-  //----------------------------------
   void showNoConnectionSnackbar() {
+    final colors = Theme.of(context).colorScheme;
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text(
+      SnackBar(
+        content: const Text(
             "Sin conexión a internet, no puedes ver los detalles ahora"),
-        backgroundColor: Colors.red,
+        backgroundColor: colors.error,
       ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
     final tutorVM = Provider.of<TutorViewModel>(context);
     final sessionVM = Provider.of<SessionViewModel>(context);
     final connection = ConnectionService();
@@ -89,46 +82,49 @@ class _HomePageState extends State<HomePage> {
     return CustomScrollView(
       controller: scrollController,
       slivers: [
-        //----------------------------------
-        // SALUDO
-        //----------------------------------
         SliverToBoxAdapter(
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             child: Text(
               'Hola $nombre!',
-              style: const TextStyle(
-                  fontSize: 35, fontWeight: FontWeight.bold),
+              style: TextStyle(
+                fontSize: 35,
+                fontWeight: FontWeight.bold,
+                color: colors.onSurface,
+              ),
             ),
           ),
         ),
 
-        //----------------------------------
-        // SESIONES
-        //----------------------------------
-        const SliverToBoxAdapter(
+        SliverToBoxAdapter(
           child: Padding(
-            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
             child: Text(
               'Próximas sesiones',
-              style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
+              style: TextStyle(
+                fontSize: 25,
+                fontWeight: FontWeight.bold,
+                color: colors.onSurface,
+              ),
             ),
           ),
         ),
 
-        //----------------------------------
-        // LOADING (MEJORADO)
-        //----------------------------------
         (sessionVM.isLoading || tutorVM.isLoading)
             ? const SliverToBoxAdapter(
                 child: Center(child: CircularProgressIndicator()),
               )
             : sessionVM.studentSessions.isEmpty
-                ? const SliverToBoxAdapter(
+                ? SliverToBoxAdapter(
                     child: Padding(
-                      padding:
-                          EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                      child: Text("No tienes sesiones próximas"),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 8),
+                      child: Text(
+                        "No tienes sesiones próximas",
+                        style: TextStyle(
+                          color: colors.onSurfaceVariant,
+                        ),
+                      ),
                     ),
                   )
                 : SliverList(
@@ -152,19 +148,22 @@ class _HomePageState extends State<HomePage> {
                     ),
                   ),
 
-        //----------------------------------
-        // RECOMENDADOS
-        //----------------------------------
-        if (tutorVM.recommendedTutors.isNotEmpty) ...[
-          const SliverToBoxAdapter(
+        if (tutorVM.recommendedTutors.isNotEmpty)
+          SliverToBoxAdapter(
             child: Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
               child: Text(
                 'Tutores destacados',
-                style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
+                style: TextStyle(
+                  fontSize: 25,
+                  fontWeight: FontWeight.bold,
+                  color: colors.onSurface,
+                ),
               ),
             ),
           ),
+
+        if (tutorVM.recommendedTutors.isNotEmpty)
           SliverToBoxAdapter(
             child: SizedBox(
               height: 200,
@@ -189,7 +188,6 @@ class _HomePageState extends State<HomePage> {
               ),
             ),
           ),
-        ],
 
         const SliverToBoxAdapter(child: SizedBox(height: 10)),
       ],

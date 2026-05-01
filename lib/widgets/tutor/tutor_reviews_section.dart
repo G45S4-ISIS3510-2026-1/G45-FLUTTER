@@ -98,19 +98,22 @@ class _TutorReviewsSectionState extends State<TutorReviewsSection> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const Text(
+            Text(
               "Reseñas",
               style: TextStyle(
                 fontSize: 22,
-                color: Colors.white,
+                color: Theme.of(context).colorScheme.onSurface,
                 fontWeight: FontWeight.bold,
               ),
             ),
             TextButton(
               onPressed: () => _openReviewModal(context),
-              child: const Text(
+              child: Text(
                 "+ Nueva Reseña",
-                style: TextStyle(color: Colors.yellow),
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.primary,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ),
           ],
@@ -125,9 +128,11 @@ class _TutorReviewsSectionState extends State<TutorReviewsSection> {
         // EMPTY STATE
         //------------------------------------------
         if (!vm.isLoading && vm.reviews.isEmpty)
-          const Text(
+          Text(
             "Aún no hay reseñas para este tutor.",
-            style: TextStyle(color: Colors.white54),
+            style: TextStyle(
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
           ),
 
         //------------------------------------------
@@ -152,7 +157,10 @@ class _TutorReviewsSectionState extends State<TutorReviewsSection> {
             },
             child: Text(
               showAll ? "Ver menos" : "Ver todas (${vm.reviews.length})",
-              style: const TextStyle(color: Colors.yellow),
+              style: TextStyle(
+                color: Theme.of(context).colorScheme.primary,
+                fontWeight: FontWeight.w500,
+              ),
             ),
           ),
       ],
@@ -194,11 +202,11 @@ class _TutorReviewsSectionState extends State<TutorReviewsSection> {
                       //------------------------------------------
                       // TITLE
                       //------------------------------------------
-                      const Text(
+                      Text(
                         "Nueva Reseña",
                         style: TextStyle(
                           fontSize: 20,
-                          color: Colors.white,
+                          color: Theme.of(context).colorScheme.onSurface,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
@@ -219,8 +227,10 @@ class _TutorReviewsSectionState extends State<TutorReviewsSection> {
                             icon: Icon(
                               Icons.star,
                               color: index < rating
-                                  ? Colors.yellow
-                                  : Colors.white38,
+                                  ? Theme.of(context).colorScheme.tertiary
+                                  : Theme.of(
+                                      context,
+                                    ).colorScheme.onSurfaceVariant,
                             ),
                           );
                         }),
@@ -233,12 +243,20 @@ class _TutorReviewsSectionState extends State<TutorReviewsSection> {
                         controller: _controller,
                         onChanged: (value) => _saveReviewDraft(),
                         maxLines: 4,
-                        style: const TextStyle(color: Colors.white),
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.onSurface,
+                        ),
                         decoration: InputDecoration(
                           hintText: "Detalles de tu experiencia",
-                          hintStyle: const TextStyle(color: Colors.white38),
+                          hintStyle: TextStyle(
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.onSurfaceVariant,
+                          ),
                           filled: true,
-                          fillColor: Colors.white10,
+                          fillColor: Theme.of(
+                            context,
+                          ).colorScheme.surfaceContainerHigh,
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
                           ),
@@ -360,12 +378,16 @@ class _TutorReviewsSectionState extends State<TutorReviewsSection> {
                                 showDialog(
                                   context: parentContext,
                                   builder: (_) => AlertDialog(
-                                    backgroundColor: Colors.white,
+                                    backgroundColor: Theme.of(
+                                      context,
+                                    ).colorScheme.surface,
                                     content: Text(
                                       vm.errorMessage ??
                                           "No se pudo enviar la reseña. Verifica tu conexión",
-                                      style: const TextStyle(
-                                        color: Colors.black,
+                                      style: TextStyle(
+                                        color: Theme.of(
+                                          context,
+                                        ).colorScheme.onSurface,
                                       ),
                                     ),
                                   ),
@@ -374,8 +396,12 @@ class _TutorReviewsSectionState extends State<TutorReviewsSection> {
                             },
 
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.yellow,
-                              foregroundColor: Colors.black,
+                              backgroundColor: Theme.of(
+                                context,
+                              ).colorScheme.tertiary,
+                              foregroundColor: Theme.of(
+                                context,
+                              ).colorScheme.onTertiary,
                             ),
 
                             child: const Text("Publicar"),

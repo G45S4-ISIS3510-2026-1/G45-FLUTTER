@@ -8,27 +8,32 @@ class ProfileExtraInfo extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
-        _box("Código", user.id ?? ""),
-        _box("Promedio", "${user.tutorRating ?? 0}/5.0"),
+        _box(context, "Código", user.id ?? ""),
+        _box(context, "Promedio", "${user.tutorRating ?? 0}/5.0"),
       ],
     );
   }
 
-  Widget _box(String title, String value) {
+  Widget _box(BuildContext context, String title, String value) {
+    final colorScheme = Theme.of(context).colorScheme;
+    
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: Colors.white10,
+        color: colorScheme.surfaceContainer,
         borderRadius: BorderRadius.circular(12),
       ),
       child: Column(
         children: [
-          Text(title, style: const TextStyle(color: Colors.white54)),
+          Text(title,
+              style: TextStyle(color: colorScheme.onSurfaceVariant)),
           const SizedBox(height: 4),
-          Text(value, style: const TextStyle(color: Colors.white)),
+          Text(value, style: TextStyle(color: colorScheme.onSurface)),
         ],
       ),
     );
