@@ -8,51 +8,50 @@ class MaterialTheme {
   static ColorScheme lightScheme() {
     return const ColorScheme(
       brightness: Brightness.light,
-      primary: Color(0xff0057c0),
-      surfaceTint: Color(0xff005ac4),
-      onPrimary: Color(0xffffffff),
-      primaryContainer: Color(0xff2970e1),
-      onPrimaryContainer: Color(0xfffefcff),
-      secondary: Color(0xff3859b1),
-      onSecondary: Color(0xffffffff),
-      secondaryContainer: Color(0xff83a2ff),
-      onSecondaryContainer: Color(0xff05348c),
-      tertiary: Color(0xff7b5808),
-      onTertiary: Color(0xffffffff),
-      tertiaryContainer: Color(0xffecbd68),
-      onTertiaryContainer: Color(0xff6b4b00),
-      error: Color(0xffba1a1a),
-      onError: Color(0xffffffff),
-      errorContainer: Color(0xffffdad6),
-      onErrorContainer: Color(0xff93000a),
-      surface: Color(0xfffcf8fa),
-      onSurface: Color(0xff1c1b1d),
-      onSurfaceVariant: Color(0xff434750),
-      outline: Color(0xff747781),
-      outlineVariant: Color(0xffc4c6d1),
-      shadow: Color(0xff000000),
-      scrim: Color(0xff000000),
-      inverseSurface: Color(0xff313031),
-      inversePrimary: Color(0xffaec6ff),
-      primaryFixed: Color(0xffd8e2ff),
-      onPrimaryFixed: Color(0xff001a42),
-      primaryFixedDim: Color(0xffaec6ff),
-      onPrimaryFixedVariant: Color(0xff004396),
-      secondaryFixed: Color(0xffdbe1ff),
-      onSecondaryFixed: Color(0xff00174b),
-      secondaryFixedDim: Color(0xffb4c5ff),
-      onSecondaryFixedVariant: Color(0xff1b4198),
-      tertiaryFixed: Color(0xffffdea8),
-      onTertiaryFixed: Color(0xff271900),
-      tertiaryFixedDim: Color(0xffeebf6a),
-      onTertiaryFixedVariant: Color(0xff5e4200),
-      surfaceDim: Color(0xffdcd9da),
-      surfaceBright: Color(0xfffcf8fa),
+
+      // 🔵 Azul suave (header / acentos)
+      primary: Color(0xff6B8DE3),
+      onPrimary: Colors.white,
+
+      // 🧊 Fondo general (gris azulado suave)
+      surface: Color(0xffDCE3EE),
+      onSurface: Color(0xff1C1C1E),
+
+      // 🧱 Cards (neumorphism look)
+      surfaceContainer: Color(0xffCBD5E3),
+      surfaceContainerHigh: Color(0xffBFCBE0),
+      surfaceContainerHighest: Color(0xffCBD5E3),
+
+      // 📝 Texto secundario
+      onSurfaceVariant: Color(0xff6B7280),
+
+      // 🔘 Pills (filtros)
+      secondary: Color(0xffB7C4E0),
+      onSecondary: Color(0xff1C1C1E),
+
+      // 🟡 Botón reservar
+      tertiary: Color(0xffFACC15),
+      onTertiary: Color(0xff000000),
+
+      error: Color(0xffEF4444),
+      onError: Colors.white,
+
+      outline: Color(0xffC7CFDB),
+      outlineVariant: Color(0xffE5EAF2),
+
+      shadow: Color(0x33000000),
+      scrim: Colors.black,
+
+      inverseSurface: Color(0xff1C1C1E),
+      inversePrimary: Color(0xff6B8DE3),
+
+      surfaceTint: Color(0xff6B8DE3),
+
+      surfaceDim: Color(0xffDCE3EE),
+      surfaceBright: Color(0xffffffff),
+
       surfaceContainerLowest: Color(0xffffffff),
-      surfaceContainerLow: Color(0xfff6f3f4),
-      surfaceContainer: Color(0xfff0edee),
-      surfaceContainerHigh: Color(0xffeae7e9),
-      surfaceContainerHighest: Color(0xffe5e2e3),
+      surfaceContainerLow: Color(0xffF3F6FB),
     );
   }
 
@@ -171,65 +170,51 @@ class MaterialTheme {
   }
 
   static ColorScheme darkScheme() {
-  return const ColorScheme(
-    brightness: Brightness.dark,
+    return const ColorScheme(
+      brightness: Brightness.dark,
 
-    // PRIMARY (azul profundo)
-    primary: Color(0xff1E3A8A),
-    onPrimary: Color(0xffffffff),
+      primary: Color(0xff4A7DFF),
+      onPrimary: Colors.white,
 
-    // BACKGROUND BASE
-    surface: Color(0xff0B1220), // fondo oscuro elegante
-    onSurface: Color(0xffffffff),
+      // 🔥 Fondo azul profundo (clave del diseño)
+      surface: Color(0xff0F172A),
+      onSurface: Colors.white,
 
-    // CONTAINERS (cards)
-    surfaceContainer: Color(0xff111827),
-    surfaceContainerHigh: Color(0xff1F2937),
-    surfaceContainerHighest: Color(0xff273244),
+      // 🧱 Cards elegantes
+      surfaceContainer: Color(0xff1E293B),
+      surfaceContainerHigh: Color(0xff273244),
+      surfaceContainerHighest: Color(0xff334155),
 
-    // VARIANTS
-    onSurfaceVariant: Color(0xff9CA3AF),
+      onSurfaceVariant: Color(0xff9CA3AF),
 
-    // ACCENTS
-    secondary: Color(0xff3B82F6),
-    onSecondary: Color(0xffffffff),
+      secondary: Color(0xff3B82F6),
+      onSecondary: Colors.white,
 
-    // AMARILLO (botones tipo "Reservar")
-    tertiary: Color(0xffFACC15),
-    onTertiary: Color(0xff000000),
+      // 🟡 Botón
+      tertiary: Color(0xffFACC15),
+      onTertiary: Color(0xff000000),
 
-    // ERROR
-    error: Color(0xffef4444),
-    onError: Color(0xffffffff),
+      error: Color(0xffEF4444),
+      onError: Colors.white,
 
-    // OTROS 
-    primaryContainer: Color(0xff1E40AF),
-    onPrimaryContainer: Color(0xffffffff),
+      outline: Color(0xff334155),
+      outlineVariant: Color(0xff1E293B),
 
-    secondaryContainer: Color(0xff1D4ED8),
-    onSecondaryContainer: Color(0xffffffff),
+      shadow: Colors.black,
+      scrim: Colors.black,
 
-    tertiaryContainer: Color(0xffEAB308),
-    onTertiaryContainer: Color(0xff000000),
+      inverseSurface: Colors.white,
+      inversePrimary: Color(0xff4A7DFF),
 
-    outline: Color(0xff374151),
-    outlineVariant: Color(0xff1F2937),
+      surfaceTint: Color(0xff3B82F6),
 
-    shadow: Color(0xff000000),
-    scrim: Color(0xff000000),
+      surfaceDim: Color(0xff0F172A),
+      surfaceBright: Color(0xff1E293B),
 
-    inverseSurface: Color(0xffffffff),
-    inversePrimary: Color(0xff1E3A8A),
-
-    surfaceTint: Color(0xff3B82F6),
-
-    surfaceDim: Color(0xff0B1220),
-    surfaceBright: Color(0xff1F2937),
-
-    surfaceContainerLowest: Color(0xff020617),
-    surfaceContainerLow: Color(0xff0F172A),
-  );
-}
+      surfaceContainerLowest: Color(0xff020617),
+      surfaceContainerLow: Color(0xff020617),
+    );
+  }
 
   ThemeData dark() {
     return theme(darkScheme());
@@ -345,22 +330,23 @@ class MaterialTheme {
     return theme(darkHighContrastScheme());
   }
 
-
   ThemeData theme(ColorScheme colorScheme) => ThemeData(
-     useMaterial3: true,
-     brightness: colorScheme.brightness,
-     colorScheme: colorScheme,
-     textTheme: textTheme.apply(
-       bodyColor: colorScheme.onSurface,
-       displayColor: colorScheme.onSurface,
-     ),
-     scaffoldBackgroundColor: colorScheme.surface,
-     canvasColor: colorScheme.surface,
+    useMaterial3: true,
+    brightness: colorScheme.brightness,
+    colorScheme: colorScheme,
+    textTheme: textTheme.apply(
+      bodyColor: colorScheme.brightness == Brightness.light
+          ? Colors.black
+          : colorScheme.onSurface,
+      displayColor: colorScheme.brightness == Brightness.light
+          ? Colors.black
+          : colorScheme.onSurface,
+    ),
+    scaffoldBackgroundColor: colorScheme.surface,
+    canvasColor: colorScheme.surface,
   );
 
-
-  List<ExtendedColor> get extendedColors => [
-  ];
+  List<ExtendedColor> get extendedColors => [];
 }
 
 class ExtendedColor {

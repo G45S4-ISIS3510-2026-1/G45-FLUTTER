@@ -26,7 +26,10 @@ class WidgetTree extends StatelessWidget {
                   //Detecta si hubo cambio en la pagina y recarga la ui en la nueva pagina
                   valueListenable: selectedPageNotifier,
                   builder: (context, selectedPage, child) {
-                    return pages[selectedPage];
+                    // Rebuild pages to ensure theme changes propagate
+                    return Builder(
+                      builder: (context) => pages[selectedPage],
+                    );
                   },
                 ),
               ),

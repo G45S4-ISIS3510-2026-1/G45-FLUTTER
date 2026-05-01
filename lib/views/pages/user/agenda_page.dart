@@ -40,6 +40,7 @@ class _AgendaPageState extends State<AgendaPage> {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     final viewModel = Provider.of<AgendaViewModel>(context);
     final userId = AuthViewModel.instance.userCache?.id ?? '';
 
@@ -58,7 +59,9 @@ class _AgendaPageState extends State<AgendaPage> {
     return Scaffold(
       backgroundColor: Colors.transparent,
       appBar: AppBar(
-        title: const Text('Mi Agenda', style: TextStyle(fontWeight: FontWeight.bold)),
+        title: Text('Mi Agenda',
+            style: TextStyle(
+                fontWeight: FontWeight.bold, color: colorScheme.onSurface)),
         backgroundColor: Colors.transparent,
         elevation: 0,
       ),
@@ -75,18 +78,22 @@ class _AgendaPageState extends State<AgendaPage> {
                   children: [
                     Text(
                       '${_months[_selectedDate.month - 1]}, ${_selectedDate.year}',
-                      style: const TextStyle(
-                          color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+                      style: TextStyle(
+                          color: colorScheme.onSurface,
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold),
                     ),
                     Row(
                       children: [
                         IconButton(
-                          icon: const Icon(Icons.chevron_left, color: Colors.white70),
+                          icon: Icon(Icons.chevron_left,
+                              color: colorScheme.onSurfaceVariant),
                           onPressed: () => setState(() =>
                               _weekStart = _weekStart.subtract(const Duration(days: 7))),
                         ),
                         IconButton(
-                          icon: const Icon(Icons.chevron_right, color: Colors.white70),
+                          icon: Icon(Icons.chevron_right,
+                              color: colorScheme.onSurfaceVariant),
                           onPressed: () => setState(() =>
                               _weekStart = _weekStart.add(const Duration(days: 7))),
                         ),
@@ -121,13 +128,16 @@ class _AgendaPageState extends State<AgendaPage> {
                   children: [
                     Text(
                       '${_dayFull[_selectedDate.weekday - 1]}, ${_selectedDate.day} de ${_months[_selectedDate.month - 1]}',
-                      style: const TextStyle(color: Colors.white70, fontSize: 13),
+                      style: TextStyle(
+                          color: colorScheme.onSurfaceVariant, fontSize: 13),
                     ),
                     if (!viewModel.isLoading)
                       Text(
                         '${filtered.length} SESIONES',
-                        style: const TextStyle(
-                            color: Colors.blue, fontSize: 13, fontWeight: FontWeight.bold),
+                        style: TextStyle(
+                            color: colorScheme.primary,
+                            fontSize: 13,
+                            fontWeight: FontWeight.bold),
                       ),
                   ],
                 ),
@@ -142,11 +152,14 @@ class _AgendaPageState extends State<AgendaPage> {
   }
 
   Widget _buildList(AgendaViewModel viewModel, List<Session> filtered, String userId) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     if (viewModel.isLoading) return const Center(child: CircularProgressIndicator());
 
     if (viewModel.errorMessage != null) {
       return Center(
-        child: Text(viewModel.errorMessage!, style: const TextStyle(color: Colors.red)),
+        child: Text(viewModel.errorMessage!,
+            style: TextStyle(color: colorScheme.error)),
       );
     }
 
@@ -155,10 +168,13 @@ class _AgendaPageState extends State<AgendaPage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.calendar_today, size: 64, color: Colors.grey.withAlpha(128)),
+            Icon(Icons.calendar_today,
+                size: 64,
+                color: colorScheme.onSurfaceVariant.withAlpha(128)),
             const SizedBox(height: 16),
-            const Text('No hay sesiones para este día',
-                style: TextStyle(color: Colors.grey, fontSize: 16)),
+            Text('No hay sesiones para este día',
+                style: TextStyle(
+                    color: colorScheme.onSurfaceVariant, fontSize: 16)),
           ],
         ),
       );

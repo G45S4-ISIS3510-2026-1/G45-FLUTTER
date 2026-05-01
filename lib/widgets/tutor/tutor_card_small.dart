@@ -10,6 +10,8 @@ class TutorCardSmall extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+
     return GestureDetector(
       onTap: () {
         Navigator.push(
@@ -24,8 +26,22 @@ class TutorCardSmall extends StatelessWidget {
         width: 150,
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: const Color(0xFF1E222D),
+          color: colors.surfaceContainer,
           borderRadius: BorderRadius.circular(20),
+          boxShadow: [
+            if (Theme.of(context).brightness == Brightness.light) ...[
+              BoxShadow(
+                color: Colors.white.withOpacity(0.6),
+                offset: const Offset(-4, -4),
+                blurRadius: 10,
+              ),
+              BoxShadow(
+                color: Colors.black.withOpacity(0.1),
+                offset: const Offset(4, 4),
+                blurRadius: 10,
+              ),
+            ]
+          ],
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -41,27 +57,36 @@ class TutorCardSmall extends StatelessWidget {
                       : null,
                   child: (tutor.profileImageUrl == null ||
                           tutor.profileImageUrl!.isEmpty)
-                      ? const Icon(Icons.person, size: 40)
+                      ? Icon(Icons.person,
+                          size: 40, color: colors.onSurfaceVariant)
                       : null,
                 ),
-                const CircleAvatar(
-                  radius: 10,
-                  backgroundColor: Colors.black54,
-                  child: Text("⭐", style: TextStyle(fontSize: 10)),
+                Container(
+                  padding: const EdgeInsets.all(4),
+                  decoration: BoxDecoration(
+                    color: colors.surfaceContainerHigh,
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Text("⭐", style: TextStyle(fontSize: 10)),
                 )
               ],
             ),
             const SizedBox(height: 8),
             Text(
               tutor.name ?? "Sin nombre",
-              style: const TextStyle(
-                  color: Colors.white, fontWeight: FontWeight.bold),
+              style: TextStyle(
+                color: colors.onSurface,
+                fontWeight: FontWeight.bold,
+              ),
               textAlign: TextAlign.center,
               overflow: TextOverflow.ellipsis,
             ),
             Text(
               tutor.major ?? "Carrera",
-              style: const TextStyle(color: Colors.grey, fontSize: 12),
+              style: TextStyle(
+                color: colors.onSurfaceVariant,
+                fontSize: 12,
+              ),
               textAlign: TextAlign.center,
               overflow: TextOverflow.ellipsis,
             ),
@@ -78,14 +103,17 @@ class TutorCardSmall extends StatelessWidget {
                   );
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFFFD15C),
-                  foregroundColor: Colors.black,
+                  backgroundColor: colors.tertiary,
+                  foregroundColor: colors.onTertiary,
                   padding: EdgeInsets.zero,
                   shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10)),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
                 ),
-                child: const Text("RESERVAR",
-                    style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
+                child: const Text(
+                  "RESERVAR",
+                  style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
+                ),
               ),
             ),
           ],

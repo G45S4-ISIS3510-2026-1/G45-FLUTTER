@@ -15,16 +15,17 @@ class TutorCard extends StatelessWidget {
     final skillsVM = Provider.of<SkillsViewModel>(context);
 
     final tutorSkills = tutor.tutoringSkills ?? [];
-    //     print("""
-    // ----- TUTOR SUMMARY -----
-    // id: ${tutor.id}
-    // name: ${tutor.name}
-    // major: ${tutor.major}
-    // profileImageUrl: ${tutor.profileImageUrl}
-    // sessionPrice: ${tutor.sessionPrice}
-    // tutoringSkills: ${tutor.tutoringSkills}
-    // ------------------------
-    // """);
+    print("""
+------ TUTOR DEBUG ------
+ID: ${tutor.id}
+Nombre: ${tutor.name}
+Carrera: ${tutor.major}
+Rating: ${tutor.rating}
+Precio: ${tutor.sessionPrice}
+Skills IDs: $tutorSkills
+
+-------------------------
+""");
     //     print("Tutor skills IDs: $tutorSkills");
     //     print("All skills: ${skillsVM.skills.map((s) => s.id)}");
 
@@ -48,7 +49,7 @@ class TutorCard extends StatelessWidget {
       child: Container(
         padding: EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: Colors.black,
+          color: Theme.of(context).colorScheme.surfaceContainer,
           borderRadius: BorderRadius.circular(20),
         ),
         child: Column(
@@ -67,7 +68,10 @@ class TutorCard extends StatelessWidget {
                   child:
                       (tutor.profileImageUrl == null ||
                           tutor.profileImageUrl!.isEmpty)
-                      ? Icon(Icons.person)
+                      ? Icon(
+                          Icons.person,
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+                        )
                       : null,
                 ),
                 SizedBox(width: 12),
@@ -82,21 +86,27 @@ class TutorCard extends StatelessWidget {
                           Expanded(
                             child: Text(
                               tutor.name ?? "Sin nombre",
-                              style: TextStyle(color: Colors.white),
+                              style: TextStyle(
+                                color: Theme.of(context).colorScheme.onSurface,
+                              ),
                               overflow: TextOverflow.ellipsis,
                             ),
                           ),
                           SizedBox(width: 8),
                           Text(
                             "\$${tutor.sessionPrice}",
-                            style: TextStyle(color: Colors.blue),
+                            style: TextStyle(
+                              color: Theme.of(context).colorScheme.primary,
+                            ),
                           ),
                         ],
                       ),
                       //major del tutor
                       Text(
                         tutor.major ?? "Sin carrera",
-                        style: TextStyle(color: Colors.grey),
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+                        ),
                       ),
 
                       Wrap(
@@ -106,8 +116,12 @@ class TutorCard extends StatelessWidget {
                             .map(
                               (skill) => Chip(
                                 label: Text(skill),
-                                backgroundColor: Color(0xFF1A2A40),
-                                labelStyle: TextStyle(color: Colors.blueAccent),
+                                backgroundColor: Theme.of(
+                                  context,
+                                ).colorScheme.surfaceContainer,
+                                labelStyle: TextStyle(
+                                  color: Theme.of(context).colorScheme.primary,
+                                ),
                               ),
                             )
                             .toList(),
@@ -126,10 +140,12 @@ class TutorCard extends StatelessWidget {
                 Icon(Icons.star, color: Colors.amber, size: 18),
                 SizedBox(width: 4),
                 Text(
-                  (tutor.rating ?? 0) == 0
+                  (tutor.receivedRatings ?? 0) == 0
                       ? "Nuevo"
-                      : tutor.rating!.toStringAsFixed(1),
-                  style: TextStyle(color: Colors.white),
+                      : (tutor.rating ?? 0).toStringAsFixed(1),
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.onSurface,
+                  ),
                 ),
                 Spacer(),
                 //--------------------------------------------------

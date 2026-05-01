@@ -7,10 +7,25 @@ class GradientBackground extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    final gradientColors = isDark
+        ? [
+            colors.surface, // base oscuro
+            colors.surfaceContainerHigh, // transición
+            colors.primary.withOpacity(0.3), // glow azul
+          ]
+        : [
+            colors.primary,
+            colors.primary.withOpacity(0.85),
+            colors.surface.withOpacity(0.95),
+          ];
+
     return Container(
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [Color(0xff020617), Color(0xff0B1220), Color(0xff1E3A8A)],
+          colors: gradientColors,
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
         ),
