@@ -26,11 +26,11 @@ class TutorSummary {
       id: user.id,
       name: user.name,
       major: user.major,
+      rating: user.tutorRating ?? 0,
+      receivedRatings: 0,
       profileImageUrl: user.profileImageUrl,
       sessionPrice: user.sessionPrice,
       tutoringSkills: user.tutoringSkills,
-      rating: 0,
-      receivedRatings: 0,
     );
   }
 
@@ -40,11 +40,7 @@ class TutorSummary {
       name: json['name'],
       major: json['major']?.toString(),
 
-      rating: (json['tutorRating'] ??
-              json['rating'] ??
-              0)
-          .toDouble(),
-
+      rating: (json['tutorRating'] ?? json['rating'] ?? 0).toDouble(),
       receivedRatings: json['receivedRatings'] ?? 0,
 
       profileImageUrl:
@@ -54,9 +50,7 @@ class TutorSummary {
           json['session_price'] ?? json['sessionPrice'],
 
       tutoringSkills: List<String>.from(
-        json['tutoring_skills'] ??
-            json['tutoringSkills'] ??
-            [],
+        json['tutoring_skills'] ?? json['tutoringSkills'] ?? [],
       ),
     );
   }
@@ -67,11 +61,7 @@ class TutorSummary {
       name: map['name'],
       major: map['major'],
 
-      rating: (map['tutorRating'] ??
-              map['rating'] ??
-              0)
-          .toDouble(),
-
+      rating: (map['tutorRating'] ?? map['rating'] ?? 0).toDouble(),
       receivedRatings: map['receivedRatings'] ?? 0,
 
       profileImageUrl:
@@ -81,9 +71,7 @@ class TutorSummary {
           map['sessionPrice'] ?? map['session_price'],
 
       tutoringSkills: List<String>.from(
-        map['tutoringSkills'] ??
-            map['tutoring_skills'] ??
-            [],
+        map['tutoringSkills'] ?? map['tutoring_skills'] ?? [],
       ),
     );
   }

@@ -128,6 +128,19 @@ class ReservationDetailPageState extends State<ReservationDetailPage> {
                           },
                         ),
                         SizedBox(height: 16),
+                        ElevatedButton.icon(
+                          onPressed: () => Navigator.pop(context),
+                          icon: const Icon(Icons.arrow_back, color: Colors.white),
+                          label: const Text(
+                            'Volver sin confirmar',
+                            style: TextStyle(color: Colors.white),
+                          ),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.grey.shade600,
+                            minimumSize: const Size(double.infinity, 48),
+                          ),
+                        ),
+                        SizedBox(height: 8),
                         ElevatedButton(
                           onPressed: () {
                             showDialog(

@@ -39,24 +39,17 @@ class _TutorProfilePageState extends State<TutorProfilePage> {
   void initState() {
     super.initState();
 
-    //----------------------------------
-    // RECENT VIEWED
-    //----------------------------------
+    // Recent viewed
     RecentViewedService().addTutor(widget.tutorId);
 
-    //----------------------------------
-    // ANALYTICS
-    //----------------------------------
+    // Analytics
     _startTime = DateTime.now();
-
     AnalyticsService.instance.setCurrentService('TutorProfile');
     AnalyticsService.instance.logEvent('view_review', {
       'tutor_id': widget.tutorId,
     });
 
-    //----------------------------------
-    // DATA
-    //----------------------------------
+    // Data
     loadFavorites();
     loadTutor();
   }
@@ -107,13 +100,10 @@ class _TutorProfilePageState extends State<TutorProfilePage> {
     if (_startTime != null) {
       final seconds = DateTime.now().difference(_startTime!).inSeconds;
 
-      analytics.logEvent(
-        name: 'time_spent_on_reviews',
-        parameters: {
-          'tutor_id': widget.tutorId,
-          'seconds': seconds,
-        },
-      );
+      AnalyticsService.instance.logEvent('time_spent_on_reviews', {
+        'tutor_id': widget.tutorId,
+        'seconds': seconds,
+      });
     }
     super.dispose();
   }
@@ -121,24 +111,36 @@ class _TutorProfilePageState extends State<TutorProfilePage> {
   //----------------------------------
   // UI HELPERS
   //----------------------------------
-  Widget buildStat(String title, String value) {
+  Widget buildStat(String title, String value, ColorScheme colors) {
     return Column(
       children: [
-        Text(title,
-            style: const TextStyle(
-                fontSize: 12, color: Colors.white70, letterSpacing: 1.2)),
+        Text(
+          title,
+          style: TextStyle(
+            fontSize: 12,
+            color: colors.onSurfaceVariant,
+            letterSpacing: 1.2,
+          ),
+        ),
         const SizedBox(height: 8),
-        Text(value,
-            style: const TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: Colors.white)),
+        Text(
+          value,
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            color: colors.onSurface,
+          ),
+        ),
       ],
     );
   }
 
-  Widget buildDivider() {
-    return Container(height: 30, width: 1, color: Colors.white24);
+  Widget buildDivider(ColorScheme colors) {
+    return Container(
+      height: 30,
+      width: 1,
+      color: colors.outlineVariant,
+    );
   }
 
   //----------------------------------
@@ -146,6 +148,8 @@ class _TutorProfilePageState extends State<TutorProfilePage> {
   //----------------------------------
   @override
   Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+
     if (isLoading) {
       return const Scaffold(
         body: Center(child: CircularProgressIndicator()),
@@ -153,9 +157,12 @@ class _TutorProfilePageState extends State<TutorProfilePage> {
     }
 
     if (tutor == null) {
-      return const Scaffold(
+      return Scaffold(
         body: Center(
-          child: Text("No se pudo cargar el tutor"),
+          child: Text(
+            "No se pudo cargar el tutor",
+            style: TextStyle(color: colors.onSurface),
+          ),
         ),
       );
     }
@@ -169,207 +176,205 @@ class _TutorProfilePageState extends State<TutorProfilePage> {
         .toList();
 
     return Scaffold(
-      body: SafeArea(
-        child: SingleChildScrollView(
-          child: Column(
-            children: [
-              //----------------------------------
-              // HEADER
-              //----------------------------------
-              SizedBox(
-                height: 300,
-                child: Stack(
-                  children: [
-                    Positioned.fill(
-                      child: Image.network(
-                        tutor!.profileImageUrl ?? "",
-                        fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) =>
-                            Container(color: Colors.black),
+      body: SingleChildScrollView(
+        child: Column(
+          children: [
+
+            //----------------------------------
+            // HEADER
+            //----------------------------------
+            SizedBox(
+              height: 300,
+              child: Stack(
+                children: [
+                  Positioned.fill(
+                    child: Image.network(
+                      tutor!.profileImageUrl ?? "",
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, __, ___) =>
+                          Container(color: Colors.black),
+                    ),
+                  ),
+
+                  // BACK
+                  Positioned(
+                    top: 40,
+                    left: 16,
+                    child: CircleAvatar(
+                      backgroundColor: Colors.white,
+                      child: IconButton(
+                        icon: const Icon(Icons.arrow_back, color: Colors.black),
+                        onPressed: () => Navigator.pop(context),
                       ),
                     ),
+                  ),
 
-                    //----------------------------------
-                    // BACK BUTTON
-                    //----------------------------------
-                    Positioned(
-                      top: 40,
-                      left: 16,
-                      child: Container(
-                        decoration: const BoxDecoration(
-                          color: Colors.white,
-                          shape: BoxShape.circle,
+                  // FAVORITE
+                  Positioned(
+                    top: 40,
+                    right: 16,
+                    child: CircleAvatar(
+                      backgroundColor: Colors.white,
+                      child: IconButton(
+                        icon: Icon(
+                          isFavorite
+                              ? Icons.favorite
+                              : Icons.favorite_border,
+                          color: isFavorite ? Colors.red : Colors.black,
                         ),
-                        child: IconButton(
-                          icon: const Icon(Icons.arrow_back,
-                              color: Colors.black),
-                          onPressed: () => Navigator.pop(context),
-                        ),
+                        onPressed: () async {
+                          final repo = UserRepository();
+
+                          setState(() {
+                            if (isFavorite) {
+                              favorites.remove(widget.tutorId);
+                            } else {
+                              favorites.add(widget.tutorId);
+                            }
+                            isFavorite = !isFavorite;
+                          });
+
+                          await repo.saveFavorites(favorites);
+                        },
                       ),
                     ),
+                  ),
 
-                    //----------------------------------
-                    // FAVORITE BUTTON
-                    //----------------------------------
-                    Positioned(
-                      top: 40,
-                      right: 16,
-                      child: Container(
-                        decoration: const BoxDecoration(
-                          color: Colors.white,
-                          shape: BoxShape.circle,
-                        ),
-                        child: IconButton(
-                          icon: Icon(
-                            isFavorite
-                                ? Icons.favorite
-                                : Icons.favorite_border,
-                            color: isFavorite ? Colors.red : Colors.black,
-                          ),
-                          onPressed: () async {
-                            final repo = UserRepository();
-
-                            setState(() {
-                              if (isFavorite) {
-                                favorites.remove(widget.tutorId);
-                              } else {
-                                favorites.add(widget.tutorId);
-                              }
-                              isFavorite = !isFavorite;
-                            });
-
-                            await repo.saveFavorites(favorites);
-                          },
-                        ),
-                      ),
-                    ),
-
-                    //----------------------------------
-                    // INFO
-                    //----------------------------------
-                    Positioned(
-                      bottom: 20,
-                      left: 16,
-                      right: 16,
-                      child: Row(
-                        children: [
-                          CircleAvatar(
-                            radius: 40,
-                            backgroundImage: NetworkImage(
-                              tutor!.profileImageUrl ?? "",
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                tutor!.name ?? "",
-                                style: const TextStyle(
-                                    fontSize: 26,
-                                    fontWeight: FontWeight.bold),
-                              ),
-                              Text(
-                                tutor!.major ?? "",
-                                style: const TextStyle(
-                                    color: Colors.blueAccent),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
-              //----------------------------------
-              // BODY
-              //----------------------------------
-              Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
-                child: Column(
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  // INFO
+                  Positioned(
+                    bottom: 20,
+                    left: 16,
+                    right: 16,
+                    child: Row(
                       children: [
-                        buildStat("PUNTAJE",
-                            "${tutor!.tutorRating?.toStringAsFixed(1) ?? 'Nuevo'} ⭐"),
-                        buildDivider(),
-                        buildStat("TUTORÍAS", "+120"),
-                        buildDivider(),
-                        buildStat("NIVEL", "Senior"),
+                        CircleAvatar(
+                          radius: 40,
+                          backgroundImage:
+                              NetworkImage(tutor!.profileImageUrl ?? ""),
+                        ),
+                        const SizedBox(width: 12),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              tutor!.name ?? "",
+                              style: TextStyle(
+                                fontSize: 26,
+                                fontWeight: FontWeight.bold,
+                                color: colors.onSurface,
+                              ),
+                            ),
+                            Text(
+                              tutor!.major ?? "",
+                              style: TextStyle(
+                                color: colors.primary,
+                              ),
+                            ),
+                          ],
+                        ),
                       ],
                     ),
-
-                    const SizedBox(height: 20),
-
-                    //----------------------------------
-                    // SKILLS
-                    //----------------------------------
-                    Align(
-                      alignment: Alignment.centerLeft,
-                      child: Text("Especialidades",
-                          style: Theme.of(context).textTheme.titleLarge),
-                    ),
-
-                    Wrap(
-                      spacing: 10,
-                      children: skillNames
-                          .map((e) => Chip(label: Text(e)))
-                          .toList(),
-                    ),
-
-                    const SizedBox(height: 20),
-
-                    //----------------------------------
-                    // INFO
-                    //----------------------------------
-                    SizedBox(
-                      height: 140,
-                      child: TutorInfoSection(tutor: tutor!),
-                    ),
-
-                    const SizedBox(height: 20),
-
-                    //----------------------------------
-                    // REVIEWS
-                    //----------------------------------
-                    ChangeNotifierProvider(
-                      create: (_) => ReviewViewModel()
-                        ..loadReviewsByTutor(widget.tutorId),
-                      child: TutorReviewsSection(tutorId: widget.tutorId),
-                    ),
-
-                    const SizedBox(height: 20),
-
-                    //----------------------------------
-                    // BOOK BUTTON
-                    //----------------------------------
-                    ElevatedButton(
-                      onPressed: () {
-                        analytics.logEvent(
-                          name: 'schedule_session',
-                          parameters: {'tutor_id': tutor!.id ?? ""},
-                        );
-
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => ReservationGatewayPage(
-                              tutor: TutorSummary.fromUser(tutor!),
-                            ),
-                          ),
-                        );
-                      },
-                      child: const Text("Reservar sesión"),
-                    ),
-                  ],
-                ),
+                  ),
+                ],
               ),
-            ],
-          ),
+            ),
+
+            //----------------------------------
+            // BODY
+            //----------------------------------
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+              child: Column(
+                children: [
+
+                  // STATS
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      buildStat(
+                        "PUNTAJE",
+                        tutor!.tutorRating != null
+                            ? "${tutor!.tutorRating!.toStringAsFixed(1)} ⭐"
+                            : "Nuevo",
+                        colors,
+                      ),
+                      buildDivider(colors),
+                      buildStat("TUTORÍAS", "+120", colors),
+                      buildDivider(colors),
+                      buildStat("NIVEL", "Senior", colors),
+                    ],
+                  ),
+
+                  const SizedBox(height: 20),
+
+                  // SKILLS
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      "Especialidades",
+                      style: Theme.of(context).textTheme.titleLarge,
+                    ),
+                  ),
+
+                  Wrap(
+                    spacing: 10,
+                    children: skillNames
+                        .map((e) => Chip(
+                              label: Text(e),
+                              backgroundColor:
+                                  colors.surfaceContainerHigh,
+                            ))
+                        .toList(),
+                  ),
+
+                  const SizedBox(height: 20),
+
+                  // INFO
+                  SizedBox(
+                    height: 140,
+                    child: TutorInfoSection(tutor: tutor!),
+                  ),
+
+                  const SizedBox(height: 20),
+
+                  // REVIEWS
+                  ChangeNotifierProvider(
+                    create: (_) => ReviewViewModel()
+                      ..loadReviewsByTutor(widget.tutorId),
+                    child: TutorReviewsSection(
+                      tutorId: widget.tutorId,
+                    ),
+                  ),
+
+                  const SizedBox(height: 20),
+
+                  // BUTTON
+                  ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: colors.tertiary,
+                      foregroundColor: colors.onTertiary,
+                    ),
+                    onPressed: () {
+                      analytics.logEvent(
+                        name: 'schedule_session',
+                        parameters: {'tutor_id': tutor!.id ?? ""},
+                      );
+
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => ReservationGatewayPage(
+                            tutor: TutorSummary.fromUser(tutor!),
+                          ),
+                        ),
+                      );
+                    },
+                    child: const Text("Reservar sesión"),
+                  ),
+                ],
+              ),
+            ),
+          ],
         ),
       ),
     );
