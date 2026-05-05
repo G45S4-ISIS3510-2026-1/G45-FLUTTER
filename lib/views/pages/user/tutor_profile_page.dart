@@ -30,6 +30,7 @@ class _TutorProfilePageState extends State<TutorProfilePage> {
   User? tutor;
   bool isLoading = true;
   bool isFavorite = false;
+  bool _timeSent = false;
   List<String> favorites = [];
 
   final FirebaseAnalytics analytics = FirebaseAnalytics.instance;
@@ -97,7 +98,7 @@ class _TutorProfilePageState extends State<TutorProfilePage> {
   //----------------------------------
   @override
   void dispose() {
-    if (_startTime != null) {
+    if (_startTime != null && !_timeSent) {
       final seconds = DateTime.now().difference(_startTime!).inSeconds;
 
       AnalyticsService.instance.logEvent('time_spent_on_reviews', {
@@ -136,11 +137,7 @@ class _TutorProfilePageState extends State<TutorProfilePage> {
   }
 
   Widget buildDivider(ColorScheme colors) {
-    return Container(
-      height: 30,
-      width: 1,
-      color: colors.outlineVariant,
-    );
+    return Container(height: 30, width: 1, color: colors.outlineVariant);
   }
 
   //----------------------------------
@@ -151,9 +148,7 @@ class _TutorProfilePageState extends State<TutorProfilePage> {
     final colors = Theme.of(context).colorScheme;
 
     if (isLoading) {
-      return const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
-      );
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
     if (tutor == null) {
@@ -179,7 +174,6 @@ class _TutorProfilePageState extends State<TutorProfilePage> {
       body: SingleChildScrollView(
         child: Column(
           children: [
-
             //----------------------------------
             // HEADER
             //----------------------------------
@@ -217,9 +211,7 @@ class _TutorProfilePageState extends State<TutorProfilePage> {
                       backgroundColor: Colors.white,
                       child: IconButton(
                         icon: Icon(
-                          isFavorite
-                              ? Icons.favorite
-                              : Icons.favorite_border,
+                          isFavorite ? Icons.favorite : Icons.favorite_border,
                           color: isFavorite ? Colors.red : Colors.black,
                         ),
                         onPressed: () async {
@@ -249,8 +241,9 @@ class _TutorProfilePageState extends State<TutorProfilePage> {
                       children: [
                         CircleAvatar(
                           radius: 40,
-                          backgroundImage:
-                              NetworkImage(tutor!.profileImageUrl ?? ""),
+                          backgroundImage: NetworkImage(
+                            tutor!.profileImageUrl ?? "",
+                          ),
                         ),
                         const SizedBox(width: 12),
                         Column(
@@ -266,9 +259,7 @@ class _TutorProfilePageState extends State<TutorProfilePage> {
                             ),
                             Text(
                               tutor!.major ?? "",
-                              style: TextStyle(
-                                color: colors.primary,
-                              ),
+                              style: TextStyle(color: colors.primary),
                             ),
                           ],
                         ),
@@ -286,7 +277,6 @@ class _TutorProfilePageState extends State<TutorProfilePage> {
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
               child: Column(
                 children: [
-
                   // STATS
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -319,31 +309,27 @@ class _TutorProfilePageState extends State<TutorProfilePage> {
                   Wrap(
                     spacing: 10,
                     children: skillNames
-                        .map((e) => Chip(
-                              label: Text(e),
-                              backgroundColor:
-                                  colors.surfaceContainerHigh,
-                            ))
+                        .map(
+                          (e) => Chip(
+                            label: Text(e),
+                            backgroundColor: colors.surfaceContainerHigh,
+                          ),
+                        )
                         .toList(),
                   ),
 
                   const SizedBox(height: 20),
 
                   // INFO
-                  SizedBox(
-                    height: 140,
-                    child: TutorInfoSection(tutor: tutor!),
-                  ),
+                  SizedBox(height: 140, child: TutorInfoSection(tutor: tutor!)),
 
                   const SizedBox(height: 20),
 
                   // REVIEWS
                   ChangeNotifierProvider(
-                    create: (_) => ReviewViewModel()
-                      ..loadReviewsByTutor(widget.tutorId),
-                    child: TutorReviewsSection(
-                      tutorId: widget.tutorId,
-                    ),
+                    create: (_) =>
+                        ReviewViewModel()..loadReviewsByTutor(widget.tutorId),
+                    child: TutorReviewsSection(tutorId: widget.tutorId),
                   ),
 
                   const SizedBox(height: 20),
@@ -354,12 +340,28 @@ class _TutorProfilePageState extends State<TutorProfilePage> {
                       backgroundColor: colors.tertiary,
                       foregroundColor: colors.onTertiary,
                     ),
-                    onPressed: () {
-                      analytics.logEvent(
-                        name: 'schedule_session',
-                        parameters: {'tutor_id': tutor!.id ?? ""},
+                    onPressed: () async {
+                      //  Enviar tiempo ANTES de navegar
+                      if (_startTime != null && !_timeSent) {
+                        final seconds = DateTime.now()
+                            .difference(_startTime!)
+                            .inSeconds;
+
+                        await AnalyticsService.instance.logEvent(
+                          'time_spent_on_reviews',
+                          {'tutor_id': widget.tutorId, 'seconds': seconds},
+                        );
+
+                        _timeSent = true;
+                      }
+
+                      // Evento de agendamiento (Firebase)
+                      await AnalyticsService.instance.logEvent(
+                        'schedule_session',
+                        {'tutor_id': tutor!.id ?? ""},
                       );
 
+                      // Navegar
                       Navigator.push(
                         context,
                         MaterialPageRoute(
