@@ -11,6 +11,8 @@ class AnalyticsService {
   AnalyticsService._();
 
   final FirebaseAnalytics _fa = FirebaseAnalytics.instance;
+  final Map<String, DateTime> _lastEventTimes = {};
+  static const _debounceDuration = Duration(milliseconds: 800);
 
   // BQ1: tag which screen/service is active for Crashlytics
   void setCurrentService(String service) {
@@ -37,8 +39,15 @@ class AnalyticsService {
     await _post('crash_reported', {'service': service, 'message': message});
   }
 
-  // BQ4, BQ5: log event to Firebase Analytics + G45-Analytics
+  // BQ4, BQ5: log event to Firebase Analytics and G45-Analytics
   Future<void> logEvent(String eventType, Map<String, dynamic> metadata) async {
+    final key =
+        '$eventType:${metadata.entries.map((e) => '${e.key}=${e.value}').join(',')}';
+    final now = DateTime.now();
+    final last = _lastEventTimes[key];
+    if (last != null && now.difference(last) < _debounceDuration) return;
+    _lastEventTimes[key] = now;
+
     final faParams = <String, Object>{};
     metadata.forEach(
       (k, v) =>

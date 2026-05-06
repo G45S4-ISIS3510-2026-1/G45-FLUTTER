@@ -9,7 +9,7 @@ class SessionCardWidget extends StatelessWidget {
 
   Color _statusColor(String status) {
     switch (status) {
-      case 'Confirmada': return Colors.green;
+      case 'Concluida': return Colors.green;
       case 'Cancelada': return Colors.red;
       default: return Colors.amber;
     }

@@ -47,6 +47,8 @@ class ReservationDetailPageState extends State<ReservationDetailPage> {
     super.dispose();
   }
 
+  Session get _session => viewModel.updatedSession ?? widget.session;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -78,7 +80,7 @@ class ReservationDetailPageState extends State<ReservationDetailPage> {
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Text(
-                      widget.session.status.toUpperCase(),
+                      _session.status.toUpperCase(),
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
@@ -88,7 +90,7 @@ class ReservationDetailPageState extends State<ReservationDetailPage> {
                   SizedBox(height: 16),
                   Column(
                     children: [
-                      SessionCardWidget(session: widget.session),
+                      SessionCardWidget(session: _session),
                       SizedBox(height: 16),
                       if (viewModel.isLoading)
                         CircularProgressIndicator()
@@ -110,10 +112,10 @@ class ReservationDetailPageState extends State<ReservationDetailPage> {
                             isTutor: false,
                           ),
                       ],
-                      if (widget.session.status == 'Pendiente') ...[
+                      if (_session.status == 'Pendiente') ...[
                         SizedBox(height: 16),
                         QrCodeWidget(
-                          verifCode: widget.session.verifCode,
+                          verifCode: _session.verifCode,
                           isTutor: isTutorView,
                           onCodeScanned: (code) async {
                             final messenger = ScaffoldMessenger.of(context);

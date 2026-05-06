@@ -167,10 +167,10 @@ class _CatalogPageState extends State<CatalogPage> {
                             selectedSort = "";
                           } else {
                             selectedSort = "rating";
+                            AnalyticsService.instance.logEvent('filter_applied', {
+                              'filter_name': 'mejor_rating',
+                            });
                           }
-                        });
-                        AnalyticsService.instance.logEvent('filter_applied', {
-                          'filter_name': 'mejor_rating',
                         });
                       },
                       style: ElevatedButton.styleFrom(
@@ -190,10 +190,10 @@ class _CatalogPageState extends State<CatalogPage> {
                             selectedSort = "";
                           } else {
                             selectedSort = "price";
+                            AnalyticsService.instance.logEvent('filter_applied', {
+                              'filter_name': 'precio',
+                            });
                           }
-                        });
-                        AnalyticsService.instance.logEvent('filter_applied', {
-                          'filter_name': 'precio',
                         });
                       },
                       style: ElevatedButton.styleFrom(
@@ -241,12 +241,12 @@ class _CatalogPageState extends State<CatalogPage> {
                                 selectedFaculty = null;
                               } else {
                                 selectedFaculty = facultad;
+                                AnalyticsService.instance.logEvent(
+                                  'filter_applied',
+                                  {'filter_name': facultad},
+                                );
                               }
                             });
-                            AnalyticsService.instance.logEvent(
-                              'filter_applied',
-                              {'filter_name': facultad},
-                            );
                           },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: isSelected
