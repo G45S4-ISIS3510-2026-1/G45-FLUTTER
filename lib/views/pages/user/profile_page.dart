@@ -46,6 +46,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     final authVM = Provider.of<AuthViewModel>(context);
 
     if (authVM.userCache != null && authVM.userCache != user) {
@@ -71,8 +72,8 @@ class _ProfilePageState extends State<ProfilePage> {
                     child: ElevatedButton(
                       onPressed: () {},
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFFFFD15C),
-                        foregroundColor: Colors.black,
+                        backgroundColor: colorScheme.tertiary,
+                        foregroundColor: colorScheme.onTertiary,
                         padding: const EdgeInsets.symmetric(vertical: 14),
                         shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(10)),
@@ -96,8 +97,8 @@ class _ProfilePageState extends State<ProfilePage> {
                         });
                       },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFFFFD15C),
-                        foregroundColor: Colors.black,
+                        backgroundColor: colorScheme.tertiary,
+                        foregroundColor: colorScheme.onTertiary,
                         padding: const EdgeInsets.symmetric(vertical: 14),
                         shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(10)),
@@ -128,8 +129,7 @@ class _ProfilePageState extends State<ProfilePage> {
                     context,
                     MaterialPageRoute(builder: (_) => const FavoritesPage()),
                   );
-                },
-                onPqrTap: () {
+                }, onPqrTap: () {
                   Navigator.push(
                     context,
                     MaterialPageRoute(builder: (_) => const PqrPage()),
@@ -144,7 +144,8 @@ class _ProfilePageState extends State<ProfilePage> {
                       await authVM.logout();
                     });
                   },
-                  style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                  style: ElevatedButton.styleFrom(
+                      backgroundColor: colorScheme.error),
                   child: const Text("Cerrar Sesión"),
                 ),
               ),

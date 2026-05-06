@@ -62,13 +62,11 @@ class _CatalogPageState extends State<CatalogPage> {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     final vm = Provider.of<TutorViewModel>(
       context,
-    ); //instancia de ViewModel donde vm.tutor es la lista de todos los TutorSummary
+    );
 
-    //final skillsVM = Provider.of<SkillsViewModel>(context); //instancia de skillsViewModel donde skillsVM.skills lista de skills
-
-    // si cualquiera de los dos no carga simbolo de carga
     if (vm.isLoading) {
       return Center(child: CircularProgressIndicator());
     }
@@ -86,7 +84,6 @@ class _CatalogPageState extends State<CatalogPage> {
       return matchesSearch && matchesFaculty;
     }).toList();
 
-    // ORDENAR
     filteredTutors.sort((a, b) => (b.rating ?? 0).compareTo(a.rating ?? 0));
 
     if (selectedSort == "rating") {
@@ -96,15 +93,12 @@ class _CatalogPageState extends State<CatalogPage> {
         (a, b) => (a.sessionPrice ?? 0).compareTo(b.sessionPrice ?? 0),
       );
     }
-    // if (skillsVM.isLoading) {
-    //   return Center(child: CircularProgressIndicator());
-    // }
+
     return SingleChildScrollView(
       controller: _scrollController,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          //titulo del catalogo y foto de usuario Cuando este
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             child: Row(
@@ -112,22 +106,24 @@ class _CatalogPageState extends State<CatalogPage> {
                 Expanded(
                   child: Text(
                     'Catálogo de Tutores',
-                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                    style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: colorScheme.onSurface),
                   ),
                 ),
               ],
             ),
           ),
-          //barra de busqueda
           Padding(
             padding: const EdgeInsets.all(16.0),
             child: Container(
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: colorScheme.surfaceContainer,
                 borderRadius: BorderRadius.circular(8),
               ),
               child: TextField(
-                style: TextStyle(color: Colors.black),
+                style: TextStyle(color: colorScheme.onSurface),
                 onChanged: (value) {
                   setState(() {
                     searchQuery = value;
@@ -135,6 +131,7 @@ class _CatalogPageState extends State<CatalogPage> {
                 },
                 decoration: InputDecoration(
                   hintText: 'Buscar por materia o tutor',
+                  hintStyle: TextStyle(color: colorScheme.onSurfaceVariant),
                 ),
               ),
             ),
@@ -152,6 +149,7 @@ class _CatalogPageState extends State<CatalogPage> {
                     style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.normal,
+                      color: colorScheme.onSurface,
                     ),
                   ),
                 ),
@@ -175,11 +173,11 @@ class _CatalogPageState extends State<CatalogPage> {
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: selectedSort == "rating"
-                            ? Colors.blue
-                            : Colors.blue.withOpacity(0.2),
+                            ? colorScheme.primary
+                            : colorScheme.primary.withOpacity(0.2),
                         foregroundColor: selectedSort == "rating"
-                            ? Colors.white
-                            : Colors.blue,
+                            ? colorScheme.onPrimary
+                            : colorScheme.primary,
                       ),
                       child: Text("Mejor Ratings"),
                     ),
@@ -198,15 +196,14 @@ class _CatalogPageState extends State<CatalogPage> {
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: selectedSort == "price"
-                            ? Colors.blue
-                            : Colors.blue.withOpacity(0.2),
+                            ? colorScheme.primary
+                            : colorScheme.primary.withOpacity(0.2),
                         foregroundColor: selectedSort == "price"
-                            ? Colors.white
-                            : Colors.blue,
+                            ? colorScheme.onPrimary
+                            : colorScheme.primary,
                       ),
                       child: Text("Precio"),
                     ),
-                    //ElevatedButton(onPressed: () {}, child: Text("Proximidad")),
                   ],
                 ),
 
@@ -218,12 +215,13 @@ class _CatalogPageState extends State<CatalogPage> {
                     style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.normal,
+                      color: colorScheme.onSurface,
                     ),
                   ),
                 ),
                 //Botones de filtro de Facultad [mapeados]
                 SizedBox(
-                  height: 45, // altura fija para los chips
+                  height: 45,
                   child: ListView.builder(
                     scrollDirection: Axis.horizontal,
                     itemCount: facultadesMock.length,
@@ -250,11 +248,11 @@ class _CatalogPageState extends State<CatalogPage> {
                           },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: isSelected
-                                ? Colors.blue
-                                : Colors.blue.withOpacity(0.2),
+                                ? colorScheme.primary
+                                : colorScheme.primary.withOpacity(0.2),
                             foregroundColor: isSelected
-                                ? Colors.white
-                                : Colors.blue,
+                                ? colorScheme.onPrimary
+                                : colorScheme.primary,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(20),
                             ),

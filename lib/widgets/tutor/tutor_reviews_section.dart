@@ -1,5 +1,7 @@
 import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:g45_flutter/viewmodels/auth.dart';
 import 'package:g45_flutter/viewmodels/review_viewmodel.dart';
 import 'package:g45_flutter/widgets/tutor/tutor_review_card.dart';
 import 'package:provider/provider.dart';
@@ -49,9 +51,6 @@ class _TutorReviewsSectionState extends State<TutorReviewsSection> {
     //----------------------------------
     _startTime = DateTime.now();
 
-    //----------------------------------
-    //  INICIO MEDICIÓN TIEMPO
-    //----------------------------------
     _loadReviewDraft();
     //----------------------------------
     // TAG DE SERVICIO (Crashlytics)
@@ -59,21 +58,10 @@ class _TutorReviewsSectionState extends State<TutorReviewsSection> {
     AnalyticsService.instance.setCurrentService("reviews");
 
     //----------------------------------
-    // cargar reviews
-    //----------------------------------
-    Future.microtask(() {
-      Provider.of<ReviewViewModel>(
-        context,
-        listen: false,
-      ).loadReviewsByTutor(widget.tutorId);
-    });
-
-    //----------------------------------
     // BQ IV — screen view
     //----------------------------------
-    AnalyticsService.instance.logEvent("screen_view", {
-      "screen_name": "TutorProfileReview",
-      "screen_class": "TutorProfile",
+    AnalyticsService.instance.logEvent("view_review", {
+      "tutor_id": widget.tutorId,
     });
   }
 
@@ -91,12 +79,13 @@ class _TutorReviewsSectionState extends State<TutorReviewsSection> {
       });
     }
 
+    _controller.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    final vm = Provider.of<ReviewViewModel>(context);
+    final vm = context.watch<ReviewViewModel>();
 
     final reviewsToShow = showAll ? vm.reviews : vm.reviews.take(2).toList();
 
@@ -109,19 +98,22 @@ class _TutorReviewsSectionState extends State<TutorReviewsSection> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const Text(
+            Text(
               "Reseñas",
               style: TextStyle(
                 fontSize: 22,
-                color: Colors.white,
+                color: Theme.of(context).colorScheme.onSurface,
                 fontWeight: FontWeight.bold,
               ),
             ),
             TextButton(
               onPressed: () => _openReviewModal(context),
-              child: const Text(
+              child: Text(
                 "+ Nueva Reseña",
-                style: TextStyle(color: Colors.yellow),
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.primary,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ),
           ],
@@ -136,18 +128,21 @@ class _TutorReviewsSectionState extends State<TutorReviewsSection> {
         // EMPTY STATE
         //------------------------------------------
         if (!vm.isLoading && vm.reviews.isEmpty)
-          const Text(
+          Text(
             "Aún no hay reseñas para este tutor.",
-            style: TextStyle(color: Colors.white54),
+            style: TextStyle(
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
           ),
 
         //------------------------------------------
         // LISTA DE REVIEWS
         //------------------------------------------
-        Column(
-          children: reviewsToShow.map((review) {
-            return ReviewCard(review: review);
-          }).toList(),
+        ListView.builder(
+          shrinkWrap: true,
+          physics: NeverScrollableScrollPhysics(),
+          itemCount: reviewsToShow.length,
+          itemBuilder: (_, i) => ReviewCard(review: reviewsToShow[i]),
         ),
 
         //------------------------------------------
@@ -162,7 +157,10 @@ class _TutorReviewsSectionState extends State<TutorReviewsSection> {
             },
             child: Text(
               showAll ? "Ver menos" : "Ver todas (${vm.reviews.length})",
-              style: const TextStyle(color: Colors.yellow),
+              style: TextStyle(
+                color: Theme.of(context).colorScheme.primary,
+                fontWeight: FontWeight.w500,
+              ),
             ),
           ),
       ],
@@ -173,6 +171,8 @@ class _TutorReviewsSectionState extends State<TutorReviewsSection> {
   // MODAL CREAR REVIEW
   //--------------------------------------------------
   void _openReviewModal(BuildContext context) {
+    final parentContext = context;
+
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -180,155 +180,240 @@ class _TutorReviewsSectionState extends State<TutorReviewsSection> {
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
-      builder: (_) {
-        return Padding(
-          padding: EdgeInsets.only(
-            left: 16,
-            right: 16,
-            top: 24,
-            bottom: MediaQuery.of(context).viewInsets.bottom + 16,
-          ),
-          child: Consumer<ReviewViewModel>(
-            builder: (context, vm, _) {
-              return Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  //------------------------------------------
-                  // TITLE
-                  //------------------------------------------
-                  const Text(
-                    "Nueva Reseña",
-                    style: TextStyle(
-                      fontSize: 20,
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                    ),
+      builder: (modalContext) {
+        final vm = Provider.of<ReviewViewModel>(parentContext, listen: false);
+
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            return Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: SafeArea(
+                child: Padding(
+                  padding: EdgeInsets.only(
+                    left: 16,
+                    right: 16,
+                    top: 24,
+                    bottom: MediaQuery.of(context).viewInsets.bottom + 16,
                   ),
-
-                  const SizedBox(height: 16),
-
-                  //------------------------------------------
-                  // RATING
-                  //------------------------------------------
-                  Row(
-                    children: List.generate(5, (index) {
-                      return IconButton(
-                        onPressed: () {
-                          setState(() {
-                            rating = index + 1;
-                          });
-                        },
-                        icon: Icon(
-                          Icons.star,
-                          color: index < rating
-                              ? Colors.yellow
-                              : Colors.white38,
-                        ),
-                      );
-                    }),
-                  ),
-
-                  //------------------------------------------
-                  // TEXT INPUT
-                  //------------------------------------------
-                  TextField(
-                    controller: _controller,
-                    onChanged: (value) => _saveReviewDraft(),
-                    maxLines: 4,
-                    style: const TextStyle(color: Colors.white),
-                    decoration: InputDecoration(
-                      hintText: "Detalles de tu experiencia",
-                      hintStyle: const TextStyle(color: Colors.white38),
-                      filled: true,
-                      fillColor: Colors.white10,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                  ),
-
-                  const SizedBox(height: 16),
-
-                  //------------------------------------------
-                  // BUTTONS
-                  //------------------------------------------
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      TextButton(
-                        onPressed: () => Navigator.pop(context),
-                        child: const Text(
-                          "Cancelar",
-                          style: TextStyle(color: Colors.yellow),
+                      //------------------------------------------
+                      // TITLE
+                      //------------------------------------------
+                      Text(
+                        "Nueva Reseña",
+                        style: TextStyle(
+                          fontSize: 20,
+                          color: Theme.of(context).colorScheme.onSurface,
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
-                      ElevatedButton(
-                        onPressed: vm.isLoading
-                            ? null
-                            : () async {
-                                //----------------------------------
-                                //
-                                //----------------------------------
-                                final connectivity = await Connectivity()
-                                    .checkConnectivity();
 
-                                if (connectivity == ConnectivityResult.none) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                      content: Text("Sin conexión a internet"),
-                                    ),
-                                  );
-                                  return;
-                                }
+                      const SizedBox(height: 16),
 
-                                //----------------------------------
-                                // ENVÍO NORMAL
-                                //----------------------------------
-                                final success = await vm.createReview(
-                                  tutorId: widget.tutorId,
-                                  rating: rating,
-                                  details: _controller.text,
-                                );
+                      //------------------------------------------
+                      // RATING
+                      //------------------------------------------
+                      Row(
+                        children: List.generate(5, (index) {
+                          return IconButton(
+                            onPressed: () {
+                              setModalState(() {
+                                rating = index + 1;
+                              });
+                            },
+                            icon: Icon(
+                              Icons.star,
+                              color: index < rating
+                                  ? Theme.of(context).colorScheme.tertiary
+                                  : Theme.of(
+                                      context,
+                                    ).colorScheme.onSurfaceVariant,
+                            ),
+                          );
+                        }),
+                      ),
 
-                                if (success) {
-                                  //----------------------------------
-                                  // ANALYTICS
-                                  //----------------------------------
-                                  AnalyticsService.instance.logEvent(
-                                    "review_submit",
-                                    {
-                                      "review_length": _controller.text.length,
-                                      "rating": rating,
-                                      "tutor_id": widget.tutorId,
-                                    },
-                                  );
-                                  await _clearReviewDraft();
-                                  Navigator.pop(context);
-                                  _controller.clear();
-                                  rating = 0;
-                                } else {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                      content: Text(vm.errorMessage ?? "Error"),
-                                    ),
-                                  );
-                                }
-                              },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.yellow,
-                          foregroundColor: Colors.black,
+                      //------------------------------------------
+                      // TEXT INPUT
+                      //------------------------------------------
+                      TextField(
+                        controller: _controller,
+                        onChanged: (value) => _saveReviewDraft(),
+                        maxLines: 4,
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.onSurface,
                         ),
-                        child: vm.isLoading
-                            ? const CircularProgressIndicator()
-                            : const Text("Publicar"),
+                        decoration: InputDecoration(
+                          hintText: "Detalles de tu experiencia",
+                          hintStyle: TextStyle(
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.onSurfaceVariant,
+                          ),
+                          filled: true,
+                          fillColor: Theme.of(
+                            context,
+                          ).colorScheme.surfaceContainerHigh,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                      ),
+
+                      const SizedBox(height: 16),
+
+                      //------------------------------------------
+                      // BUTTONS
+                      //------------------------------------------
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          //----------------------------------
+                          // CANCELAR
+                          //----------------------------------
+                          TextButton(
+                            onPressed: () async {
+                              await _clearReviewDraft();
+                              _controller.clear();
+                              rating = 0;
+
+                              Navigator.pop(modalContext);
+                            },
+                            child: const Text(
+                              "Cancelar",
+                              style: TextStyle(color: Colors.white70),
+                            ),
+                          ),
+
+                          //----------------------------------
+                          // PUBLICAR
+                          //----------------------------------
+                          ElevatedButton(
+                            onPressed: () async {
+                              print("CLICK BOTON");
+
+                              //----------------------------------
+                              // VALIDACIÓN
+                              //----------------------------------
+                              if (rating == 0 ||
+                                  _controller.text.trim().isEmpty) {
+                                ScaffoldMessenger.of(modalContext).showSnackBar(
+                                  const SnackBar(
+                                    content: Text("Completa la reseña"),
+                                  ),
+                                );
+                                return;
+                              }
+
+                              //----------------------------------
+                              // FIREBASE USER
+                              //----------------------------------
+                              final firebaseUser =
+                                  FirebaseAuth.instance.currentUser;
+
+                              print("FIREBASE USER: $firebaseUser");
+
+                              if (firebaseUser == null) {
+                                print(" USER NULL");
+
+                                ScaffoldMessenger.of(modalContext).showSnackBar(
+                                  const SnackBar(
+                                    content: Text("Usuario no autenticado"),
+                                  ),
+                                );
+                                return;
+                              }
+
+                              //----------------------------------
+                              // VIEWMODEL
+                              //----------------------------------
+                              final vm = parentContext.read<ReviewViewModel>();
+
+                              //----------------------------------
+                              // CREATE REVIEW
+                              //----------------------------------
+                              print("LLAMANDO CREATE REVIEW...");
+
+                              final success = await vm.createReview(
+                                authorId: firebaseUser.uid,
+                                tutorId: widget.tutorId,
+                                rating: rating,
+                                details: _controller.text.trim(),
+                              );
+
+                              print("RESULTADO CREATE REVIEW: $success");
+
+                              //----------------------------------
+                              // SUCCESS
+                              //----------------------------------
+                              if (success) {
+                                print(" REVIEW CREADA");
+                                await AnalyticsService.instance
+                                    .logEvent('review_submit', {
+                                      'tutor_id': widget.tutorId,
+                                      'review_length': _controller.text
+                                          .trim()
+                                          .length,
+                                      'rating': rating,
+                                    });
+
+                                await _clearReviewDraft();
+                                _controller.clear();
+
+                                if (mounted) {
+                                  setState(() {
+                                    rating = 0;
+                                  });
+                                }
+
+                                Navigator.pop(modalContext);
+                              } else {
+                                print(" ERROR DESDE VM: ${vm.errorMessage}");
+
+                                FocusScope.of(modalContext).unfocus();
+
+                                showDialog(
+                                  context: parentContext,
+                                  builder: (_) => AlertDialog(
+                                    backgroundColor: Theme.of(
+                                      context,
+                                    ).colorScheme.surface,
+                                    content: Text(
+                                      vm.errorMessage ??
+                                          "No se pudo enviar la reseña. Verifica tu conexión",
+                                      style: TextStyle(
+                                        color: Theme.of(
+                                          context,
+                                        ).colorScheme.onSurface,
+                                      ),
+                                    ),
+                                  ),
+                                );
+                              }
+                            },
+
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Theme.of(
+                                context,
+                              ).colorScheme.tertiary,
+                              foregroundColor: Theme.of(
+                                context,
+                              ).colorScheme.onTertiary,
+                            ),
+
+                            child: const Text("Publicar"),
+                          ),
+                        ],
                       ),
                     ],
                   ),
-                ],
-              );
-            },
-          ),
+                ),
+              ),
+            );
+          },
         );
       },
     );

@@ -14,6 +14,7 @@ class DateCardWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     final List<String> weekDays = [
       'LUN',
       'MAR',
@@ -35,11 +36,11 @@ class DateCardWidget extends StatelessWidget {
         padding: const EdgeInsets.symmetric(vertical: 12),
         decoration: BoxDecoration(
           color: isSelected
-              ? Colors.blue.withValues(alpha: 0.1)
-              : Colors.white.withValues(alpha: 0.05),
+              ? colorScheme.primary.withValues(alpha: 0.1)
+              : colorScheme.surface.withValues(alpha: 0.05),
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: isSelected ? Colors.blue : Colors.white10,
+            color: isSelected ? colorScheme.primary : colorScheme.outline,
             width: 2,
           ),
         ),
@@ -49,15 +50,15 @@ class DateCardWidget extends StatelessWidget {
             Text(
               weekDay,
               style: TextStyle(
-                color: isSelected ? Colors.blue : Colors.grey,
+                color: isSelected ? colorScheme.primary : colorScheme.onSurfaceVariant,
                 fontWeight: FontWeight.bold,
               ),
             ),
             const SizedBox(height: 8),
             Text(
               "${date.day}",
-              style: const TextStyle(
-                color: Colors.white,
+              style: TextStyle(
+                color: colorScheme.onSurface,
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
               ),

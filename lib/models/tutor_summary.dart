@@ -5,6 +5,7 @@ class TutorSummary {
   final String? name;
   final String? major;
   final double? rating;
+  final int? receivedRatings;
   final String? profileImageUrl;
   final int? sessionPrice;
   final List<String>? tutoringSkills;
@@ -14,6 +15,7 @@ class TutorSummary {
     this.name,
     this.major,
     this.rating,
+    this.receivedRatings,
     this.profileImageUrl,
     this.sessionPrice,
     this.tutoringSkills,
@@ -24,7 +26,8 @@ class TutorSummary {
       id: user.id,
       name: user.name,
       major: user.major,
-      rating: user.tutorRating,
+      rating: user.tutorRating ?? 0,
+      receivedRatings: 0,
       profileImageUrl: user.profileImageUrl,
       sessionPrice: user.sessionPrice,
       tutoringSkills: user.tutoringSkills,
@@ -35,10 +38,17 @@ class TutorSummary {
     return TutorSummary(
       id: json['id']?.toString(),
       name: json['name'],
-      major: json['major'],
-      rating: ((json['rating'] ?? json['tutorRating']) as num?)?.toDouble(),
-      profileImageUrl: json['profile_image_url'] ?? json['profileImageUrl'],
-      sessionPrice: json['session_price'] ?? json['sessionPrice'],
+      major: json['major']?.toString(),
+
+      rating: (json['tutorRating'] ?? json['rating'] ?? 0).toDouble(),
+      receivedRatings: json['receivedRatings'] ?? 0,
+
+      profileImageUrl:
+          json['profile_image_url'] ?? json['profileImageUrl'],
+
+      sessionPrice:
+          json['session_price'] ?? json['sessionPrice'],
+
       tutoringSkills: List<String>.from(
         json['tutoring_skills'] ?? json['tutoringSkills'] ?? [],
       ),
@@ -50,10 +60,19 @@ class TutorSummary {
       id: map['id']?.toString(),
       name: map['name'],
       major: map['major'],
-      rating: (map['rating'] as num?)?.toDouble(),
-      profileImageUrl: map['profileImageUrl'],
-      sessionPrice: map['sessionPrice'],
-      tutoringSkills: List<String>.from(map['tutoringSkills'] ?? []),
+
+      rating: (map['tutorRating'] ?? map['rating'] ?? 0).toDouble(),
+      receivedRatings: map['receivedRatings'] ?? 0,
+
+      profileImageUrl:
+          map['profileImageUrl'] ?? map['profile_image_url'],
+
+      sessionPrice:
+          map['sessionPrice'] ?? map['session_price'],
+
+      tutoringSkills: List<String>.from(
+        map['tutoringSkills'] ?? map['tutoring_skills'] ?? [],
+      ),
     );
   }
 
@@ -63,6 +82,7 @@ class TutorSummary {
       'name': name,
       'major': major,
       'rating': rating,
+      'receivedRatings': receivedRatings,
       'profileImageUrl': profileImageUrl,
       'sessionPrice': sessionPrice,
       'tutoringSkills': tutoringSkills,

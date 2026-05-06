@@ -45,7 +45,10 @@ class AuthViewModel extends ChangeNotifier {
     setAuthState(AuthState.loading);
 
     try {
-      final updatedUser = await repository.updateUserInterestedSkills(user, major);
+      final updatedUser = await repository.updateUserInterestedSkills(
+        user,
+        major,
+      );
       if (updatedUser != null) {
         userCache = updatedUser;
         await saveUserInCache(updatedUser);
@@ -102,11 +105,16 @@ class AuthViewModel extends ChangeNotifier {
 
     try {
       final fetched = await repository.getUserById(userCache!.id!);
-      userCache = fetched;
-      await saveUserInCache(fetched);
-      notifyListeners();
+
+      if (fetched != null) {
+        userCache = fetched;
+        await saveUserInCache(fetched);
+        notifyListeners();
+      } else {
+        print("No se pudo refrescar (null)");
+      }
     } catch (e) {
-      // queda con el cache, no hacer signOut
+      print("Error refrescando usuario: $e");
     }
   }
 

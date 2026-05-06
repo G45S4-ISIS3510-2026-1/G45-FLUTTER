@@ -30,6 +30,7 @@ class _HomePageState extends State<HomePage> {
       final user = await authVM.getUserCache();
       if (user != null) {
         setState(() => nombre = user.name);
+
         if (mounted) {
           Provider.of<SessionViewModel>(
             context,
@@ -69,7 +70,8 @@ class _HomePageState extends State<HomePage> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    Provider.of<TutorViewModel>(context, listen: false).loadRecommendations();
+    Provider.of<TutorViewModel>(context, listen: false)
+        .loadRecommendations();
   }
 
   @override
@@ -80,18 +82,20 @@ class _HomePageState extends State<HomePage> {
   }
 
   void showNoConnectionSnackbar() {
+    final colors = Theme.of(context).colorScheme;
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text(
+      SnackBar(
+        content: const Text(
           "Sin conexión a internet, no puedes ver los detalles ahora",
         ),
-        backgroundColor: Colors.red,
+        backgroundColor: colors.error,
       ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
     final tutorVM = Provider.of<TutorViewModel>(context);
     final sessionVM = Provider.of<SessionViewModel>(context);
     final connection = ConnectionService();
@@ -99,70 +103,93 @@ class _HomePageState extends State<HomePage> {
     return CustomScrollView(
       controller: scrollController,
       slivers: [
+        // 🔹 SALUDO
         SliverToBoxAdapter(
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             child: Text(
               'Hola $nombre!',
-              style: const TextStyle(fontSize: 35, fontWeight: FontWeight.bold),
+              style: TextStyle(
+                fontSize: 35,
+                fontWeight: FontWeight.bold,
+                color: colors.onSurface,
+              ),
             ),
           ),
         ),
 
-        const SliverToBoxAdapter(
+        // 🔹 TÍTULO SESIONES
+        SliverToBoxAdapter(
           child: Padding(
-            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
             child: Text(
-              'Proximas sesiones',
-              style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
+              'Próximas sesiones',
+              style: TextStyle(
+                fontSize: 25,
+                fontWeight: FontWeight.bold,
+                color: colors.onSurface,
+              ),
             ),
           ),
         ),
 
-        sessionVM.isLoading || tutorVM.isLoading
+        // 🔹 LISTA SESIONES
+        (sessionVM.isLoading || tutorVM.isLoading)
             ? const SliverToBoxAdapter(
                 child: Center(child: CircularProgressIndicator()),
               )
             : sessionVM.studentSessions.isEmpty
-            ? const SliverToBoxAdapter(
-                child: Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  child: Text("No tienes sesiones próximas"),
-                ),
-              )
-            : SliverList(
-                delegate: SliverChildBuilderDelegate(
-                  (context, index) => GestureDetector(
-                    onTap: () {
-                      if (!connection.hasConnection) {
-                        showNoConnectionSnackbar();
-                        return;
-                      }
-                    },
+                ? SliverToBoxAdapter(
                     child: Padding(
                       padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 8,
-                      ),
-                      child: SessionCardWidget(
-                        session: sessionVM.studentSessions[index],
+                          horizontal: 16, vertical: 8),
+                      child: Text(
+                        "No tienes sesiones próximas",
+                        style: TextStyle(
+                          color: colors.onSurfaceVariant,
+                        ),
                       ),
                     ),
+                  )
+                : SliverList(
+                    delegate: SliverChildBuilderDelegate(
+                      (context, index) => GestureDetector(
+                        onTap: () {
+                          if (!connection.hasConnection) {
+                            showNoConnectionSnackbar();
+                            return;
+                          }
+                        },
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 16, vertical: 8),
+                          child: SessionCardWidget(
+                            session: sessionVM.studentSessions[index],
+                          ),
+                        ),
+                      ),
+                      childCount: sessionVM.studentSessions.length,
+                    ),
                   ),
-                  childCount: sessionVM.studentSessions.length,
-                ),
-              ),
 
-        if (tutorVM.recommendedTutors.isNotEmpty) ...[
-          const SliverToBoxAdapter(
+        // 🔹 TUTORES DESTACADOS
+        if (tutorVM.recommendedTutors.isNotEmpty)
+          SliverToBoxAdapter(
             child: Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
               child: Text(
                 'Tutores destacados',
-                style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
+                style: TextStyle(
+                  fontSize: 25,
+                  fontWeight: FontWeight.bold,
+                  color: colors.onSurface,
+                ),
               ),
             ),
           ),
+
+        // 🔹 LISTA HORIZONTAL TUTORES
+        if (tutorVM.recommendedTutors.isNotEmpty)
           SliverToBoxAdapter(
             child: tutorVM.isLoading
                 ? const Center(child: CircularProgressIndicator())
@@ -189,9 +216,8 @@ class _HomePageState extends State<HomePage> {
                     ),
                   ),
           ),
-        ],
 
-        const SliverToBoxAdapter(child: SizedBox(height: 5)),
+        const SliverToBoxAdapter(child: SizedBox(height: 10)),
       ],
     );
   }
