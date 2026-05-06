@@ -31,6 +31,7 @@ class _TutorProfilePageState extends State<TutorProfilePage> {
   bool isLoading = true;
   bool isFavorite = false;
   bool _timeSent = false;
+  bool _viewSent = false;
   List<String> favorites = [];
 
   final FirebaseAnalytics analytics = FirebaseAnalytics.instance;
@@ -40,17 +41,23 @@ class _TutorProfilePageState extends State<TutorProfilePage> {
   void initState() {
     super.initState();
 
-    // Recent viewed
-    RecentViewedService().addTutor(widget.tutorId);
-
-    // Analytics
     _startTime = DateTime.now();
-    AnalyticsService.instance.setCurrentService('TutorProfile');
-    AnalyticsService.instance.logEvent('view_review', {
-      'tutor_id': widget.tutorId,
-    });
+    print("⏱️ START TIME: $_startTime");
 
-    // Data
+    AnalyticsService.instance.setCurrentService('TutorProfile');
+
+    print("📤 Sending view_review for tutor: ${widget.tutorId}");
+
+    if (!_viewSent) {
+      _viewSent = true;
+
+      AnalyticsService.instance.logEvent('view_review', {
+        'tutor_id': widget.tutorId,
+      });
+
+      print(" ✅ view_review enviado una sola vez");
+    }
+
     loadFavorites();
     loadTutor();
   }
@@ -96,18 +103,6 @@ class _TutorProfilePageState extends State<TutorProfilePage> {
   //----------------------------------
   // DISPOSE (TIME ANALYTICS)
   //----------------------------------
-  @override
-  void dispose() {
-    if (_startTime != null && !_timeSent) {
-      final seconds = DateTime.now().difference(_startTime!).inSeconds;
-
-      AnalyticsService.instance.logEvent('time_spent_on_reviews', {
-        'tutor_id': widget.tutorId,
-        'seconds': seconds,
-      });
-    }
-    super.dispose();
-  }
 
   //----------------------------------
   // UI HELPERS
@@ -341,27 +336,39 @@ class _TutorProfilePageState extends State<TutorProfilePage> {
                       foregroundColor: colors.onTertiary,
                     ),
                     onPressed: () async {
-                      //  Enviar tiempo ANTES de navegar
+                      print("🟡 CLICK EN RESERVAR");
+
                       if (_startTime != null && !_timeSent) {
                         final seconds = DateTime.now()
                             .difference(_startTime!)
                             .inSeconds;
+                        final safeSeconds = seconds < 1 ? 1 : seconds;
+
+                        print("⏱️ TIME CALCULATED: $safeSeconds segundos");
 
                         await AnalyticsService.instance.logEvent(
                           'time_spent_on_reviews',
-                          {'tutor_id': widget.tutorId, 'seconds': seconds},
+                          {'tutor_id': widget.tutorId, 'seconds': safeSeconds},
                         );
+
+                        print("✅ time_spent_on_reviews enviado");
 
                         _timeSent = true;
                       }
+                      await Future.delayed(const Duration(milliseconds: 300));
+                      print("📤 Sending session_scheduled...");
 
-                      // Evento de agendamiento (Firebase)
                       await AnalyticsService.instance.logEvent(
-                        'schedule_session',
+                        'session_scheduled',
                         {'tutor_id': tutor!.id ?? ""},
                       );
 
-                      // Navegar
+                      print("✅ session_scheduled enviado");
+
+                      await Future.delayed(
+                        const Duration(milliseconds: 300),
+                      ); // 🔥 clave
+
                       Navigator.push(
                         context,
                         MaterialPageRoute(
