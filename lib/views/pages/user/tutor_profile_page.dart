@@ -166,224 +166,271 @@ class _TutorProfilePageState extends State<TutorProfilePage> {
         .toList();
 
     return Scaffold(
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            //----------------------------------
-            // HEADER
-            //----------------------------------
-            SizedBox(
-              height: 300,
-              child: Stack(
-                children: [
-                  Positioned.fill(
-                    child: Image.network(
-                      tutor!.profileImageUrl ?? "",
-                      fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) =>
-                          Container(color: Colors.black),
-                    ),
-                  ),
-
-                  // BACK
-                  Positioned(
-                    top: 40,
-                    left: 16,
-                    child: CircleAvatar(
-                      backgroundColor: Colors.white,
-                      child: IconButton(
-                        icon: const Icon(Icons.arrow_back, color: Colors.black),
-                        onPressed: () => Navigator.pop(context),
-                      ),
-                    ),
-                  ),
-
-                  // FAVORITE
-                  Positioned(
-                    top: 40,
-                    right: 16,
-                    child: CircleAvatar(
-                      backgroundColor: Colors.white,
-                      child: IconButton(
-                        icon: Icon(
-                          isFavorite ? Icons.favorite : Icons.favorite_border,
-                          color: isFavorite ? Colors.red : Colors.black,
+      body: SafeArea(
+        child: NotificationListener<OverscrollIndicatorNotification>(
+          onNotification: (notification) {
+            notification.disallowIndicator();
+            return true;
+          },
+          child: SingleChildScrollView(
+            physics: const ClampingScrollPhysics(),
+            child: Column(
+              children: [
+                //----------------------------------
+                // HEADER
+                //----------------------------------
+                SizedBox(
+                  height: 300,
+                  child: Stack(
+                    children: [
+                      Positioned.fill(
+                        child: Image.network(
+                          tutor!.profileImageUrl ?? "",
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, __, ___) =>
+                              Container(color: Colors.black),
                         ),
-                        onPressed: () async {
-                          final repo = UserRepository();
-
-                          setState(() {
-                            if (isFavorite) {
-                              favorites.remove(widget.tutorId);
-                            } else {
-                              favorites.add(widget.tutorId);
-                            }
-                            isFavorite = !isFavorite;
-                          });
-
-                          await repo.saveFavorites(favorites);
-                        },
                       ),
-                    ),
-                  ),
 
-                  // INFO
-                  Positioned(
-                    bottom: 20,
-                    left: 16,
-                    right: 16,
-                    child: Row(
-                      children: [
-                        CircleAvatar(
-                          radius: 40,
-                          backgroundImage: NetworkImage(
-                            tutor!.profileImageUrl ?? "",
+                      // BACK
+                      Positioned(
+                        top: 40,
+                        left: 16,
+                        child: CircleAvatar(
+                          backgroundColor: Colors.white,
+                          child: IconButton(
+                            icon: const Icon(
+                              Icons.arrow_back,
+                              color: Colors.black,
+                            ),
+                            onPressed: () => Navigator.pop(context),
                           ),
                         ),
-                        const SizedBox(width: 12),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              tutor!.name ?? "",
-                              style: TextStyle(
-                                fontSize: 26,
-                                fontWeight: FontWeight.bold,
-                                color: colors.onSurface,
-                              ),
-                            ),
-                            Text(
-                              tutor!.major ?? "",
-                              style: TextStyle(color: colors.primary),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
-            //----------------------------------
-            // BODY
-            //----------------------------------
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
-              child: Column(
-                children: [
-                  // STATS
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      buildStat(
-                        "PUNTAJE",
-                        tutor!.tutorRating != null
-                            ? "${tutor!.tutorRating!.toStringAsFixed(1)} ⭐"
-                            : "Nuevo",
-                        colors,
                       ),
-                      buildDivider(colors),
-                      buildStat("TUTORÍAS", "+120", colors),
-                      buildDivider(colors),
-                      buildStat("NIVEL", "Senior", colors),
+
+                      // FAVORITE
+                      Positioned(
+                        top: 40,
+                        right: 16,
+                        child: CircleAvatar(
+                          backgroundColor: Colors.white,
+                          child: IconButton(
+                            icon: Icon(
+                              isFavorite
+                                  ? Icons.favorite
+                                  : Icons.favorite_border,
+                              color: isFavorite ? Colors.red : Colors.black,
+                            ),
+                            onPressed: () async {
+                              final repo = UserRepository();
+
+                              setState(() {
+                                if (isFavorite) {
+                                  favorites.remove(widget.tutorId);
+                                } else {
+                                  favorites.add(widget.tutorId);
+                                }
+                                isFavorite = !isFavorite;
+                              });
+
+                              await repo.saveFavorites(favorites);
+                            },
+                          ),
+                        ),
+                      ),
+
+                      // INFO
+                      Positioned(
+                        bottom: 20,
+                        left: 16,
+                        right: 16,
+                        child: Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: Colors.black.withOpacity(0.45),
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          child: Row(
+                            children: [
+                              CircleAvatar(
+                                radius: 40,
+                                backgroundImage: NetworkImage(
+                                  tutor!.profileImageUrl ?? "",
+                                ),
+                              ),
+
+                              const SizedBox(width: 12),
+
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      tutor!.name ?? "",
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: const TextStyle(
+                                        fontSize: 26,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+
+                                    const SizedBox(height: 4),
+
+                                    Text(
+                                      tutor!.major ?? "",
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: TextStyle(
+                                        color: Colors.blue.shade200,
+                                        fontSize: 16,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
                     ],
                   ),
+                ),
 
-                  const SizedBox(height: 20),
-
-                  // SKILLS
-                  Align(
-                    alignment: Alignment.centerLeft,
-                    child: Text(
-                      "Especialidades",
-                      style: Theme.of(context).textTheme.titleLarge,
-                    ),
+                //----------------------------------
+                // BODY
+                //----------------------------------
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 20,
                   ),
-
-                  Wrap(
-                    spacing: 10,
-                    children: skillNames
-                        .map(
-                          (e) => Chip(
-                            label: Text(e),
-                            backgroundColor: colors.surfaceContainerHigh,
+                  child: Column(
+                    children: [
+                      // STATS
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: [
+                          buildStat(
+                            "PUNTAJE",
+                            tutor!.tutorRating != null
+                                ? "${tutor!.tutorRating!.toStringAsFixed(1)} ⭐"
+                                : "Nuevo",
+                            colors,
                           ),
-                        )
-                        .toList(),
-                  ),
+                          buildDivider(colors),
+                          buildStat("TUTORÍAS", "+120", colors),
+                          buildDivider(colors),
+                          buildStat("NIVEL", "Senior", colors),
+                        ],
+                      ),
 
-                  const SizedBox(height: 20),
+                      const SizedBox(height: 20),
 
-                  // INFO
-                  SizedBox(height: 140, child: TutorInfoSection(tutor: tutor!)),
-
-                  const SizedBox(height: 20),
-
-                  // REVIEWS
-                  ChangeNotifierProvider(
-                    create: (_) =>
-                        ReviewViewModel()..loadReviewsByTutor(widget.tutorId),
-                    child: TutorReviewsSection(tutorId: widget.tutorId),
-                  ),
-
-                  const SizedBox(height: 20),
-
-                  // BUTTON
-                  ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: colors.tertiary,
-                      foregroundColor: colors.onTertiary,
-                    ),
-                    onPressed: () async {
-                      print("🟡 CLICK EN RESERVAR");
-
-                      if (_startTime != null && !_timeSent) {
-                        final seconds = DateTime.now()
-                            .difference(_startTime!)
-                            .inSeconds;
-                        final safeSeconds = seconds < 1 ? 1 : seconds;
-
-                        print("⏱️ TIME CALCULATED: $safeSeconds segundos");
-
-                        await AnalyticsService.instance.logEvent(
-                          'time_spent_on_reviews',
-                          {'tutor_id': widget.tutorId, 'seconds': safeSeconds},
-                        );
-
-                        print("✅ time_spent_on_reviews enviado");
-
-                        _timeSent = true;
-                      }
-                      await Future.delayed(const Duration(milliseconds: 300));
-                      print("📤 Sending session_scheduled...");
-
-                      await AnalyticsService.instance.logEvent(
-                        'session_scheduled',
-                        {'tutor_id': tutor!.id ?? ""},
-                      );
-
-                      print("✅ session_scheduled enviado");
-
-                      await Future.delayed(
-                        const Duration(milliseconds: 300),
-                      ); // 🔥 clave
-
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => ReservationGatewayPage(
-                            tutor: TutorSummary.fromUser(tutor!),
-                          ),
+                      // SKILLS
+                      Align(
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          "Especialidades",
+                          style: Theme.of(context).textTheme.titleLarge,
                         ),
-                      );
-                    },
-                    child: const Text("Reservar sesión"),
+                      ),
+
+                      Wrap(
+                        spacing: 10,
+                        children: skillNames
+                            .map(
+                              (e) => Chip(
+                                label: Text(e),
+                                backgroundColor: colors.surfaceContainerHigh,
+                              ),
+                            )
+                            .toList(),
+                      ),
+
+                      const SizedBox(height: 20),
+
+                      // INFO
+                      SizedBox(
+                        height: 180,
+                        child: TutorInfoSection(tutor: tutor!),
+                      ),
+
+                      const SizedBox(height: 20),
+
+                      // REVIEWS
+                      ChangeNotifierProvider(
+                        create: (_) =>
+                            ReviewViewModel()
+                              ..loadReviewsByTutor(widget.tutorId),
+                        child: TutorReviewsSection(tutorId: widget.tutorId),
+                      ),
+
+                      const SizedBox(height: 20),
+
+                      // BUTTON
+                      ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: colors.tertiary,
+                          foregroundColor: colors.onTertiary,
+                        ),
+                        onPressed: () async {
+                          print("🟡 CLICK EN RESERVAR");
+
+                          if (_startTime != null && !_timeSent) {
+                            final seconds = DateTime.now()
+                                .difference(_startTime!)
+                                .inSeconds;
+                            final safeSeconds = seconds < 1 ? 1 : seconds;
+
+                            print("⏱️ TIME CALCULATED: $safeSeconds segundos");
+
+                            await AnalyticsService.instance.logEvent(
+                              'time_spent_on_reviews',
+                              {
+                                'tutor_id': widget.tutorId,
+                                'seconds': safeSeconds,
+                              },
+                            );
+
+                            print("✅ time_spent_on_reviews enviado");
+
+                            _timeSent = true;
+                          }
+                          await Future.delayed(
+                            const Duration(milliseconds: 300),
+                          );
+                          print("📤 Sending session_scheduled...");
+
+                          await AnalyticsService.instance.logEvent(
+                            'session_scheduled',
+                            {'tutor_id': tutor!.id ?? ""},
+                          );
+
+                          print("✅ session_scheduled enviado");
+
+                          await Future.delayed(
+                            const Duration(milliseconds: 300),
+                          ); // 🔥 clave
+
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => ReservationGatewayPage(
+                                tutor: TutorSummary.fromUser(tutor!),
+                              ),
+                            ),
+                          );
+                        },
+                        child: const Text("Reservar sesión"),
+                      ),
+                    ],
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );
