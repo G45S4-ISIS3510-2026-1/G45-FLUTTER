@@ -32,10 +32,12 @@ class _HomePageState extends State<HomePage> {
         setState(() => nombre = user.name);
 
         if (mounted) {
-          Provider.of<SessionViewModel>(
+          final sessionVM = Provider.of<SessionViewModel>(
             context,
             listen: false,
-          ).loadSessionsByStudent(user.id);
+          );
+          sessionVM.loadSessionsByStudent(user.id);
+          sessionVM.loadSessionsByTutor(user.id);
         }
       }
     });
@@ -58,10 +60,12 @@ class _HomePageState extends State<HomePage> {
       Future.microtask(() async {
         final user = await authVM.getUserCache();
         if (user != null && mounted) {
-          Provider.of<SessionViewModel>(
+          final sessionVM = Provider.of<SessionViewModel>(
             context,
             listen: false,
-          ).loadSessionsByStudent(user.id);
+          );
+          sessionVM.loadSessionsByStudent(user.id);
+          sessionVM.loadSessionsByTutor(user.id);
         }
       });
     }
@@ -70,8 +74,7 @@ class _HomePageState extends State<HomePage> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    Provider.of<TutorViewModel>(context, listen: false)
-        .loadRecommendations();
+    Provider.of<TutorViewModel>(context, listen: false).loadRecommendations();
   }
 
   @override
@@ -103,7 +106,7 @@ class _HomePageState extends State<HomePage> {
     return CustomScrollView(
       controller: scrollController,
       slivers: [
-        // 🔹 SALUDO
+        // SALUDO
         SliverToBoxAdapter(
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -118,7 +121,7 @@ class _HomePageState extends State<HomePage> {
           ),
         ),
 
-        // 🔹 TÍTULO SESIONES
+        // TÍTULO SESIONES
         SliverToBoxAdapter(
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
@@ -133,46 +136,61 @@ class _HomePageState extends State<HomePage> {
           ),
         ),
 
-        // 🔹 LISTA SESIONES
-        (sessionVM.isLoading || tutorVM.isLoading)
-            ? const SliverToBoxAdapter(
+        // LISTA SESIONES
+        Builder(
+          builder: (context) {
+            final allSessions = [
+              ...sessionVM.studentSessions,
+              ...sessionVM.tutorSessions,
+            ]..sort((a, b) => a.scheduledAt.compareTo(b.scheduledAt));
+            final userId = AuthViewModel.instance.userCache?.id ?? '';
+
+            if (sessionVM.isLoading || tutorVM.isLoading) {
+              return const SliverToBoxAdapter(
                 child: Center(child: CircularProgressIndicator()),
-              )
-            : sessionVM.studentSessions.isEmpty
-                ? SliverToBoxAdapter(
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 16, vertical: 8),
-                      child: Text(
-                        "No tienes sesiones próximas",
-                        style: TextStyle(
-                          color: colors.onSurfaceVariant,
-                        ),
-                      ),
+              );
+            }
+            if (allSessions.isEmpty) {
+              return SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 8,
+                  ),
+                  child: Text(
+                    "No tienes sesiones próximas",
+                    style: TextStyle(color: colors.onSurfaceVariant),
+                  ),
+                ),
+              );
+            }
+            return SliverList(
+              delegate: SliverChildBuilderDelegate(
+                (context, index) => GestureDetector(
+                  onTap: () {
+                    if (!connection.hasConnection) {
+                      showNoConnectionSnackbar();
+                      return;
+                    }
+                  },
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 8,
                     ),
-                  )
-                : SliverList(
-                    delegate: SliverChildBuilderDelegate(
-                      (context, index) => GestureDetector(
-                        onTap: () {
-                          if (!connection.hasConnection) {
-                            showNoConnectionSnackbar();
-                            return;
-                          }
-                        },
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 16, vertical: 8),
-                          child: SessionCardWidget(
-                            session: sessionVM.studentSessions[index],
-                          ),
-                        ),
-                      ),
-                      childCount: sessionVM.studentSessions.length,
+                    child: SessionCardWidget(
+                      session: allSessions[index],
+                      isTutor: allSessions[index].tutorId == userId,
                     ),
                   ),
+                ),
+                childCount: allSessions.length,
+              ),
+            );
+          },
+        ),
 
-        // 🔹 TUTORES DESTACADOS
+        // TUTORES DESTACADOS
         if (tutorVM.recommendedTutors.isNotEmpty)
           SliverToBoxAdapter(
             child: Padding(
@@ -188,7 +206,7 @@ class _HomePageState extends State<HomePage> {
             ),
           ),
 
-        // 🔹 LISTA HORIZONTAL TUTORES
+        // LISTA HORIZONTAL TUTORES
         if (tutorVM.recommendedTutors.isNotEmpty)
           SliverToBoxAdapter(
             child: tutorVM.isLoading

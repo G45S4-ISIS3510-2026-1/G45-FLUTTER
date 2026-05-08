@@ -90,7 +90,7 @@ class SessionCardWidget extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      (session.skill['label'] as String?) ?? '',
+                      (session.skill?['label'] as String?) ?? '',
                       style: TextStyle(
                         color: colors.onSurface,
                         fontWeight: FontWeight.bold,

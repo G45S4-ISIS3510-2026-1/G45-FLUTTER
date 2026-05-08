@@ -265,22 +265,20 @@ class _ReservationGatewayPageState extends State<ReservationGatewayPage> {
                     listen: false,
                   );
                   final tutorSkillIds = widget.tutor.tutoringSkills ?? [];
-                  final tutorSkill = skillsViewModel.skills.firstWhere(
-                    (skill) => tutorSkillIds.contains(skill.id),
-                    orElse: () => Skill(
-                      id: tutorSkillIds.isNotEmpty ? tutorSkillIds.first : '0',
-                      major: 'Otro',
-                      label: 'Tutoría',
-                      iconUrl: '',
-                    ),
+                  final matchedSkill = skillsViewModel.skills.cast<Skill?>().firstWhere(
+                    (skill) => tutorSkillIds.contains(skill!.id),
+                    orElse: () => null,
                   );
+                  final skillMap = matchedSkill != null
+                      ? {
+                          'id': matchedSkill.id,
+                          'label': matchedSkill.label,
+                          'major': matchedSkill.major,
+                          'iconUrl': matchedSkill.iconUrl,
+                        }
+                      : null;
                   final reservation = Session(
-                    skill: {
-                      'id': tutorSkill.id,
-                      'label': tutorSkill.label,
-                      'major': tutorSkill.major,
-                      'iconUrl': tutorSkill.iconUrl,
-                    },
+                    skill: skillMap,
                     scheduledAt: selectedDate!,
                     status: 'Pendiente',
                     studentId: AuthViewModel.instance.userCache!.id,
@@ -288,33 +286,28 @@ class _ReservationGatewayPageState extends State<ReservationGatewayPage> {
                     verifCode: '',
                   );
 
-                  Session? createdSession;
-                  // CONTINGENCIA
-                  try {
-                    createdSession = await viewModel.createSession(reservation);
-                  } catch (e) {
-                    if (mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text(
-                            'Error al conectar con firebase. Mostrando vista previa.',
-                          ),
-                        ),
-                      );
-                    }
-                  }
+                  final createdSession = await viewModel.createSession(reservation);
 
-                  final sessionToDisplay = createdSession ?? reservation;
-                  // CONTINGENCIA P2
-                  if (mounted) {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) =>
-                            ReservationDetailPage(session: sessionToDisplay),
+                  if (!mounted) return;
+
+                  if (createdSession == null) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(viewModel.errorMessage ?? 'Error desconocido al crear la sesión'),
+                        backgroundColor: Colors.red,
+                        duration: const Duration(seconds: 8),
                       ),
                     );
+                    return;
                   }
+
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) =>
+                          ReservationDetailPage(session: createdSession),
+                    ),
+                  );
                 },
                 style: ElevatedButton.styleFrom(
                   minimumSize: const Size(double.infinity, 50),

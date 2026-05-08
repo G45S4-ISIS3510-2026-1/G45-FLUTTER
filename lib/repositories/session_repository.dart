@@ -11,7 +11,7 @@ class SessionRepository {
 
   // POST createSession
   Future<Session> createSession(Session session) async {
-    final url = Uri.parse(baseUrl);
+    final url = Uri.parse("$baseUrl/");
     final resp = await http.post(
       url,
       headers: {"Content-Type": "application/json"},
@@ -19,8 +19,7 @@ class SessionRepository {
     );
 
     if (resp.statusCode != 201) {
-      print("ERROR CREANDO SESION: ${resp.body}");
-      throw Exception("Error creando sesión en backend: ${resp.statusCode}");
+      throw Exception("[${resp.statusCode}] ${resp.body}");
     }
 
     return Session.fromJson(jsonDecode(resp.body));

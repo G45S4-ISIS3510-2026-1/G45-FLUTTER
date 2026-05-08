@@ -1,5 +1,5 @@
 class Session {
-  final Map<String, dynamic> skill;
+  final Map<String, dynamic>? skill;
   final DateTime scheduledAt;
   final String status;
   final String studentId;
@@ -8,7 +8,7 @@ class Session {
   final String? id;
 
   Session({
-    required this.skill,
+    this.skill,
     required this.scheduledAt,
     required this.status,
     required this.studentId,
@@ -19,7 +19,7 @@ class Session {
 
   factory Session.fromJson(Map<String, dynamic> json) {
     return Session(
-      skill: Map<String, dynamic>.from(json['skill']),
+      skill: json['skill'] != null ? Map<String, dynamic>.from(json['skill']) : null,
       scheduledAt: DateTime.parse(json['scheduledAt']),
       status: json['status'],
       // lee del backend (student.id) o del cache (studentId)
@@ -37,11 +37,11 @@ class Session {
   Map<String, dynamic> toJson() {
     return {
       'id': id,
-      'skill': skill,
+      if (skill != null) 'skill': skill,
       'scheduledAt': scheduledAt.toIso8601String(),
       'status': status,
-      'studentId': studentId,
-      'tutorId': tutorId,
+      'student': {'id': studentId, 'name': ''},
+      'tutor': {'id': tutorId, 'name': ''},
       'verifCode': verifCode,
     };
   }
