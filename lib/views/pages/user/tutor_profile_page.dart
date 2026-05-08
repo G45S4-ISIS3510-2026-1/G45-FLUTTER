@@ -56,6 +56,10 @@ class _TutorProfilePageState extends State<TutorProfilePage> {
       });
 
       print(" ✅ view_review enviado una sola vez");
+      // GUARDAR EN RECIENTES
+      RecentViewedService().addTutor(widget.tutorId);
+
+      print("🔥 ADDED TO RECENT VIEWED: ${widget.tutorId}");
     }
 
     loadFavorites();

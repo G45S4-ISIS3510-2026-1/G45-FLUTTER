@@ -47,7 +47,7 @@ class _CatalogPageState extends State<CatalogPage> {
     try {
       await RecentViewedService().init();
 
-      final searchedIds = RecentViewedService().ids;
+      final searchedIds = RecentViewedService().ids.take(1).toList();
 
       print("===== RECOMMENDATIONS DEBUG =====");
       print("RECENT VIEWED IDS SENT: $searchedIds");
@@ -77,8 +77,6 @@ class _CatalogPageState extends State<CatalogPage> {
 
           recommendationsEnabled = true;
         });
-
-        print("RECOMMENDED TUTORS COUNT: ${recommendedTutors.length}");
       }
     } catch (e) {
       print("ERROR RECOMMENDATIONS: $e");
@@ -127,8 +125,9 @@ class _CatalogPageState extends State<CatalogPage> {
 
       final matchesSearch = name.contains(query) || major.contains(query);
 
-      final matchesFaculty =
-          selectedFaculty == null || tutor.major == selectedFaculty;
+      final matchesFaculty = recommendationsEnabled
+          ? true
+          : selectedFaculty == null || tutor.major == selectedFaculty;
 
       return matchesSearch && matchesFaculty;
     }).toList();
@@ -216,14 +215,13 @@ class _CatalogPageState extends State<CatalogPage> {
                       onPressed: () {
                         setState(() {
                           recommendationsEnabled = false;
-                          if (selectedSort == "rating") {
-                            selectedSort = "";
-                          } else {
-                            selectedSort = "rating";
-                            AnalyticsService.instance.logEvent('filter_applied', {
-                              'filter_name': 'mejor_rating',
-                            });
-                          }
+                          selectedSort = selectedSort == "rating"
+                              ? ""
+                              : "rating";
+                        });
+
+                        AnalyticsService.instance.logEvent('filter_applied', {
+                          'filter_name': 'mejor_rating',
                         });
                       },
                       style: ElevatedButton.styleFrom(
@@ -252,14 +250,11 @@ class _CatalogPageState extends State<CatalogPage> {
                       onPressed: () {
                         setState(() {
                           recommendationsEnabled = false;
-                          if (selectedSort == "price") {
-                            selectedSort = "";
-                          } else {
-                            selectedSort = "price";
-                            AnalyticsService.instance.logEvent('filter_applied', {
-                              'filter_name': 'precio',
-                            });
-                          }
+                          selectedSort = selectedSort == "price" ? "" : "price";
+                        });
+
+                        AnalyticsService.instance.logEvent('filter_applied', {
+                          'filter_name': 'precio',
                         });
                       },
                       style: ElevatedButton.styleFrom(
@@ -288,26 +283,29 @@ class _CatalogPageState extends State<CatalogPage> {
                       onPressed: () async {
                         print("========== CLICK RECOMENDADOS ==========");
 
-                        setState(() {
-                          recommendationsEnabled = !recommendationsEnabled;
-
-                          // desactivar sorts
-                          selectedSort = "";
-
-                          // limpiar recomendaciones al apagar
-                          if (!recommendationsEnabled) {
+                        // SI YA ESTA ACTIVO -> apagar
+                        if (recommendationsEnabled) {
+                          setState(() {
+                            recommendationsEnabled = false;
                             recommendedTutors = [];
-                          }
+                          });
+
+                          print("RECOMENDADOS DESACTIVADOS");
+                          return;
+                        }
+
+                        // SI ESTA APAGADO -> prender y cargar
+                        setState(() {
+                          selectedSort = "";
+                          selectedFaculty = null;
+                          searchQuery = "";
+                          recommendedTutors = [];
+                          recommendationsEnabled = true;
                         });
 
-                        print(
-                          "recommendationsEnabled: $recommendationsEnabled",
-                        );
+                        print("LLAMANDO ENDPOINT DE RECOMENDACIONES...");
 
-                        // SOLO si quedó activo
-                        if (recommendationsEnabled) {
-                          await loadRecommendations();
-                        }
+                        await loadRecommendations();
 
                         AnalyticsService.instance.logEvent('filter_applied', {
                           'filter_name': 'recomendados',
@@ -369,12 +367,13 @@ class _CatalogPageState extends State<CatalogPage> {
                                 selectedFaculty = null;
                               } else {
                                 selectedFaculty = facultad;
-                                AnalyticsService.instance.logEvent(
-                                  'filter_applied',
-                                  {'filter_name': facultad},
-                                );
                               }
                             });
+
+                            AnalyticsService.instance.logEvent(
+                              'filter_applied',
+                              {'filter_name': facultad},
+                            );
                           },
 
                           style: ElevatedButton.styleFrom(
